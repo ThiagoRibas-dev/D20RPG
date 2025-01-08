@@ -1,0 +1,39 @@
+{
+  "name": "my-rpg-project",
+  "version": "1.0.0",
+  "description": "A 2D turn-based RPG",
+  "main": "dist/scripts/index.js",
+  "bin": {
+    "my-rpg-project": "dist/scripts/index.js"
+  },
+  "scripts": {
+    "build": "tsc && npx pkg . --out-path dist",
+    "build-no-package": "tsc",
+    "start": "node dist/scripts/index.js",
+    "start-dev": "tsc && node dist/scripts/index.js"
+  },
+  "pkg": {
+    "assets": [
+      "dist/resources/**/*"
+    ],
+    "targets": [
+      "node16-win-x64"
+    ],
+    "outputPath": "dist"
+  },
+  "keywords": [
+    "rpg",
+    "game",
+    "typescript"
+  ],
+  "author": "Your Name",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/node": "^18.11.18",
+    "pkg": "^5.8.1"
+  },
+  "dependencies": {
+    "npm": "^10.4.0"
+  }
+}
