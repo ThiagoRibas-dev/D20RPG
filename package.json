@@ -7,10 +7,11 @@
     "my-rpg-project": "dist/index.js"
   },
   "scripts": {
-    "build": "tsc -outDir dist && npx pkg . --out-path dist",
+    "build": "pnpm tsc -outDir dist && npx pkg ./src --out-path dist && pnpm run copy-content",
     "build-no-package": "tsc",
     "start": "node dist/scripts/index.js",
-    "start-dev": "nodemon --exec ts-node ./scripts/index.ts"
+    "start-dev": "nodemon --exec ts-node ./scripts/index.ts",
+    "copy-content": "node -e \"require('fs').cpSync('./content', './dist/content', {recursive: true});\""
   },
   "pkg": {
     "assets": [
@@ -26,8 +27,8 @@
     "game",
     "typescript"
   ],
-  "author": "Your Name",
-  "license": "ISC",
+  "author": "ThSiRi",
+  "license": "CC BY-NC-SA 4.0",
   "devDependencies": {
     "@types/node": "^18.11.18",
     "nodemon": "^3.1.9",
@@ -36,8 +37,12 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@npmcli/config": "^10.0.0",
+    "@npmcli/redact": "^3.0.0",
+    "fs-minipass": "^3.0.3",
     "npm": "^10.4.0",
-    "npx": "^10.2.2"
+    "npx": "^10.2.2",
+    "proc-log": "^5.0.0"
   },
   "tasks": [
     {
