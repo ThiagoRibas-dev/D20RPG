@@ -4,13 +4,13 @@
   "description": "A 2D turn-based RPG",
   "main": "dist/scripts/index.js",
   "bin": {
-    "my-rpg-project": "dist/scripts/index.js"
+    "my-rpg-project": "dist/index.js"
   },
   "scripts": {
-    "build": "tsc && npx pkg . --out-path dist",
+    "build": "tsc -outDir dist && npx pkg . --out-path dist",
     "build-no-package": "tsc",
     "start": "node dist/scripts/index.js",
-    "start-dev": "tsc && node dist/scripts/index.js"
+    "start-dev": "nodemon --exec ts-node ./scripts/index.ts"
   },
   "pkg": {
     "assets": [
@@ -29,12 +29,31 @@
   "author": "Your Name",
   "license": "ISC",
   "devDependencies": {
-    "typescript": "^5.3.3",
     "@types/node": "^18.11.18",
-    "pkg": "^5.8.1"
+    "nodemon": "^3.1.9",
+    "pkg": "^5.8.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   },
   "dependencies": {
-    "npm": "^10.4.0"
+    "npm": "^10.4.0",
+    "npx": "^10.2.2"
   },
+  "tasks": [
+    {
+      "label": "npm: start-dev",
+      "type": "npm",
+      "script": "start-dev",
+      "problemMatcher": [],
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ],
   "packageManager": "pnpm@9.12.2+sha512.22721b3a11f81661ae1ec68ce1a7b879425a1ca5b991c975b074ac220b187ce56c708fe5db69f4c962c989452eee76c82877f4ee80f474cebd61ee13461b6228"
 }
