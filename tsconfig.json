@@ -1,18 +1,42 @@
 {
   "compilerOptions": {
-    /* Visit https://aka.ms/tsconfig to read more about this file */
-
-    /* Language and Environment */
-    "target": "es2016",                                  /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
-
-    /* Modules */
-    "module": "commonjs",                                /* Specify what module code is generated. */
-    
-    "esModuleInterop": true,                             /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */
-    "forceConsistentCasingInFileNames": true,            /* Ensure that casing is correct in imports. */
-
-    /* Type Checking */
-    "strict": true,                                      /* Enable all strict type-checking options. */
-    "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
-  }
+    "target": "ES5",
+    "module": "CommonJS",
+    "lib": [
+      "ES6",
+      "dom"
+    ],
+    "sourceMap": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": false,
+    "forceConsistentCasingInFileNames": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "noEmit": false,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "strictNullChecks": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "*": [
+        ".src/*"
+      ]
+    },
+    "outDir": "./output", //  The output path is now placed within `output`, and this is correct because `pkg` also uses this for its builds, and its path generation
+    "rootDir": "./src", //  Root for our scripts/images
+  },
+  "ts-node": {
+    "swc": true
+  },
+  "include": [
+    "src/**/*" // Where Typescript source code resides
+  ],
+  "exclude": [
+    "src/test/**/*" // Typescript is excluded here to avoid unwanted Javascript output and to prevent the system from considering tests when creating an output using pkg or any kind of compilation
+  ]
 }
