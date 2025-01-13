@@ -1,21 +1,11 @@
-export class ContentItem {
-    [key: string]: any;//any number of keys associated to any type of value
-
-    public get: (() => Promise<ContentItem>) | null;
-    public type: string;
-
-    constructor(t: string, fn?: () => Promise<ContentItem>) {
-        this.type = t;
-        this.get = !!fn ? fn : null;
-    };
-}
+import { ContentItem } from "./entities/contentItem.mjs";
 
 export class ContentLoader {
     private contentData: ContentItem = new ContentItem("category");
     private campaignData: ContentItem = new ContentItem("category");
 
     public async getContent(force?:boolean): Promise<ContentItem> {
-        if (!force && Object.keys(this.contentData).length > 2) {
+        if (!force && Object.keys(this.contentData).length > 2) {//has get and type by default
             return this.contentData;
         }
         try {
@@ -29,7 +19,7 @@ export class ContentLoader {
     }
 
     public async getCampaigns(): Promise<ContentItem> {
-        if (Object.keys(this.campaignData).length > 1) {
+        if (Object.keys(this.campaignData).length > 2) {//has get and type by default
             return this.campaignData;
         }
         try {

@@ -1,4 +1,4 @@
-import { ContentItem } from './contentLoader.mjs'; // Now importing the function that loads/fetches content as implemented, with specific categories as exemplified
+import { ContentItem } from "./entities/contentItem.mjs";
 
 export class Game {
   private content: ContentItem;
