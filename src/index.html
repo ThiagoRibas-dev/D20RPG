@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My RPG Project</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #222;
+      color: white;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    button {
+      background-color: #555;
+      color: white;
+      padding: 10px 20px;
+      margin: 10px;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #777;
+    }
+
+    #gameContainer {
+      width: 800px;
+      /* Set width for your canvas element */
+      height: 600px;
+      /* Set height for your canvas element */
+      border: 2px solid white;
+      display: block;
+      /* To enable the width/height of the canvas and not expand beyond viewport. If needed */
+    }
+
+    #campaigns-container {
+      /* Added styles for your specific implementations */
+      margin-top: 20px;
+      max-width: 400px;
+      text-align: left;
+    }
+
+    .campaign-item {
+      padding: 5px;
+      border-bottom: 1px solid #444;
+      cursor: pointer;
+    }
+
+    .campaign-item:hover {
+      background-color: #333;
+    }
+  </style>
+
+  <script type="module" defer src="./scripts/index.mjs"></script>
+  <script>
+    function doInit() {
+      var gameApi = window.gameApi;
+      console.log('Set global gameApi in browser context from window object.', gameApi);
+    }
+  </script>
+</head>
+
+<body onload="doInit()">
+  <div id="startMenu">
+    <h1>Eversummer Days</h1>
+    <br>
+    <button onclick="gameApi.newGameClick()">New Game</button>
+    <br>
+    <button onclick="gameApi.continueGameClick()">Continue</button>
+    <br>
+    <button onclick="gameApi.exitGameClick()">Exit</button>
+  </div>
+  <div id="characterCreation" style="display:none;">
+    <h1>Character Creation</h1>
+  </div>
+  <div id="campaignSelection" style="display:none;">
+    <h1>Campaign Selection</h1>
+    <div id="campaigns-container"></div>
+    <button id="campaignSelectBtn" style="display:none;">Select</button>
+  </div>
+  <div id="gameContainer" style="display:none;">
+  </div>
+</body>
+
+</html>

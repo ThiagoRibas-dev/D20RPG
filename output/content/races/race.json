@@ -1,0 +1,53 @@
+{
+  "name": "(string, required) The name of the race (e.g., 'Human', 'Elf').",
+  "description": "(string, optional) A general description of the race.",
+    "ability_score_adjustments": {
+      "str": "(integer, required) Modifier to strength",
+      "dex": "(integer, required) Modifier to dexterity",
+      "con": "(integer, required) Modifier to constitution",
+      "int": "(integer, required) Modifier to intelligence",
+      "wis": "(integer, required) Modifier to wisdom",
+      "cha": "(integer, required) Modifier to charisma"
+     },
+  "size": "(string, required) The size category of the race ('Small', 'Medium').",
+  "base_speed": "(integer, required) The base land speed of the race in feet.",
+  "speed_mod": "(object, optional) Any specific modifier or exception for speed.",
+  "low_light_vision": "(boolean, optional, defaults to false) Whether the race has low-light vision.",
+  "darkvision": "(integer, optional, defaults to 0) The distance in feet of darkvision.",
+  "immunities": [
+      "(string, optional) Array of any magical immunities (e.g. 'sleep')."
+  ],
+  "resistances": {
+         "acid": "(integer, optional, defaults to 0) acid resistance amount",
+         "cold": "(integer, optional, defaults to 0) cold resistance amount",
+         "electricity": "(integer, optional, defaults to 0) electricity resistance amount",
+         "fire": "(integer, optional, defaults to 0) fire resistance amount",
+        },
+ "bonuses": [
+        {
+          "type": "(string, required)  'saving_throw', 'armor_class', 'attack_roll', or 'skill', and more)",
+          "subtype": "(string, optional) Specific bonus types like enchantment, poison, dodge, natural, skill names)",
+           "target": "(string, optional) Specific target types like goblinoids or giants.",
+          "value": "(integer, required) Amount of bonus.",
+          "description": "(string, optional) Description of the effect"
+         }
+      ],
+   "weapon_proficiencies": [
+      "(string, optional) Array of weapon proficiencies (e.g. longsword)."
+  ],
+    "weapon_familiarity": [
+      "(string, optional) Array of weapons treated as martial (e.g. dwarven waraxe)"
+   ],
+    "automatic_languages": [
+      "(string, required) Array of languages the race automatically knows (e.g. 'common')."
+    ],
+    "bonus_languages": [
+      "(string, optional) Array of additional languages the race can choose from."
+     ],
+  "stability": "(boolean, optional, defaults to false)  If race has the stability special ability set to true.",
+    "elven_blood": "(boolean, optional, defaults to false) A boolean used by half-elves to check how to apply race-specific rules.",
+     "orc_blood": "(boolean, optional, defaults to false)  As with elven_blood, for half-orcs.",
+      "burrowing_mammal_affinity": "(boolean, optional, defaults to false)  Whether gnomes have that unique spell like ability.",
+   "favored_class": "(string, optional) Name of the race's favored class (e.g. 'fighter').",
+    "level_adjustment": "(integer, optional, defaults to 0) The race's level adjustment."
+}
