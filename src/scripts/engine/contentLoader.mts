@@ -1,27 +1,21 @@
-// Interface for a generic content item (leaf node in the structure).
-interface IContentItem {
-    [get: string]: () => Promise<any>;
-}
+export class ContentItem {
+    [key: string]: any;//any number of keys associated to any type of value
 
-// Interface for a content category (a folder in the structure).
-interface IContentCategory {
-    [key: string]: IContentItem | IContentCategory;
-}
+    public get: (() => Promise<ContentItem>) | null;
+    public type: string;
 
-export class ContentCategory implements IContentCategory {
-    [key: string]: IContentCategory | IContentItem;
-}
-
-export class ContentItem implements IContentItem {
-    [get: string]: () => Promise<any>;
+    constructor(t: string, fn?: () => Promise<ContentItem>) {
+        this.type = t;
+        this.get = !!fn ? fn : null;
+    };
 }
 
 export class ContentLoader {
-    private contentData: IContentCategory = {};
-    private campaignData: IContentCategory = {};
+    private contentData: ContentItem = new ContentItem("category");
+    private campaignData: ContentItem = new ContentItem("category");
 
-    public async getContent(): Promise<IContentCategory> {
-        if (Object.keys(this.contentData).length > 0) {
+    public async getContent(force?:boolean): Promise<ContentItem> {
+        if (!force && Object.keys(this.contentData).length > 2) {
             return this.contentData;
         }
         try {
@@ -34,8 +28,8 @@ export class ContentLoader {
         return this.contentData;
     }
 
-    public async getCampaigns(): Promise<IContentCategory> {
-        if (Object.keys(this.campaignData).length > 0) {
+    public async getCampaigns(): Promise<ContentItem> {
+        if (Object.keys(this.campaignData).length > 1) {
             return this.campaignData;
         }
         try {
@@ -48,8 +42,8 @@ export class ContentLoader {
         return this.campaignData;
     }
 
-    private async loadDirectory(dirPath: string): Promise<IContentCategory> {
-        const directory: IContentCategory = {};
+    private async loadDirectory(dirPath: string): Promise<ContentItem> {
+        const directory: ContentItem = new ContentItem("category");
         try {
             const response = await fetch(dirPath)
             if (!response.ok) {
@@ -74,7 +68,7 @@ export class ContentLoader {
         return directory
     }
 
-    private createContentItem(filePath: string): IContentItem {
+    private createContentItem(filePath: string): ContentItem {
         // Using a closure to encapsulate data and isLoaded, also changed it to 'let' instead of 'var'.
         const getLazyLoadFn = () => {
             let data: any = null;
@@ -99,15 +93,6 @@ export class ContentLoader {
                 return data
             }
         };
-        return {
-            get: getLazyLoadFn()
-        };
+        return new ContentItem("item", getLazyLoadFn());
     }
-}
-
-export async function getIValue(item: IContentItem | IContentCategory | (() => Promise<any>)) {
-    if ((item as ContentItem).get) {
-        return await (item as ContentItem).get();
-    }
-    return null
 }

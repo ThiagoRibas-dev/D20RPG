@@ -1,4 +1,4 @@
-import { ContentLoader, getIValue } from "./engine/contentLoader.mjs";
+import { ContentLoader } from "./engine/contentLoader.mjs";
 import { GameState } from "./engine/entities/gameState";
 import { Game } from "./engine/game.mjs";
 
@@ -23,10 +23,10 @@ async function initializeGame(winObj: any) {
   try {
     console.log('Testing content', content);
 
-    const humanData = await getIValue(content.races.human);
+    const humanData = await content.races.human.get();
     console.log('Loaded human data:', humanData?.name);
 
-    const clericData = await getIValue(content.classes.cleric);
+    const clericData = await content.classes.cleric.get();
     console.log('Loaded cleric data:', clericData?.name);
 
   } catch (error) {
@@ -89,20 +89,22 @@ async function renderScreen() {
     campaignListContainer.innerHTML = '';
 
     const campaigns = await contentLoader.getCampaigns();
-    const campaignFolders = Object.keys(campaigns);
-    console.log('availableCampaigns', campaignFolders)
+    console.log('availableCampaigns', campaigns)
 
-    if (campaignFolders) {
-      campaignFolders.forEach((campaign: string) => {
-        const campaignItem = WIN_DOCUMENT.createElement('div');
+    for (var name in campaigns) {
+      if (name !== 'type') {
+        const campaignItem = WIN_DOCUMENT.createElement('li');
+        const campaign = await campaigns[name].about.info.get();
+
         campaignItem.classList.add('campaign-item');
-        campaignItem.textContent = campaign; // Adding this now
+        campaignItem.textContent = JSON.stringify(campaign.name);
         campaignItem.onclick = () => {
-          GAME_STATE.campaign = campaign;
+          GAME_STATE.campaign = name;
           WIN_DOCUMENT.getElementById('campaignSelectBtn')?.removeAttribute('style');
         }
+
         campaignListContainer.appendChild(campaignItem);
-      })
+      }
     }
   }
   else if (GAME_STATE.currentScreen === "game") {
@@ -113,7 +115,7 @@ async function renderScreen() {
   }
 
   console.log("Current Game State:", GAME_STATE.currentScreen); // A test output to see the flow
-  return true; // Use this for testing UI methods
+  return true;
 }
 
 initializeGame(window); // Now passing window for making use of global object from our js.

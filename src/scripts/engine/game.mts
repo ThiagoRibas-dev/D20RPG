@@ -1,11 +1,11 @@
-import { ContentCategory, getIValue } from './contentLoader.mjs'; // Now importing the function that loads/fetches content as implemented, with specific categories as exemplified
+import { ContentItem } from './contentLoader.mjs'; // Now importing the function that loads/fetches content as implemented, with specific categories as exemplified
 
 export class Game {
-  private content: ContentCategory;
+  private content: ContentItem;
   private gameData: any;
   private gameLoopInterval: NodeJS.Timeout;
 
-  constructor(content: ContentCategory) {
+  constructor(content: ContentItem) {
     this.content = content;
     this.gameData = {};
     this.gameLoopInterval = setInterval(() => { console.log('pooling') }, 1000);
@@ -14,8 +14,8 @@ export class Game {
   public async createCharacter() { // If, at some point, you need a placeholder/hardcoded version or need it as a backup through custom/user content you may then make use of the below if that data is not correctly implemented with any json under categories, if not, then this follows dynamic implementations, with user created data:
     const character = {
       name: 'Test Character',
-      race: await getIValue(this.content.races.human),
-      class: await getIValue(this.content.classes.cleric),
+      race: await this.content.races.human.get(),
+      class: await this.content.classes.cleric.get(),
       inventory: [],
       level: 1,
       position: { x: 1, y: 1 },
