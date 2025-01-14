@@ -1,0 +1,19 @@
+{
+    "name": "Knowledge (Religion)",
+    "description": "Knowledge (religion) involves gods and goddesses, mythic history, ecclesiastic tradition, holy symbols, and the undead. As well as specific behaviors/procedures tied to said belief, such as prayer or performing holy acts in those locations.",
+    "key_ability": "Int",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "Use this skill to understand religious concepts or specific implementations from given faiths as well as interacting with relevant religious characters or items.",
+    "action": "Usually none, as an intellectual process.",
+    "try_again": "No. The knowledge acquired about the faith (or a religious figure, holy items and so on) remains in place and does not get improved or discovered if trying the same action repeatedly.",
+    "special": [],
+    "synergy": [
+        {
+            "skill": "Intimidate",
+            "bonus": "+2 bonus on checks to turn or rebuke undead."
+        }
+    ],
+    "restriction": "This is based on learning and understanding a given faith through years of study and practice. To fully access all the details from its structure (and similar relevant content) requires literacy or related teachings, specific rituals and traditions as they're written in those tomes and other religious related sources (if relevant)",
+    "untrained": "An untrained user has vague understanding of popular religions but their interpretation of religious data, figures or beliefs, is likely going to be incorrect and based on unreliable or basic/incomplete data and traditions that lacks key data (and context). As such, you may still have vague ideas, general information but not deep or applicable data for a trained usage, with all that this implies for using or understanding that content/knowledge in a dynamic game with specific behaviors from data or elements from those that also interact through hardcoded parts (using said dynamic content with Ids)."
+}

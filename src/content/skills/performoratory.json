@@ -1,0 +1,14 @@
+{
+    "name": "Perform (Oratory)",
+    "description": "Use this skill to express yourself in speeches, epic storytelling, delivering odes, recitations, and any other method that uses vocals (and some times, text, using notes/writings)",
+    "key_ability": "Cha",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "Use your speech or voice as the central point to create epic, stories or speeches to impact audiences using persuasive, expressive, poetic or dramatic speech or reciting. It can be accompanied by music, other acts, dancing or simple speeches and stories (or tales/fables)",
+    "action": "Delivering any type of message that has structure/depth will take hours if those aren't a simple or clear message and will rely on how much data and how much effort needs to be delivered and/or the quality of such production.",
+    "try_again": "Yes but a failed message or a story delivered badly is very hard to retell or try to fix or re-apply unless there's significant changes, usually for very few positive returns on the following attempts, and some data may even change and not for the better.",
+    "special": [],
+    "synergy": [],
+    "restriction": "Perform(Oratory) depends on eloquence, diction and memory. An untalented person (low charisma, low inteligence, bad constitution for holding breath during delivery) might perform those skills with little success. This skill may become harder depending on external conditions (wind, storms, if underground, or lack of resources). Some skills require preparation before delivering such content, if this hardcoded feature gets properly called/used dynamically",
+    "untrained": "Untrained speakers might still make some impression in smaller audiences (with no previous experiences on a high level) using personal experiences or knowledge but lack any relevant structure, rhythm, quality or information depth or delivery power (as would otherwise be used for a high trained performer), or with more complex or engaging structures that provide the best performances for each occasion/place"
+}

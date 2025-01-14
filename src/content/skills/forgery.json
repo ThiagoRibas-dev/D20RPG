@@ -1,0 +1,24 @@
+{
+    "name": "Forgery",
+    "description": "Use this skill to fake a written order from the duchess instructing a jailer to release prisoners, to create an authentic-looking treasure map, or to detect forgeries that others try to pass off.",
+    "key_ability": "Int",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "Forgery requires writing materials, some light and a source of handwriting or a similar document. The result is checked whenever someone tries to authenticate that given forgery with a specific DC.",
+    "action": "Forging a very short and simple document takes about 1 minute. A longer or more complex document takes 1d4 minutes per page.",
+    "try_again": "No. The result of a Forgery check for a particular document must be used for every instance of a different reader examining the document. No reader can attempt to detect a particular forgery more than once.",
+    "special": [
+        {
+            "name": "Deceitful feat",
+            "description": "If you have the Deceitful feat, you get a +2 bonus on Forgery checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Deceitful",
+                "value": 2
+            }
+        }
+    ],
+    "synergy": [],
+    "restriction": "Forgery is language-dependent, a user must be able to read/write it",
+    "untrained": "Untrained characters can only make simple forgeries for generic text and have little chances to deceive readers in those checks without additional preparation for specific tasks"
+}

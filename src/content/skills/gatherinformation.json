@@ -1,0 +1,45 @@
+{
+    "name": "Gather Information",
+    "description": "Use this skill for making contacts in an area, finding out local gossip, rumormongering, and collecting general information.",
+    "key_ability": "Cha",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "A few gold pieces for drinks, plus 1d4 hours, along with a successful check to gain information of varying qualities depending on the roll.",
+    "action": "A typical Gather Information check takes 1d4+1 hours.",
+    "try_again": "Yes but you might become suspect if too frequent.",
+    "special": [
+        {
+            "name": "Half-elf Gather Info Bonus",
+            "description": "A half-elf has a +2 racial bonus on Gather Information checks.",
+            "data": {
+                "bonus_type": "racial",
+                "value": 2
+            }
+        },
+        {
+            "name": "Investigator Feat",
+            "description": "If you have the Investigator feat, you get a +2 bonus on Gather Information checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Investigator",
+                "value": 2
+            }
+        },
+        {
+            "name": "Urban Tracking Feat",
+            "description": "If you have the Urban Tracking feat, you can use Gather Information to track down the location of missing persons or wanted individuals within communities.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Urban Tracking"
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Knowledge (local)",
+            "bonus": "+2 on Gather Information checks."
+        }
+    ],
+    "restriction": "None",
+    "untrained": "An untrained check will result in little, vague, unreliable information, though that still can give the user useful or valid clues and paths."
+}

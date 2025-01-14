@@ -1,0 +1,57 @@
+{
+    "name": "Bluff",
+    "description": "Use this skill to make the outrageous or the untrue seem plausible, or use doublespeak or innuendo to deliver a secret message to another character. It encompasses acting, conning, fast talking, misdirection, prevarication, and misleading body language.",
+    "key_ability": "Cha",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "A Bluff check is opposed by the target's Sense Motive check.",
+    "action": "Varies. A Bluff check made as part of general interaction always takes at least 1 round (and is at least a full-round action), but it can take much longer. A Bluff check made to feint in combat or create a diversion to hide is a standard action.",
+    "try_again": "Varies. Generally, a failed Bluff check in social interaction makes the target too suspicious for you to try again in the same circumstances, but you may retry freely on Bluff checks made to feint in combat or send messages, although those carry the risk of failing.",
+    "special": [
+        {
+            "name": "Ranger Bonus",
+            "description": "A ranger gains a bonus on Bluff checks when using this skill against a favored enemy.",
+            "data": {
+                "bonus_type": "favored_enemy"
+            }
+        },
+        {
+            "name": "Familiar bonus",
+            "description": "The master of a snake familiar gains a +3 bonus on Bluff checks.",
+            "data": {
+                "bonus_type": "familiar",
+                "familiar_type": "snake",
+                "value": 3
+            }
+        },
+        {
+            "name": "Persuasive Feat",
+            "description": "If you have the Persuasive feat, you get a +2 bonus on Bluff checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Persuasive",
+                "value": 2
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Intimidate",
+            "bonus": "+2 on Intimidate checks"
+        },
+        {
+            "skill": "Disguise",
+            "bonus": "+2 on Disguise checks to act in character when observed."
+        },
+        {
+            "skill": "Sleight of Hand",
+            "bonus": "+2 on Sleight of Hand checks"
+        },
+        {
+            "skill": "Diplomacy",
+            "bonus": "+2 on Diplomacy checks"
+        }
+    ],
+    "restriction": "None",
+    "untrained": "The user may try bluff but may face a DC+5 on the check. No other hardcoded implementation."
+}

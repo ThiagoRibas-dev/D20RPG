@@ -1,0 +1,46 @@
+{
+    "name": "Hide",
+    "description": "Use this skill to sink back into the shadows and proceed unseen, to approach a wizard's tower under cover of brush, or to tail someone through a busy street without being noticed.",
+    "key_ability": "Dex",
+    "trained_only": false,
+    "armor_check_penalty": true,
+    "check": "Your Hide check is opposed by the Spot check of anyone who might see you. You can move up to one-half your normal speed and hide at no penalty. When moving at a speed greater than one-half but less than your normal speed, you take a -5 penalty.",
+    "action": "Usually none. Hiding immediately after a ranged attack is a move action.",
+    "try_again": "No unless you break the observer's line of sight.",
+    "special": [
+        {
+            "name": "Invisibility bonus",
+            "description": "If you are invisible, you gain a +40 bonus on Hide checks if you are immobile, or a +20 bonus on Hide checks if you're moving.",
+            "data": {
+                "bonus_type": "condition",
+                "condition_type": "invisibility",
+                "immobile_value": 40,
+                "moving_value": 20
+            }
+        },
+        {
+            "name": "Stealthy feat",
+            "description": "If you have the Stealthy feat, you get a +2 bonus on Hide checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Stealthy",
+                "value": 2
+            }
+        },
+        {
+            "name": "Ranger Stealth bonus",
+            "description": "A 13th-level ranger can attempt a Hide check in any sort of natural terrain, even if it doesn't grant cover or concealment. A 17th-level ranger can do this even while being observed.",
+            "data": {
+                "bonus_type": "class",
+                "level_13": true,
+                "level_17": true,
+                "class": [
+                    "ranger"
+                ]
+            }
+        }
+    ],
+    "synergy": [],
+    "restriction": "You need cover or concealment in order to attempt a Hide check, and specific skills, features or magical abilities.",
+    "untrained": "Without ranks you are likely to be easily found and take major penalties unless proper conditions (darkness, etc) apply."
+}

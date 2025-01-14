@@ -1,0 +1,45 @@
+{
+    "name": "Sense Motive",
+    "description": "Use this skill to tell when someone is bluffing you, to discern hidden messages in conversations, or to sense when someone is being magically influenced. This skill represents sensitivity to the body language, speech habits, and mannerisms of others.",
+    "key_ability": "Wis",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "Your Sense Motive skill lets you detect lies, and discern how another person is actually acting as well as their general mood or trustworthiness by analyzing several factors such as their behavior. Also, for detecting enchantments or other influences upon a character and how it will impact your interaction.",
+    "action": "Trying to gain information with Sense Motive generally takes at least 1 minute. Assess Opponent can be done through a single, specific, defined action during a given turn, if a character makes the necessary checks, data calls and performs those through implemented functionalities within your engine.",
+    "try_again": "No. A user can only obtain data through that single interpretation (unless additional clues or context change the data as understood through other checks, implementations or abilities from classes or equipment). A retry with same data won't produce anything new.",
+    "special": [
+        {
+            "name": "Ranger bonus",
+            "description": "A ranger gains a bonus on Sense Motive checks when using this skill against a favored enemy.",
+            "data": {
+                "bonus_type": "favored_enemy"
+            }
+        },
+        {
+            "name": "Negotiator Feat",
+            "description": "If you have the Negotiator feat, you get a +2 bonus on Sense Motive checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Negotiator",
+                "value": 2
+            }
+        },
+        {
+            "name": "Combat Intuition feat",
+            "description": "The Combat Intuition feat grants a +4 bonus on Sense Motive checks made to assess opponents.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Combat Intuition",
+                "value": 4
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Diplomacy",
+            "bonus": "+2 bonus on Diplomacy checks."
+        }
+    ],
+    "restriction": "Characters without sight (and without echolocation or similar), will usually be severely impacted in its usage as well as those creatures or individuals that are immune to emotions or body languages or who don't express those at all, either by lacking any visible sign, through a physical issue, or through a magical condition, may prove difficult to apply that ability. They usually take significant or high penalties depending on conditions",
+    "untrained": "Without training users can usually identify extreme examples of untruth but with no accuracy or reliability to understand the nuances or the intent behind someone else's words."
+}

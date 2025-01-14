@@ -1,0 +1,46 @@
+{
+    "name": "Jump",
+    "description": "Use this skill to leap over pits, vault low fences, or reach a tree's lowest branches.",
+    "key_ability": "Str",
+    "trained_only": false,
+    "armor_check_penalty": true,
+    "check": "The DC and the distance you can cover vary according to the type of jump you are attempting. All DCs are based on a 20 ft running start.",
+    "action": "None. A Jump check is included in your movement.",
+    "try_again": "Yes, by performing again (moving with another jump).",
+    "special": [
+        {
+            "name": "Run Feat bonus",
+            "description": "If you have the Run feat, you get a +4 bonus on Jump checks for any jumps made after a running start.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Run",
+                "value": 4
+            }
+        },
+        {
+            "name": "Halfling Jump bonus",
+            "description": "A halfling has a +2 racial bonus on Jump checks.",
+            "data": {
+                "bonus_type": "racial",
+                "value": 2
+            }
+        },
+        {
+            "name": "Acrobatic feat bonus",
+            "description": "If you have the Acrobatic feat, you get a +2 bonus on Jump checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Acrobatic",
+                "value": 2
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Tumble",
+            "bonus": "+2 bonus on Jump checks."
+        }
+    ],
+    "restriction": "If untrained and you do not beat the DC by 5 or more you automatically land prone unless you beat that threshold.",
+    "untrained": "Can jump untrained but it may incur negative conditions unless it beats DC."
+}

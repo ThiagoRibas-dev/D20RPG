@@ -1,0 +1,47 @@
+{
+    "name": "Spellcraft",
+    "description": "Use this skill to identify spells as they are cast or spells already in place. The Spellcraft skill allows you to use, detect and analyze all types of spells, spell-like abilities or other magic manifestations or their results.",
+    "key_ability": "Int",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "You can use this skill to understand spells as they are cast or as effects that are already working, usually following previously existing game, magic and spell implementation or creation/modification. Spells with components such as a verbal one are much easier to be perceived. Reading and/or deciphering written spells (scrolls, etc.) might require specialized training as well, with extra rules that rely on how the player characters use that information through a spellcaster class.",
+    "action": "Varies, depending on how complex a spell effect or data becomes. Also depends on any type of procedure that makes the game perform/use that check/action, for which an engine feature or custom constructor will then take care of their particular/relevant details as implemented with all data handling functionalities and files.",
+    "try_again": "No. Once information about a magic effect or specific casting process was detected it will not be rediscovered without additional tests or knowledge (if used through hardcoded procedures such as spell learning) to correctly parse or to access such kind of knowledge unless the original method or implementation has specific calls/logic to allow further implementations for different spells.",
+    "special": [
+        {
+            "name": "Specialist Wizard bonus",
+            "description": "If you are a specialist wizard, you get a +2 bonus on Spellcraft checks when dealing with a spell or effect from your specialty school. You take a -5 penalty when dealing with a spell or effect from a prohibited school (and some tasks, such as learning a prohibited spell, are just impossible).",
+            "data": {
+                "bonus_type": "specialization",
+                "school_type": "wizard",
+                "special_value": 2,
+                "prohibited_value": -5
+            }
+        },
+        {
+            "name": "Magical Aptitude feat",
+            "description": "If you have the Magical Aptitude feat, you get a +2 bonus on Spellcraft checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Magical Aptitude",
+                "value": 2
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Knowledge (arcana)",
+            "bonus": "+2 bonus on Spellcraft checks"
+        },
+        {
+            "skill": "Use Magic Device",
+            "bonus": "+2 bonus on Use Magic Device checks related to scrolls."
+        },
+        {
+            "skill": "Decipher Script",
+            "bonus": "+2 bonus on Spellcraft checks to identify the effects of a rune circle"
+        }
+    ],
+    "restriction": "It relies on your training, magical attunement, experience and also can rely on a hardcoded file/path or data format within your dynamically created data structure or within other game behaviors. These specific behaviors require specific class types to access/make usage or their effects (especially if those spells use magic or are class or level-specific with specific conditions for said use).",
+    "untrained": "You may sense magic and some general features but details and specific functionality will always elude untrained individuals. Also it requires knowledge on magic for understanding those systems so specific data will only be detected (or activated/used through it), when proper knowledge has been learned."
+}

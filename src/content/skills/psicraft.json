@@ -1,0 +1,23 @@
+{
+    "name": "Psicraft",
+    "description": "Use this skill to identify powers as they are manifest or powers already in place, as well as items with such traits.",
+    "key_ability": "Int",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "You can identify powers and psionic effects. DC varies according to the task, ranging from detecting powers to their intended function (as well as devices that uses those psionic features, like psionic tattoos and other specialized objects)",
+    "action": "Varies. Generally does not take an action (for detecting those when manifested or present).",
+    "try_again": "See above. You can't reuse the knowledge you gathered at first try without more info/usage or testing. A given encounter will use the data obtained in that situation but a new one may change that if something in that encounter changes your implementation or code or hardcoded call for said check using previously described behaviors for handling errors and data validation through IDs (item IDs, or custom values under user created folders and data).",
+    "special": [],
+    "synergy": [
+        {
+            "skill": "Use Psionic Device",
+            "bonus": "+2 bonus on Psicraft checks to address power stones."
+        },
+        {
+            "skill": "Knowledge (psionics)",
+            "bonus": "+2 bonus on Psicraft checks."
+        }
+    ],
+    "restriction": "Specific usage, features or rules depending on the object or power you're analyzing or trying to access/use.",
+    "untrained": "Untrained characters can sense the presence of mind-based abilities but have difficulties determining those's characteristics without any prior training."
+}

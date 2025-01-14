@@ -1,0 +1,32 @@
+{
+    "name": "Heal",
+    "description": "Use this skill to keep a badly wounded friend from dying, to help others recover faster from wounds, to keep your friend from succumbing to a wyvern's sting, or to treat disease. ",
+    "key_ability": "Wis",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "First aid (DC 15), Long-term care (DC 15). Treating wounds from specific sources like traps has a DC of 15. Treating poisons and diseases is as hard as their effects. Quick or Perfect Recovery of health can only be done through a successful check of 50-100",
+    "action": "Treating wounds or administering first aid requires a standard action. Treat disease and a longer treat requires a full round or several rounds depending on their complexity. Longer treatment and perfect recoveries use a single action or for a whole hour. Using it for cause of death uses 10 minutes.",
+    "try_again": "Yes. Retries are possible depending on the nature of the failed test such as if the person being helped was harmed, stabilized or has been helped through other magical methods such as cure spells.",
+    "special": [
+        {
+            "name": "Self-Sufficient feat",
+            "description": "A character with the Self-Sufficient feat gets a +2 bonus on Heal checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Self-Sufficient",
+                "value": 2
+            }
+        },
+        {
+            "name": "Healer Kit bonus",
+            "description": "A healer's kit gives you a +2 circumstance bonus on Heal checks.",
+            "data": {
+                "bonus_type": "equipment",
+                "value": 2
+            }
+        }
+    ],
+    "synergy": [],
+    "restriction": "You cannot apply those on yourself (except with very basic effects and abilities). Also may need to have specialized knowledge and procedures to perform more difficult healing related tests (such as poison, disease or magic related cures).",
+    "untrained": "Untrained users can perform only basic checks like simple, small bandages or to apply a poultice, and have severe limitations to dealing with diseases and magical cures."
+}

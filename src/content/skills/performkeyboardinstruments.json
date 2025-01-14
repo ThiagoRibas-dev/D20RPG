@@ -1,0 +1,14 @@
+{
+    "name": "Perform (Keyboard Instruments)",
+    "description": "Use this skill to create musical performances with a harpsichord, piano, pipe organ, or similar keyboard instruments.",
+    "key_ability": "Cha",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "Performs with the piano, pipe organ, or any other instrument in this category (with or without vocals) using musical knowledge and technique.",
+    "action": "Performs takes at least several rounds, hours or even whole days depending on how much information and/or planning and complexity they have for those performance.",
+    "try_again": "Yes, but after multiple retries and failures audiences may be less inclined to watch/listen to their performance unless improved or unless the context or format is drastically changed. Specifics apply depending on location, and type of show being used. If using magic as an aid check those spells descriptions or powers to avoid specific incompatibilities. An unimpressed audience has limited or zero return for repeated performances if those don't show some changes.",
+    "special": [],
+    "synergy": [],
+    "restriction": "To use them you need specific, properly sized keyboard equipment for each, since they are all quite different in size, mechanics and even playing styles (organs tend to be more architectural and difficult to relocate). Without those they'd provide reduced power and control.",
+    "untrained": "Untrained individuals may make use of those but usually won't sound like proper/well implemented songs/tunes."
+}

@@ -1,0 +1,19 @@
+{
+    "name": "Knowledge (Architecture and Engineering)",
+    "description": "Knowledge (architecture and engineering) covers buildings, aqueducts, bridges, and fortifications, including the science of naval architecture, ship design, and construction techniques for large vessels. Also the study of ships.",
+    "key_ability": "Int",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "A check may be made to inspect or analyze structures or fortifications to detect hidden entrances or structural weaknesses as well as to guide/manage construction for various complex buildings and devices, including ships. You can build large ships but smaller ones must rely on different crafts, such as with boatbuilding",
+    "action": "Usually none.",
+    "try_again": "No. You can only know something that was studied.",
+    "special": [],
+    "synergy": [
+        {
+            "skill": "Search",
+            "bonus": "+2 on Search checks made to find secret doors or hidden compartments"
+        }
+    ],
+    "restriction": "You cannot identify complex information or objects from far distances. Ship creation requires knowledge, specialized equipment, a yard and access to workers. Shipwright expertise and high rank in the craft skills also improve creation.",
+    "untrained": "Untrained people may make generic checks to use architectural structures in a more basic level (to check the structural stability or basic data), but will have little to no success at identifying traps or understanding specific or complex parts of buildings, aqueducts, or ships or even complex machines."
+}

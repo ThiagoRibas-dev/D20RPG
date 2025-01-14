@@ -1,0 +1,19 @@
+{
+    "name": "Knowledge (Nature)",
+    "description": "Knowledge (nature) involves animals, fey, giants, monstrous humanoids, plants, seasons and cycles, weather, and vermin, as well as elements such as land conditions, forest, and so on.",
+    "key_ability": "Int",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "You can use this skill to identify creatures (or species, families) or to learn to properly manage/adapt to your given location or environment such as tracking, creating basic medicines/herbs, weather predictions and so on",
+    "action": "Usually none.",
+    "try_again": "No. Once an information from nature has been perceived and understood then you can't learn a second time or reapply knowledge from previous checks.",
+    "special": [],
+    "synergy": [
+        {
+            "skill": "Survival",
+            "bonus": "+2 on Survival checks made in aboveground natural environments"
+        }
+    ],
+    "restriction": "May need to be at or near the environment or with related clues/traces or using specific materials for testing that.",
+    "untrained": "Without specific training those features will have severely limited or very poor effects, especially for more exotic/dangerous animals, weather or regions."
+}

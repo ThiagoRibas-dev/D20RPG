@@ -1,0 +1,33 @@
+{
+    "name": "Swim",
+    "description": "Using this skill, a land-based creature can swim, dive, navigate underwater obstacles, and so on. It also requires breath control, spatial understanding as well as understanding the local environment such as the tide or currents. Swimming includes going down/diving or going over obstacles (if jumping or otherwise performing actions to do so).",
+    "key_ability": "Str",
+    "trained_only": false,
+    "armor_check_penalty": true,
+    "check": "You make checks each turn while on the water. If these fail the creature may become overwhelmed by conditions or even fall under the water unless it makes other, new, specific attempts (as described).",
+    "action": "If you do not attempt a quicker swimming action, you make that test each round, otherwise a move-equivalent action or a free-action depending on implementation.",
+    "try_again": "Yes. You make that Swim test (or the required Constitution test) whenever that event triggers such actions.",
+    "special": [
+        {
+            "name": "Athletic feat",
+            "description": "If you have the Athletic feat, you get a +2 bonus on Swim checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Athletic",
+                "value": 2
+            }
+        },
+        {
+            "name": "Endurance feat",
+            "description": "If you have the Endurance feat, you get a +4 bonus on Swim checks made to avoid taking nonlethal damage from fatigue.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Endurance",
+                "value": 4
+            }
+        }
+    ],
+    "synergy": [],
+    "restriction": "Swim checks can be performed while wearing armor, though penalties will always apply. You can hold breath only so much, before your character might die through that attempt or action (which also relies on the implementation you give it when doing dynamic/hardcoded calls, file parsing and integration). If your species has a swimming special ability, their inherent skill bonus might give some advantages in most or all areas.",
+    "untrained": "Untrained characters might still attempt this but it carries major drawbacks when attempting to traverse great distances or complex conditions as described."
+}

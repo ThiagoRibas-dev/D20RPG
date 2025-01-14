@@ -1,0 +1,14 @@
+{
+    "name": "Perform (Percussion Instruments)",
+    "description": "Use this skill to express your artistic talents through drumming, use of bells, gongs, and other percussion based instruments that depend on rhythmic movement or timing of your hits (and its interaction) in their composition.",
+    "key_ability": "Cha",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "Perform with percussive instrument, by hitting it, with the hand or some implement and creating rhythms with the given data set/type (or similar) that's specified to the hardcoded feature through file structure and/or calls using categories as we did throughout this explanation, also in the `special` category).",
+    "action": "Performs can be for minutes, hours, or entire nights for specific types or performances and might require previous tests or training to handle this (including the hardcoded call to load relevant `json` data and assets such as instruments and icons, and also check on those). A standard check uses just the action for their implementation with dynamic files, for the intended functionality (if any).",
+    "try_again": "Yes, but with each repeated action audiences may become less susceptible to that specific beat or tune. An expert player will also seek out to improvise or improve their implementation of these to impress listeners.",
+    "special": [],
+    "synergy": [],
+    "restriction": "To use a particular drum or instrument properly (to produce proper sound quality and rhythmic variations or patterns and to control it properly with those movements and/or patterns), one needs an appropriate knowledge and mastery of specific methods. Lacking proper training, users will not be able to have more complex or more nuanced results from a performance.",
+    "untrained": "An untrained character may be able to use a percussion instrument but it might come off as badly implemented or badly designed, making for poor listening experience due to the lack of proper pacing or rhythms/melodies if they attempt a composition instead of simple percussions and so on, including for handling a particular category of instrument with similar hardcoded calls, functions, engine methods and implementation."
+}

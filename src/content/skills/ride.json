@@ -1,0 +1,29 @@
+{
+    "name": "Ride",
+    "description": "You can ride a mount, be it a horse, riding dog, griffon, dragon, or some other kind of creature suited for riding.",
+    "key_ability": "Dex",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "Typical riding actions don't require checks unless trying more complex actions such as making combat related attacks (using it as a mount in combat). Also used to jump into or swim underwater and many similar situations for when specific mount abilities and functions or rules and restrictions to that become available (through items or classes). Those rules might become enforced/implemented using specific checks for dynamic files using these data to call them in appropriate functions/methods or by hardcoded methods (for special actions such as attacks with the mounted unit and related engine procedures that apply that functionality using existing game elements and classes).",
+    "action": "Mounting, dismounting is a move action. Several tests require you to make reaction tests in order to remain on it (without any further penalty), when you fall, etc.",
+    "try_again": "No. Unless the character gets out of its mounting and attempt it again with all related hardcoded limitations as planned.",
+    "special": [
+        {
+            "name": "Animal Affinity Feat",
+            "description": "If you have the Animal Affinity feat, you get a +2 bonus on Ride checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Animal Affinity",
+                "value": 2
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Handle Animal",
+            "bonus": "+2 bonus on Ride checks"
+        }
+    ],
+    "restriction": "Some creatures are more or less apt to be used as mounts, making these more or less challenging based on type. Or to control and steer as you see fit and as described on previous steps in this list.",
+    "untrained": "Basic riding can be achieved with untrained skill users but they might suffer sever penalties while in more complicated actions such as trying to avoid obstacles, combat encounters or controlling that unit through difficult conditions."
+}

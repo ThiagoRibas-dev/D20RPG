@@ -1,0 +1,19 @@
+{
+    "name": "Knowledge (The Planes)",
+    "description": "Knowledge (the planes) deals with the Inner Planes, the Outer Planes, the Astral Plane, the Ethereal Plane, outsiders, elementals, and magic related to the planes, as well as any interdimensional phenomena.",
+    "key_ability": "Int",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "This knowledge helps you deal with locations, entities or materials related to these locations.",
+    "action": "Usually none unless to check/detect the planar related activity or use its knowledge to further explore them using this hardcoded functionality. Some abilities or items might need this data when making dynamic calls within your system.",
+    "try_again": "No. It relies on memory and learned patterns/concepts for which a repeat of that process wont help, if no further information becomes available. You cannot just learn this through sheer will or further thinking without external input of those informations.",
+    "special": [],
+    "synergy": [
+        {
+            "skill": "Survival",
+            "bonus": "+2 bonus on Survival checks made while on other planes."
+        }
+    ],
+    "restriction": "Requires knowledge of interdimensional or magical forces to exist. Also it might be hard to use in planar areas if you did not acquire or possess those skills in specific, specialized manners to interact and move on such environments (including identifying or interacting with creatures that might be present in those locations and/or following rules for these realms)",
+    "untrained": "Without this knowledge you have no idea how extra-dimensional beings or other locations are. You also have no specific method of interaction, transportation, rules or behavior, and will be lost when using skills in said realms."
+}

@@ -1,0 +1,14 @@
+{
+    "name": "Profession",
+    "description": "You are trained in a livelihood or a professional role, such as apothecary, boater, bookkeeper, brewer, cook, driver, farmer, fisher, guide, herbalist, herder, hunter, innkeeper, lumberjack, miller, miner, porter, rancher, sailor, scribe, siege engineer, stablehand, tanner, teamster, woodcutter, or the like.",
+    "key_ability": "Wis",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "You can practice your trade and make a decent living, earning about half your Profession check result in gold pieces per week of dedicated work. You know how to use the tools of your trade, how to perform the profession's daily tasks, how to supervise helpers, and how to handle common problems.",
+    "action": "Not applicable. A single check generally represents a week of work. You also need to be in a context/area to do those, depending on each trade.",
+    "try_again": "Varies. An attempt to use a Profession skill to earn an income cannot be retried. You are stuck with whatever weekly wage your check result brought you.",
+    "special": [],
+    "synergy": [],
+    "restriction": "Requires having a specialized background or tools. The amount and detail of tasks for that area may limit who uses the profession with some or no access to some special skills. For example, blacksmithing, or medicine or magic related professional categories will usually require training/specific features/implementations of such",
+    "untrained": "An untrained user may attempt those skills but their limited usage/implementation will make that unreliable and have limited (or no) access to tools/locations required to generate a positive output."
+}

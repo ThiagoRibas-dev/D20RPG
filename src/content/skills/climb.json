@@ -1,0 +1,46 @@
+{
+    "name": "Climb",
+    "description": "Use this skill to scale a cliff, to get to the window on the second story of a wizard's tower, or to climb out of a pit after falling through a trapdoor.",
+    "key_ability": "Str",
+    "trained_only": false,
+    "armor_check_penalty": true,
+    "check": "With a successful Climb check, you can advance up, down, or across a slope, a wall, or some other steep incline (or even a ceiling with handholds) at one-quarter your normal speed.",
+    "action": "Climbing is part of movement, so it's generally part of a move action.",
+    "try_again": "Yes.",
+    "special": [
+        {
+            "name": "Halfling Climb Bonus",
+            "description": "A halfling has a +2 racial bonus on Climb checks.",
+            "data": {
+                "bonus_type": "racial",
+                "value": 2
+            }
+        },
+        {
+            "name": "Familiar bonus",
+            "description": "The master of a lizard familiar gains a +3 bonus on Climb checks.",
+            "data": {
+                "bonus_type": "familiar",
+                "familiar_type": "lizard",
+                "value": 3
+            }
+        },
+        {
+            "name": "Athletic Feat",
+            "description": "If you have the Athletic feat, you get a +2 bonus on Climb checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Athletic",
+                "value": 2
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Use Rope",
+            "bonus": "+2 on Climb checks made to climb a rope, a knotted rope, or a rope-and-wall combination."
+        }
+    ],
+    "restriction": "A character may need specific tools, like rope or a piton.",
+    "untrained": "Untrained users may still try climbing if an easy DC like 0-10, depending on difficulty. It might be too difficult to apply more challenging activities."
+}

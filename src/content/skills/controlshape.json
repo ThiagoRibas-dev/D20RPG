@@ -1,0 +1,14 @@
+{
+    "name": "Control Shape",
+    "description": "This skill determines whether an afflicted lycanthrope can control his shape.",
+    "key_ability": "Wis",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "You can use this skill to control your shape as a lycanthrope. Involuntary shape change: 25 or DC based on the wound taken. See documentation for Voluntary shape changes: Return to humanoid form (full moon) 25, (not full moon) 20. Assume hybrid form 15, Volutary change to animal form: 15 full moon or 20 without it.",
+    "action": "None. An Autohypnosis check doesn't require an action",
+    "try_again": "Yes for voluntary changes to animal or hybrid form. No, for other cases.",
+    "special": [],
+    "synergy": [],
+    "restriction": "Only those afflicted by lycantropy or other transformations can train and use this skill. Others can use an untrained version to test their natural skill in these behaviors.",
+    "untrained": "An afflicted lycanthrope not yet aware of his condition can attempt Control Shape checks untrained to understand why that shape change occurs. Failure makes a creature to transform involuntarily."
+}

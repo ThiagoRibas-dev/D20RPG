@@ -1,0 +1,24 @@
+{
+    "name": "Martial Lore",
+    "description": "Use this skill to identify martial maneuvers as soon as they are initiated.",
+    "key_ability": "Int",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "You can identify maneuvers and disciplines used by a combatant by successfully doing checks related to that action or event, including when seeing an event (a character initiating such an ability/attack or an associated training pattern/technique) or when analyzing a recording from an earlier usage. Specific difficulty depends on the specific move and its proficiency.",
+    "action": "Varies. Usually no action unless when identifying an ancient script about it, a full round is required for such use.",
+    "try_again": "See descriptions. It cannot be tried again unless with a new source or attempt.",
+    "special": [
+        {
+            "name": "Swordsage Martial Lore",
+            "description": "A swordsage gains a +2 bonus on a Martial Lore check involving a maneuver in a discipline in which he has discipline focus.",
+            "data": {
+                "bonus_type": "class",
+                "class": "swordsage",
+                "value": 2
+            }
+        }
+    ],
+    "synergy": [],
+    "restriction": "Must be trained.",
+    "untrained": "Not possible."
+}

@@ -1,0 +1,14 @@
+{
+    "name": "Speak Language",
+    "description": "The Speak Language skill doesn't work like other skills. Languages are usually a starting point or are acquired when advancing in class levels or by purchasing these directly (you learn those by practice and studying, which may use other types of knowledge)",
+    "key_ability": "None",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "It does not use any check, but its functionality and rules are described as a specific set of requirements to learn and master new languages.",
+    "action": "Not applicable. Using new languages for magic might also require training to combine both aspects and use them through appropriate engine implementations using existing methods as previously implemented/planned for items, characters, locations and more, to keep it compatible.",
+    "try_again": "Not applicable.",
+    "special": [],
+    "synergy": [],
+    "restriction": "Characters who haven't become literate yet or that cannot be heard can't speak using specific spoken languages. Other methods to speak, such as by signs or gestures can bypass those but with an inherent penalty if done to characters that use or hear speech by normal means, which needs specialized hardcoded engine functionality or file parsing implementation through custom/generated user content. Those should always take all dynamic/user created data/implementations into consideration.",
+    "untrained": "Without training users cannot fully read/write in a new language but they may attempt a partial, though likely to be faulty/misinterpreted, usage."
+}

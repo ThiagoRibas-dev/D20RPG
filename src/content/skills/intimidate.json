@@ -1,0 +1,45 @@
+{
+    "name": "Intimidate",
+    "description": "Use this skill to get a bully to back down, to frighten an opponent, or to make a prisoner give you the information you want. Intimidation includes verbal threats and body language.",
+    "key_ability": "Cha",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "You can change another's behavior with a successful check. Your Intimidate check is opposed by the target's modified level check. A successful Demoralize Opponent check also gives your enemy the 'Shaken' effect, which will result in a small penalty.",
+    "action": "Varies. Changing another's behavior requires 1 minute of interaction. Intimidating an opponent in combat is a standard action. Instigating a duel of wills requires no action and occurs before initiative is rolled.",
+    "try_again": "Optional, but not recommended because retries usually do not work.",
+    "special": [
+        {
+            "name": "Size modifier",
+            "description": "You gain a +4 bonus on your Intimidate check for every size category that you are larger than your target.",
+            "data": {
+                "bonus_type": "size",
+                "value": 4
+            }
+        },
+        {
+            "name": "Persuasive feat",
+            "description": "If you have the Persuasive feat, you get a +2 bonus on Intimidate checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Persuasive",
+                "value": 2
+            }
+        },
+        {
+            "name": "Unnerving Calm Feat",
+            "description": "If you have the Unnerving Calm feat, you can use your Concentration skill in place of your Intimidate skill when engaging in a duel of wills.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Unnerving Calm"
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Bluff",
+            "bonus": "+2 bonus on Intimidate checks."
+        }
+    ],
+    "restriction": "Those immune to fear or creatures with no inteligence are immune to Intimidate checks.",
+    "untrained": "Untrained characters can use this skill, but will not likely achieve high results as most hardcoded behaviors and functionalities are meant for users that have some familiarity with those techniques."
+}

@@ -1,0 +1,14 @@
+{
+    "name": "Perform (Dance)",
+    "description": "Use this skill for ballet, waltz, jig and other artistic dance expressions and choreographies using precise movement.",
+    "key_ability": "Cha",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "The character performs dances using various steps or rhythmic and bodily gestures and poses. Can be done with instruments if appropriate for the scene or using visual-based actions to engage their audience, usually through complex choreographed techniques.",
+    "action": "Performing dance generally takes hours to develop routines, and the implementation requires using data and visual information that the engine fetches and handles as they're called for when displaying characters, actions and the scene.",
+    "try_again": "Yes but a previously disinterested audience might be more prejudiced or have low morale as a consequence from any attempt to regain their attention by retrying the same act. Any variation would count as a new attempt though (like changing or varying pace, music, moves etc).",
+    "special": [],
+    "synergy": [],
+    "restriction": "Perform(Dance) relies on dexterity for movement. Slow characters or classes are usually bad at these performances, unless specific exceptions exist for those, based on their data files, that can improve such performance by also impacting on checks with relevant functions or with relevant special categories that were implemented or used.",
+    "untrained": "Untrained performances are clunky and often result in an undesired output with limited engagement or influence on the observer, or just an underwhelming display without technique or grace."
+}

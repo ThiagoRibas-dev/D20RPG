@@ -1,0 +1,49 @@
+{
+    "name": "Concentration",
+    "description": "You are particularly good at focusing your mind.",
+    "key_ability": "Con",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "You must make a Concentration check whenever you might potentially be distracted (by taking damage, by harsh weather, and so on) while engaged in some action that requires your full attention.",
+    "action": "Usually none. In most cases, making a Concentration check doesn't require an action",
+    "try_again": "Yes, though a success doesn't cancel the effect of a previous failure, such as the loss of a spell you were casting or the disruption of a spell you were concentrating on.",
+    "special": [
+        {
+            "name": "Defensive actions",
+            "description": "You can use Concentration to cast a spell, use a spell-like ability, manifest a power, or use a skill defensively, so as to avoid attacks of opportunity altogether, but such tasks have a increased difficulty.",
+            "data": {
+                "extra_DC": 15
+            }
+        },
+        {
+            "name": "Combat Casting feat",
+            "description": "A character with the Combat Casting feat gets a +4 bonus on Concentration checks made to cast a spell or use a spell-like ability while on the defensive or while grappling or pinned.",
+            "data": {
+                "feat": "Combat Casting",
+                "value": 4,
+                "type": "spells"
+            }
+        },
+        {
+            "name": "Combat Manifestation feat",
+            "description": "A character with the Combat Manifestation feat gets a +4 bonus on Concentration checks made to manifest a power or use a psi-like ability while on the defensive or while grappling or pinned.",
+            "data": {
+                "feat": "Combat Manifestation",
+                "value": 4,
+                "type": "powers"
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Autohypnosis",
+            "bonus": "+2 bonus on Autohypnosis checks"
+        },
+        {
+            "skill": "Perform",
+            "bonus": "+2 bonus on Concentration checks to resist heckling while using that skill."
+        }
+    ],
+    "restriction": "None",
+    "untrained": "May use the skill untrained. The basic mechanics still applies if a save throw/check or other data within that system can be obtained without specific ranks. May suffer increased failure penalties depending on hardcoded implementations of these."
+}

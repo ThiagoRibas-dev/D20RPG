@@ -1,0 +1,14 @@
+{
+    "name": "Perform (Act)",
+    "description": "Use this skill for comedy, drama, mime and other similar methods of acting.",
+    "key_ability": "Cha",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "Perform (Act) uses dramatic abilities and interpretations to create or portray stories or characters or simply acting as required. The skill also represents ability at putting on a show.",
+    "action": "Performing usually takes 1 hour or more but also has short (instant or short, round-based) applications to test reaction/ability for the same skill.",
+    "try_again": "Yes, but repeated performance for a similar audience may have diminishing returns unless done properly or through special effects (or if a large amount of time passes or through an improvement on existing data for their character/ability/item). If used for creating an experience a new set of tries requires also different implementations and a fresh set of materials.",
+    "special": [],
+    "synergy": [],
+    "restriction": "No explicit restrictions. For using that on specific class powers check the rules of those if any hardcoded interaction exist. All other actions rely solely on what data/rules have been established here with dynamic calls.",
+    "untrained": "You can perform a show without specific training but you may be unappealing or just ineffective if not done in a proper manner with proper technique/equipment and experience, if applicable"
+}

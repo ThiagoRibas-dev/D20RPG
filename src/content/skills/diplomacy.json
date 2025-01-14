@@ -1,0 +1,45 @@
+{
+    "name": "Diplomacy",
+    "description": "Use this skill to persuade the chamberlain to let you see the king, to negotiate peace between feuding barbarian tribes, or to convince the ogre mages that have captured you that they should ransom you back to your friends instead of twisting your limbs off one by one. Diplomacy includes etiquette, social grace, tact, subtlety, and a way with words.",
+    "key_ability": "Cha",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "You can change the attitudes of others with a successful Diplomacy check. In negotiations, participants roll opposed Diplomacy checks, and the winner gains the advantage.",
+    "action": "Changing others' attitudes with Diplomacy generally takes at least 1 full minute. A rushed Diplomacy check can be made as a full-round action with penalties.",
+    "try_again": "Optional, but not recommended because retries usually do not work.",
+    "special": [
+        {
+            "name": "Half-elf diplomacy",
+            "description": "A half-elf has a +2 racial bonus on Diplomacy checks.",
+            "data": {
+                "bonus_type": "racial",
+                "value": 2
+            }
+        },
+        {
+            "name": "Negotiator Feat",
+            "description": "If you have the Negotiator feat, you get a +2 bonus on Diplomacy checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Negotiator",
+                "value": 2
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Bluff",
+            "bonus": "+2 on Diplomacy checks."
+        },
+        {
+            "skill": "Sense Motive",
+            "bonus": "+2 on Diplomacy checks."
+        },
+        {
+            "skill": "Knowledge(nobility and royalty)",
+            "bonus": "+2 on Diplomacy checks."
+        }
+    ],
+    "restriction": "None",
+    "untrained": "You can make diplomacy checks untrained, though may face added DC's as a consequence of a failed check."
+}

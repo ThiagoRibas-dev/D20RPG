@@ -1,0 +1,25 @@
+{
+  "name": "(string, required) The name of the skill (e.g., 'Climb', 'Listen').",
+  "description": "(string, optional) A detailed description of the skill.",
+  "key_ability": "(string, required) The key ability score associated with the skill (e.g., 'Str', 'Dex', 'Int').",
+  "trained_only": "(boolean, optional, defaults to false) Indicates if a character must be trained to use this skill",
+  "armor_check_penalty": "(boolean, optional, defaults to false) If the skill is impacted by armor check penalties.",
+  "check": "(string, optional) A description of what a character can achieve through a skill check and their DC, following a specific format or if left as empty string",
+  "action": "(string, optional) Time needed to use the skill. (e.g., 'standard action', 'full-round action').",
+  "try_again": "(string, optional) Conditions related to multiple attempts at the skill, such as a hard coded text/value or null, for indicating specific rules or how said skills must work with our game data and behaviors, also using engine functions if it changes behaviors of said rules for that class). If null then no extra rule. Or a boolean if a simple 'can try again' or 'can't try again' type rule.",
+  "special": [
+    {
+      "name": "(string, optional) Specific or hardcoded usage name, following any pattern for easy dynamic retrieval (for user created content and implementation), from within other files (and game/engine functionalities that may make use of them using ids) for loading or triggering effects",
+      "description": "(string, optional) Relevant description that must follow data structure.",
+      "data": "(object, optional) Any kind of data that can change this behavior"
+    }
+  ],
+  "synergy": [
+    {
+      "skill": "(string, optional) A synergistic skill with at least 5 ranks to get a bonus. List the relevant keys as described in table. Or an empty object if none.",
+      "bonus": "(string, optional) what skill receives a bonus using specific or a combination of them if necessary to indicate synergy behavior/rules or dynamic implementation."
+    }
+  ],
+  "restriction": "(string, optional) Class restriction, if any or how to use the file data to enforce rules on engine behavior, as described (including what are its implications and functionalities, if using that in specific places). Use ids/file structure with specific categories to implement this behavior).",
+  "untrained": "(string, optional)  Describes what an untrained character can do with it (if used untrained). Use hardcoded/dynamic behavior in specific calls or methods/procedures to implement that. If omitted it uses the base case.",
+}

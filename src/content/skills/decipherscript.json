@@ -1,0 +1,29 @@
+{
+    "name": "Decipher Script",
+    "description": "Use this skill to piece together the meaning of ancient runes carved into the wall of an abandoned temple, to get the gist of an intercepted letter written in the Infernal language, to follow the directions on a treasure map written in a forgotten alphabet, or to interpret the mysterious glyphs painted on a cave wall.",
+    "key_ability": "Int",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "You can decipher writing in an unfamiliar language or a message written in an incomplete or archaic form. If the check succeeds, you understand the general content of a piece of writing about one page long.",
+    "action": "Deciphering the equivalent of a single page of script takes 1 minute (ten consecutive full-round actions). Creating a cipher takes a week of uninterrupted work. Deciphering the equivalent of a single page of coded script takes 1 hour.",
+    "try_again": "No for first time decryption. Yes for decrypting your own cyphers/codes but must take at least a day and even a week to do so after the first try, unless other time-reducing abilities are used.",
+    "special": [
+        {
+            "name": "Diligent feat",
+            "description": "A character with the Diligent feat gets a +2 bonus on Decipher Script checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Diligent",
+                "value": 2
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Use Magic Device",
+            "bonus": "+2 bonus on Use Magic Device checks involving scrolls."
+        }
+    ],
+    "restriction": "Literacy required to train.",
+    "untrained": "Not possible, no check is done by untrainee user."
+}

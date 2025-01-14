@@ -1,0 +1,33 @@
+{
+    "name": "Escape Artist",
+    "description": "Use this skill to slip out of bonds or manacles, wriggle through tight spaces, or escape the grip of a monster that grapples you.",
+    "key_ability": "Dex",
+    "trained_only": true,
+    "armor_check_penalty": true,
+    "check": "You can use this skill to try to escape from rope bindings, manacles, or tight spaces. Each action takes several turns, and its effects are decided based on opposed skill checks or the object’s DC to resist those.",
+    "action": "Making an Escape Artist check to escape from rope bindings, manacles, or other restraints requires 1 minute of work. Escaping from a net or an animate rope, command plants, control plants, or entangle spell is a full-round action.",
+    "try_again": "Yes for squeezing your way through tight spaces or trying again when opposed.",
+    "special": [
+        {
+            "name": "Agile feat",
+            "description": "If you have the Agile feat, you get a +2 bonus on Escape Artist checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Agile",
+                "value": 2
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Use Rope",
+            "bonus": "+2 on Escape Artist checks when escaping from rope bonds"
+        },
+        {
+            "skill": "Use Rope",
+            "bonus": "+2 on Escape Artist checks made to bind someone"
+        }
+    ],
+    "restriction": "Must be trained",
+    "untrained": "An untrained user may make simple Dex checks, but will likely fail, suffer severe damage, or not achieve anything when opposed with a more advanced restrain such as magic"
+}

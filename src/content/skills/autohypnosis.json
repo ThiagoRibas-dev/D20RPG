@@ -1,0 +1,23 @@
+{
+    "name": "Autohypnosis",
+    "description": "You have trained your mind to gain mastery over your body and the mind's own deepest capabilities.",
+    "key_ability": "Wis",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "The DC and the effect of a successful check depend on the task you attempt: \nIgnore caltrop wound: 18 \nMemorize: 15 \nResist dying: 20 \nResist fear: Fear effect DC \nTolerate poison: Poison's DC \nWillpower: 20 \nIgnore poison: Poison's DC + 5 \nRemain conscious: 30 \nSlippery mind: 50 \nTemporary hit points: 60 \nDamage reduction: 60.",
+    "action": "None. Making an Autohypnosis check doesn't require an action.",
+    "try_again": "Yes, for memorize and willpower uses, though a success doesn't cancel the effects of a previous failure. No for the other uses.",
+    "special": [],
+    "synergy": [
+        {
+            "skill": "Concentration",
+            "bonus": "+2 on Autohypnosis checks"
+        },
+        {
+            "skill": "Knowledge(psionics)",
+            "bonus": "+2 on Autohypnosis checks"
+        }
+    ],
+    "restriction": "Only for those with trained mind, lycantropy or other mind altering ability, at Dm's discretion",
+    "untrained": "You can only use for simple or very common daily tasks that a trained user could use with a much higher reliability/skill level (at the DM's discretion, following intended uses or rules for those checks). No action."
+}

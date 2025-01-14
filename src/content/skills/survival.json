@@ -1,0 +1,45 @@
+{
+    "name": "Survival",
+    "description": "Use this skill to follow tracks, hunt wild game, guide a party safely through frozen wastelands, identify signs that owlbears live nearby, predict the weather, or avoid quicksand and other natural hazards. This includes usage of terrain to obtain or avoid combat or dangerous areas, to recognize or to predict natural phenomena that impact travel or hunting activities and all kinds of interactions between man and nature (plants, creatures, areas, climate, weather and similar).",
+    "key_ability": "Wis",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "You can use this skill to stay safe in wilderness conditions and other harsh or unfavorable terrain by getting food, creating shelter and also predict/understand weather conditions or the terrain itself for tracking down specific creatures. When trained, users of this skill may get a relevant boost in performance that isn't applicable to untrained characters.",
+    "action": " Varies, for performing most tasks like for predicting weather, making safe shelters or providing for yourself and others it requires a whole day or part of a full-day cycle of work. Other situations require specific actions as a test or reaction or when moving into dangerous territory, in those situations you have an automatic reaction.",
+    "try_again": "Yes. Though it's limited, or has diminished returns. Also if a check for identifying or following trails has failed there might not be an option for doing a retake.",
+    "special": [
+        {
+            "name": "Self-Sufficient feat",
+            "description": "If you have the Self-Sufficient feat, you get a +2 bonus on Survival checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Self-Sufficient",
+                "value": 2
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Search",
+            "bonus": "+2 on Survival checks to find or follow tracks."
+        },
+        {
+            "skill": "Knowledge(nature)",
+            "bonus": "+2 bonus on Survival checks made in aboveground natural environments (aquatic, desert, forest, hill, marsh, mountains, and plains)."
+        },
+        {
+            "skill": "Knowledge(geography)",
+            "bonus": "+2 bonus on Survival checks made to keep from getting lost or to avoid natural hazards."
+        },
+        {
+            "skill": "Knowledge(the planes)",
+            "bonus": "+2 bonus on Survival checks made while on other planes."
+        },
+        {
+            "skill": "Knowledge(dungeoneering)",
+            "bonus": "+2 bonus on Survival checks made while underground."
+        }
+    ],
+    "restriction": "Track is also necessary to follow specific types of traces/trails using Survival, for specific actions. Knowledge on other worlds and regions may be needed to navigate specific extra-planar locations as well.",
+    "untrained": "Without training you can provide basic means for living, foraging and building a primitive shelter for protecting against some of the more mundane hazards (cold weather). You are usually lost, confused or overwhelmed in situations involving unknown regions, magic/planar forces or complex/unknown weather patterns."
+}

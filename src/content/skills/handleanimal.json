@@ -1,0 +1,44 @@
+{
+    "name": "Handle Animal",
+    "description": "Use this skill to drive a team of horses pulling a wagon over rough terrain, to teach a dog to guard, or to teach a tyrannosaur to speak on your command. A Druid or a Ranger handles their animal companion a lot better and can perform certain actions (push or attack) with less risk or more effectively.",
+    "key_ability": "Cha",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "A check to perform a basic, pre existing trick has a DC of 10. To teach it something new requires DC 15-20, pushing them through more difficult tasks/orders also use a higher DC such as 25.",
+    "action": "Varies, such as standard or full-round for pushing an animal, or training.",
+    "try_again": "Yes for most tasks except for rearing a new animal.",
+    "special": [
+        {
+            "name": "Druid/Ranger Handle bonus",
+            "description": "A druid or ranger gains a +4 circumstance bonus on Handle Animal checks involving her animal companion. Also some druids have their companion already know several skills.",
+            "data": {
+                "bonus_type": "class",
+                "value": 4,
+                "class": [
+                    "druid",
+                    "ranger"
+                ]
+            }
+        },
+        {
+            "name": "Animal Affinity feat",
+            "description": "If you have the Animal Affinity feat, you get a +2 bonus on Handle Animal checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Animal Affinity",
+                "value": 2
+            }
+        },
+        {
+            "name": "Vermin Trainer Feat",
+            "description": "If you have the Vermin Trainer feat, you can handle and train mindless vermin with the Handle Animal skill.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Vermin Trainer"
+            }
+        }
+    ],
+    "synergy": [],
+    "restriction": "Non-domestic animals may prove harder to train or push using this method.",
+    "untrained": "If not trained you may attempt using it through a Charisma check with domestic animals, but can't attempt complex behaviors, training or other difficult commands."
+}

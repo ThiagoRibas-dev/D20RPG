@@ -1,0 +1,37 @@
+{
+    "name": "Disguise",
+    "description": "Use this skill to change your appearance or someone else's. It may include impersonating individuals, and temporarily changing the function of an item to appear as something else.",
+    "key_ability": "Cha",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "Your Disguise check result is opposed by the Spot check of anyone who might see you, unless they are uninterested, or otherwise, your actions remain unoticed by your audience or targeted individual.",
+    "action": "Creating a disguise requires 1d3x10 minutes of work.",
+    "try_again": "Yes. You may try to redo a failed disguise, but once others know that a disguise was attempted, they'll be more suspicious.",
+    "special": [
+        {
+            "name": "Form-altering magic bonus",
+            "description": "Magic that alters your form grants you a +10 bonus on Disguise checks",
+            "data": {
+                "bonus_type": "magic",
+                "value": 10
+            }
+        },
+        {
+            "name": "Deceitful feat",
+            "description": "If you have the Deceitful feat, you get a +2 bonus on Disguise checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Deceitful",
+                "value": 2
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Bluff",
+            "bonus": "+2 on Disguise checks when observed, in character."
+        }
+    ],
+    "restriction": "None.",
+    "untrained": "Untrained characters can only use it to attempt a minor changes in clothing and similar minor modifications to make an impression, no special or advanced techniques."
+}

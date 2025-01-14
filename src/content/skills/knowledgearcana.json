@@ -1,0 +1,19 @@
+{
+    "name": "Knowledge (Arcana)",
+    "description": "Knowledge (arcana) involves the study of ancient mysteries, magic traditions, arcane symbols, cryptic phrases, constructs, dragons, magical beasts, and Incarnum.",
+    "key_ability": "Int",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "Use this skill to identify arcane spells, magic traditions, magic items and effects.",
+    "action": "Usually none, knowledge skills don't take a particular action.",
+    "try_again": "No, you can only rely on what is known through proper study. No additional info from just trying to know a given information.",
+    "special": [],
+    "synergy": [
+        {
+            "skill": "Spellcraft",
+            "bonus": "+2 bonus on Spellcraft checks"
+        }
+    ],
+    "restriction": "Trained only. Specific types may also require special procedures, equipment or training to implement it. Some features may also have their power reduced depending on the source (a creature from a plane of magic may make less calls to your engine than, say, a normal wizard.",
+    "untrained": "This knowledge is only attainable through specific training and cannot be used by those without any ranks on the skill."
+}

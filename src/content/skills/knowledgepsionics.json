@@ -1,0 +1,23 @@
+{
+    "name": "Knowledge (Psionics)",
+    "description": "Knowledge (psionics) involves the study of ancient mysteries, psionic traditions, psionic monsters, psychic symbols, cryptic phrases, astral constructs, and psionic races.",
+    "key_ability": "Int",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "You may use it to understand what Psionics entails and their effect/usage, what kind of objects are or aren't tied to them, and for identifying monsters, devices or characters from this realm. You can also better handle items, artifacts and specific regions that share psionic properties.",
+    "action": "Usually none, if you need to test any psionic powers those will also require a related test (i.e. from items, abilities).",
+    "try_again": "No. It's based on knowledge and if you did not learn or retain any data from an initial experience you won't obtain it after an extra analysis. You can't change facts, what's been studied, experienced or researched previously.",
+    "special": [],
+    "synergy": [
+        {
+            "skill": "Psicraft",
+            "bonus": "+2 on Psicraft checks"
+        },
+        {
+            "skill": "Autohypnosis",
+            "bonus": "+2 on Autohypnosis checks"
+        }
+    ],
+    "restriction": "Must have studied or be related to Psionics or other mind-related training to gain a higher grasp on how psionics works.",
+    "untrained": "Untrained user have basic awareness on mind magic and its usage. They may also identify creatures/locations from that, but the lack of proper training will result in mostly incomplete, vague or unusable information."
+}

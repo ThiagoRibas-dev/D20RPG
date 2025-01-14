@@ -1,0 +1,55 @@
+{
+    "name": "Use Rope",
+    "description": "With this skill, you can make firm knots, undo tricky knots, and bind prisoners with ropes.",
+    "key_ability": "Dex",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "You can make firm knots, or tie someone or even control a rope for different types of movement/usage and you must have it available as a tool or through another skill that grants this ability for it to work properly.",
+    "action": "Most usage, such as throwing hooks, making knots and so on is part of actions in-game (usually as a standard or move action, when relevant). Check descriptions to use or call that specific data if that implementation of a system/ability using data from files exists. The basic handling of the tool for those checks is included within the specific hardcoded implementation",
+    "try_again": "Varies. A hard coded structure for using it might prevent trying that particular trick, action or behavior, from a dynamic file and its procedures, for specific times. Otherwise, redoing an attempt will trigger checks to perform that skill again using existing data as we established in this json implementation.",
+    "special": [
+        {
+            "name": "Silk Rope Bonus",
+            "description": "A silk rope gives you a +2 circumstance bonus on Use Rope checks.",
+            "data": {
+                "bonus_type": "equipment",
+                "item": "silk rope",
+                "value": 2
+            }
+        },
+        {
+            "name": "Animate Rope bonus",
+            "description": "If you cast an animate rope spell on a rope, you get a +2 circumstance bonus on any Use Rope checks you make when using that rope.",
+            "data": {
+                "bonus_type": "magic",
+                "value": 2,
+                "item_type": "animate rope"
+            }
+        },
+        {
+            "name": "Deft Hands Feat",
+            "description": "If you have the Deft Hands feat, you get a +2 bonus on Use Rope checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Deft Hands",
+                "value": 2
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Climb",
+            "bonus": "+2 on Climb checks made to climb a rope, a knotted rope, or a rope-and-wall combination"
+        },
+        {
+            "skill": "Escape Artist",
+            "bonus": "+2 on Escape Artist checks when escaping from rope bonds"
+        },
+        {
+            "skill": "Escape Artist",
+            "bonus": "+2 on Use Rope checks when attempting to bind another person with rope"
+        }
+    ],
+    "restriction": "You cannot control, perform or interact with any effect of this, including bindings if without that tool available for its specific type (such as silk for better, improved use cases) if those behaviors were coded and implemented by calling hardcoded data from categories within the system.",
+    "untrained": "Basic binding of other objects with rope may be achieved untrained, but may lead to weak or unstable structures, bad control/use of that rope or when attempting to perform actions with more challenging methods for handling ropes and complex knots or specialized behaviors/interactions using specific procedures for using a rope to tie a creature down, rappel or any other kind of method."
+}

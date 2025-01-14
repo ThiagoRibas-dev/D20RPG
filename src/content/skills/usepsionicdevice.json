@@ -1,0 +1,33 @@
+{
+    "name": "Use Psionic Device",
+    "description": "Use this skill to activate psionic devices, including power stones and dorjes, that otherwise you could not activate.",
+    "key_ability": "Cha",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "You can use this skill to address a power stone (to learn what powers are encoded on it) or to activate a psionic item by succeeding at Use Psionic Device checks, allowing emulating or using specific data from them (abilities, levels, items, spells, races, or similar categories and structures that can impact your dynamic content) by implementing hardcoded behaviors using said content through those calls and/or if relevant with any custom file structure you might have. All behaviors also should take that type of system for file access or hardcoded implementation to manage these psionic aspects",
+    "action": "Varies depending on which item type/usage is selected, or on how your specific implementation dictates through code, when and where, that item data (and any hardcoded usage related to it through methods) should trigger or activate specific abilities, properties or rules using this, along the proper calls and functionalities you created.",
+    "try_again": "Yes, but if you ever roll a natural 1 while attempting to activate an item and you fail, you can't try to activate it again for a day, as long as said system to prevent that is hardcoded and correctly used in that action/implementation.",
+    "special": [
+        {
+            "name": "Psionic Affinity Feat",
+            "description": "A character with the Psionic Affinity feat gets a +2 bonus on Use Psionic Device checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Psionic Affinity",
+                "value": 2
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Psicraft",
+            "bonus": "+2 on Use Psionic Device checks related to power stones."
+        },
+        {
+            "skill": "Use Psionic Device",
+            "bonus": "+2 on Psicraft checks to address power stones."
+        }
+    ],
+    "restriction": "Must be trained on this ability, as well as by understanding how it interacts with your own abilities, power or class/item rules/systems (such as through categories). If using dynamic types or file names make sure to include specific procedures for managing and correctly loading this from file (and other hardcoded areas such as using an ID, that we've been mentioning since day 1) for usage or data management.",
+    "untrained": "If used untrained, a psionic device might activate with uncontrolled, unwanted effects such as damage on user and lack of desired output due to misunderstanding on specific usage or parameters (like how power is implemented or handled through hardcoded parts and functions/implementations), due to that the device may misfire or trigger unintended (and dangerous) side-effects. May result on mental stress or brainburn from failing such implementations (depending on which hardcoded method was implemented for it, as per design)"
+}

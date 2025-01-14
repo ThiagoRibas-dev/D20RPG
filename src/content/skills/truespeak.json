@@ -1,0 +1,28 @@
+{
+    "name": "Truespeak",
+    "description": "Use this skill to master the tortuous pronunciation of truenames, each of which involves a dozen syllables, precise timing, and vocalizations foreign even to the most multilingual character. Only a truenamer class uses that as a core ability/feature (that calls other behaviors and implementations from a character using said ability). Spell casters who try to cast spells of that specific kind must rely on a similar knowledge with proper training and by passing through those related checks. You also have access to more specialized use cases depending on the implemented engine calls with those.",
+    "key_ability": "Int",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "You can pronounce the truename of a creature or an object by succeeding on a Truespeak check. Speaking a creature's personal truename increases the DC.",
+    "action": "Speaking a truename is a standard action. But it's used to power other special actions (such as spellcasting with truenames), it's considered as part of other action's time.",
+    "try_again": "Yes, for normal or less significant types, for special, harder to understand cases, or when dealing with unknown origins, locations and beings a second try or attempt may fail. In these specific situations the power used might require a specific implementation in code and file usage for calling specific names, paths and effects (if they are triggered by using data on other, different file categories or even by implementing them directly using our hardcoded categories)",
+    "special": [
+        {
+            "name": "Personal truename",
+            "description": "You gain a +4 competence bonus on Truespeak checks for saying your own personal truename.",
+            "data": {
+                "bonus_type": "self",
+                "value": 4
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Knowledge(Psionics)",
+            "bonus": "+2 bonus on any Knowledge checks made to conduct truename research"
+        }
+    ],
+    "restriction": "To make proper calls for this, you require training (through special feats or class), specific intonation, understanding, mastery of language, specific methods for delivering each name correctly or they might fail.",
+    "untrained": "Without any prior understanding of a truename's nature, its implementation is close to impossible (without other outside magical or supernatural force/implementations/tools/abilities, which may help an untrained character in performing those calls and procedures that requires knowledge on Truename structure/use). An untrained attempt results in the user being utterly incapable to deliver its intended/required data for these actions."
+}

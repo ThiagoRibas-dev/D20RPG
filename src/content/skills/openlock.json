@@ -1,0 +1,24 @@
+{
+    "name": "Open Lock",
+    "description": "Use this skill to pick padlocks, finesse combination locks, and solve puzzle locks. ",
+    "key_ability": "Dex",
+    "trained_only": true,
+    "armor_check_penalty": true,
+    "check": "You can open padlocks, finesse combination locks, and solve puzzle locks by doing an appropriate test. If you do not meet the challenge by that value you can use a quick check but it implies additional penalties. ",
+    "action": "Opening a lock is a full-round action. Quicker actions impose an additional DC.",
+    "try_again": "Yes, but a retry will have higher DC values for attempting to force or unlock it quicker. Or it might take more time to reapply or redo it.",
+    "special": [
+        {
+            "name": "Nimble Fingers Feat",
+            "description": "If you have the Nimble Fingers feat, you get a +2 bonus on Open Lock checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Nimble Fingers",
+                "value": 2
+            }
+        }
+    ],
+    "synergy": [],
+    "restriction": "This skill needs to be trained.",
+    "untrained": "Untrained characters cannot open locks, they can use physical brute force instead, possibly damaging its interior."
+}

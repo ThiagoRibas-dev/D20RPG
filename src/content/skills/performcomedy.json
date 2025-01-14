@@ -1,0 +1,14 @@
+{
+    "name": "Perform (Comedy)",
+    "description": "Use this skill for buffoonery, limericks, joke-telling and other types of performance where the user intends to produce amusement and laughter.",
+    "key_ability": "Cha",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "The user can entertain with buffoonery, joke-telling, limericks, using verbal or physical methods or actions (as implemented through data if any dynamic file contains it and through relevant engine behaviors or functions, in code), all as an act or perform.",
+    "action": "The checks represent the skill used in those categories, often takes hours or rounds to properly establish a show, depending on its level.",
+    "try_again": "Yes, but retries can reduce its intended effect, such as being received poorly if overused, or generating a more skeptical/less amused response for a similar audience or set of targets",
+    "special": [],
+    "synergy": [],
+    "restriction": "No explicit restrictions but using that as a way of obtaining or managing information or data through its structure or hardcoded functionality or code.",
+    "untrained": "An untrained character may not produce any intended effect when using those or create the kind of desired emotional response or information transfer to the audience if using this untrained."
+}

@@ -1,0 +1,42 @@
+{
+    "name": "Search",
+    "description": "You can find secret doors, simple traps, hidden compartments, and other details not readily apparent. The Spot skill lets you notice something, such as a hiding rogue. The Search skill lets a character discern some small detail or irregularity through active effort.",
+    "key_ability": "Int",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "Use this skill to look for hidden things (such as doors or simple traps, or other less common/obvious features). It is also required for locating items, objects, mechanisms or detecting magical forces if they exist.",
+    "action": "It takes a full-round action to search a 5-foot-by-5-foot area or a volume of goods 5 feet on a side.",
+    "try_again": "Yes, with new searches, through different angles/views and by changing methods for searching and exploring (as implemented through code if you design any dynamic data that does that), by doing a more careful or thorough implementation/procedure.",
+    "special": [
+        {
+            "name": "Racial Search Bonus",
+            "description": "An elf has a +2 racial bonus on Search checks, and a half-elf has a +1 racial bonus.",
+            "data": {
+                "bonus_type": "racial",
+                "elf_value": 2,
+                "half-elf_value": 1
+            }
+        },
+        {
+            "name": "Investigator Feat",
+            "description": "If you have the Investigator feat, you get a +2 bonus on Search checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Investigator",
+                "value": 2
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Survival",
+            "bonus": "+2 bonus on Search checks to follow tracks."
+        },
+        {
+            "skill": "Knowledge(architecture and engineering)",
+            "bonus": "+2 bonus on Search checks to find secret doors or hidden compartments"
+        }
+    ],
+    "restriction": "Only rogues, and other characters with trapfinding can attempt disabling magic traps and devices or for detecting specific types of structures, unless a feature from a spell is in effect.",
+    "untrained": "Without training, the search skill provides very basic and poor detection in most cases. Without any knowledge/training with these, the result is also unreliable for the user (or other characters) even with favorable conditions. This also has an important effect when dealing with hardcoded behavior."
+}

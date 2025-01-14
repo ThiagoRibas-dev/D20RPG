@@ -1,0 +1,19 @@
+{
+    "name": "Knowledge (Dungeoneering)",
+    "description": "Knowledge (dungeoneering) is related to the study of aberrations, caverns, oozes, and spelunking. Including underground environments, specific features of underground terrain, identifying unique types of dangers from those, as well as their possible countermeasures or known characteristics that makes this skill essential for exploring these regions. It is also a great tool for dealing with underground monsters or unique encounters that come with said territory",
+    "key_ability": "Int",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "You may recall details about aberrations, caverns, oozes, and similar environments as well as being useful for exploring those in a safer way. You can analyze cavern or tunnel patterns, detect danger and so on.",
+    "action": "Usually none, knowledge skills don't take a specific action unless there is a given requirement or procedure to use those for another purpose or special power or item.",
+    "try_again": "No. You can only recall information already known.",
+    "special": [],
+    "synergy": [
+        {
+            "skill": "Survival",
+            "bonus": "+2 on Survival checks made while underground."
+        }
+    ],
+    "restriction": "Must be trained.",
+    "untrained": "Without this skill users may not detect or recognize danger signals or specific elements of the dungeoneering environment, thus causing increased vulnerability or more problems to travel."
+}

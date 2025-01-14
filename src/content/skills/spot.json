@@ -1,0 +1,69 @@
+{
+    "name": "Spot",
+    "description": "Use this skill to notice bandits waiting in ambush, to see a rogue lurking in the shadows, to see through a disguise, to read lips, or to see the monstrous centipede in the pile of trash. Detect those who might want to hide and objects or elements within your vision range (or using other specific abilities and enhancements) as described through hardcoded methods or dynamic data as presented in a file through an associated category and a type, id, or name of the file.",
+    "key_ability": "Wis",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "Your Spot check is either made to detect something (by checking a relevant static difficulty) or through opposition with a stealth check or disguise. It allows detecting other characters who are hiding or something from a certain range. As a consequence you may react quicker than a usual untrained user would. Certain types of characters may have advantages or better implementations/usage due to training, spells or race.",
+    "action": "Varies. Spot is mostly reactive so does not usually require a dedicated action (and the hardcoded implementation for checking if anything is spotted works through any other behavior that triggers that detection method). If you use your actions with a Spot focus those, such as using Spot to discern what something actually is or their hidden properties or actions it takes some actions (full-round if intense focus, or longer periods, to fully discern the needed data/elements to create conclusions about that)",
+    "try_again": "Yes but it's limited by your current field of vision and you cannot detect what you cannot see and therefore, can not perform another search to gain additional or other data by checking again that source again (unless with additional knowledge, features, powers and magic). Also you can try to re-check what a given disguise was using those procedures but can also run into new traps and misleading signals.",
+    "special": [
+        {
+            "name": "Alertness Feat",
+            "description": "If you have the Alertness feat, you get a +2 bonus on Spot checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Alertness",
+                "value": 2
+            }
+        },
+        {
+            "name": "Ranger bonus",
+            "description": "A ranger gains a bonus on Spot checks when using this skill against a favored enemy.",
+            "data": {
+                "bonus_type": "favored_enemy"
+            }
+        },
+        {
+            "name": "Elf Bonus",
+            "description": "An elf has a +2 racial bonus on Spot checks.",
+            "data": {
+                "bonus_type": "racial",
+                "race": "elf",
+                "value": 2
+            }
+        },
+        {
+            "name": "Half-elf bonus",
+            "description": "A half-elf has a +1 racial bonus on Spot checks.",
+            "data": {
+                "bonus_type": "racial",
+                "race": "half-elf",
+                "value": 1
+            }
+        },
+        {
+            "name": "Familiar Bonus (hawk)",
+            "description": "The master of a hawk familiar gains a +3 bonus on Spot checks in daylight or other lighted areas.",
+            "data": {
+                "bonus_type": "familiar",
+                "familiar_type": "hawk",
+                "value": 3,
+                "area_type": "lighted"
+            }
+        },
+        {
+            "name": "Familiar Bonus (owl)",
+            "description": "The master of an owl familiar gains a +3 bonus on Spot checks in shadowy or other darkened areas.",
+            "data": {
+                "bonus_type": "familiar",
+                "familiar_type": "owl",
+                "value": 3,
+                "area_type": "darkened"
+            }
+        }
+    ],
+    "synergy": [],
+    "restriction": "Magic, conditions or powers, darkness, high noise areas and similar external or internal sources might make those difficult to implement or less effective (with those using that dynamically generated, hardcoded data for a more granular experience), for all users (depending on implementation in code for each). This will influence, too, when dealing with hidden/stealthed characters (if those abilities are hardcoded into the skill). As well as to spot what it's used to make its appearance through any file usage you design with categories, IDs or relevant file types for graphics, sounds and other resources in the code/game.",
+    "untrained": "A basic sense of the environment is present even if untrained, although you'd usually only detect things with extremely blatant signs such as if an entity does a sudden movement, speaks very loud, has an extremely distinct form or appearance, a highly identifiable/distinguished type of sound (as if, they are purposely creating such an effect) or if something from the environment calls your attention (large changes in lighting or color or with visible movement)."
+}

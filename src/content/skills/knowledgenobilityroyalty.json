@@ -1,0 +1,19 @@
+{
+    "name": "Knowledge (Nobility and Royalty)",
+    "description": "Knowledge (nobility and royalty) encompasses lineages, heraldry, family trees, mottoes, and personalities.",
+    "key_ability": "Int",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "Use this skill to identify people, or locations that belong to, a specific family or lineage using titles, flags, coat of arms, banners, sigils, mottos or other relevant clues. Can be used to interact better in areas ruled by nobles or to identify where those might have influence.",
+    "action": "Usually none.",
+    "try_again": "No. As knowledge of facts about the present and history, you can't retry unless new information is added.",
+    "special": [],
+    "synergy": [
+        {
+            "skill": "Diplomacy",
+            "bonus": "+2 bonus on Diplomacy checks."
+        }
+    ],
+    "restriction": "Specific locations and areas (like knowing how certain families function in their respective regions/areas). Or to identify specific symbols.",
+    "untrained": "Untrained individuals cannot make heads or tails of most details or hierarchies of royal bloodlines, lineages or organizations."
+}

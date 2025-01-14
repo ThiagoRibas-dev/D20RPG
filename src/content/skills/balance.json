@@ -1,0 +1,29 @@
+{
+    "name": "Balance",
+    "description": "Use this skill to keep your balance while walking on a tightrope, a narrow beam, a slippery ledge, or an uneven floor.",
+    "key_ability": "Dex",
+    "trained_only": false,
+    "armor_check_penalty": true,
+    "check": "You can walk on a precarious surface. A successful check lets you move at half your speed along the surface for 1 round. A failure by 4 or less means you can't move for 1 round. A failure by 5 or more means you fall. The difficulty varies with the surface.",
+    "action": "None. A Balance check doesn't require an action.",
+    "try_again": "Yes, but a new check may be needed every time your character tries to act or move when falling, taking damage, moving on dangerous surfaces.",
+    "special": [
+        {
+            "name": "Agile feat",
+            "description": "If you have the Agile feat, you get a +2 bonus on Balance checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Agile",
+                "value": 2
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Tumble",
+            "bonus": "+2 on Balance checks"
+        }
+    ],
+    "restriction": "None",
+    "untrained": "A Balance check result greater than 15 allows movement along a lightly obstructed surface with limited penalties. No other behaviors can be achieved if not trained with specific ranks or feat usage. Any action might also lead to falls"
+}

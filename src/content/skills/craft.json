@@ -1,0 +1,38 @@
+{
+    "name": "Craft",
+    "description": "You are trained in a craft, trade, or art, such as alchemy, armorsmithing, basketweaving, bookbinding, bowmaking, blacksmithing, calligraphy, carpentry, cobbling, gemcutting, leatherworking, locksmithing, painting, pottery, sculpting, shipmaking, stonemasonry, trapmaking, weaponsmithing, or weaving.",
+    "key_ability": "Int",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "You can practice your trade and make a decent living, earning about half your check result in gold pieces per week of dedicated work.",
+    "action": "Craft checks are made by the day or week.",
+    "try_again": "Yes, but each time you miss by 5 or more, you ruin half the raw materials and have to pay half the original raw material cost again.",
+    "special": [
+        {
+            "name": "Dwarven Craft",
+            "description": "A dwarf has a +2 racial bonus on Craft checks that are related to stone or metal.",
+            "data": {
+                "bonus_type": "racial",
+                "item_type": "stone/metal",
+                "value": 2
+            }
+        },
+        {
+            "name": "Gnome Craft",
+            "description": "A gnome has a +2 racial bonus on Craft (alchemy) checks.",
+            "data": {
+                "bonus_type": "racial",
+                "skill": "alchemy",
+                "value": 2
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Appraise",
+            "bonus": "+2 on Appraise checks related to items made with that Craft skill."
+        }
+    ],
+    "restriction": "Must have specific proficiencies for creating magic/alchemic items, traps, warforged, etc.",
+    "untrained": "Can make common objects but those might have less value or become useless at higher DC, especially in regards to time usage and raw material costs."
+}

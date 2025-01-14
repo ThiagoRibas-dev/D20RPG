@@ -75,12 +75,10 @@
     }
 
     #characterCreation #character-selector {
-      /* Container for the entire section  */
       display: flex;
       align-items: flex-start;
       justify-content: center;
       width: 800px;
-      /* Setting its size  */
     }
 
     #characterCreation .selector {
@@ -110,17 +108,52 @@
     }
 
     #characterCreation #selector-info {
-      /* Display this information to the side */
       flex: 1;
       margin-left: 10px;
       max-width: 300px;
       text-align: left;
-      /* We will show it as needed by clicking an element*/
     }
 
     #characterCreation #selector-info p {
       margin-top: 10px;
       text-align: justify;
+    }
+
+    #ability-score-selection {
+      margin-top: 20px;
+    }
+
+    #ability-score-selection #ability-scores-container {
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    #ability-score-selection .ability-score-container {
+      width: fit-content;
+      flex-direction: column;
+      margin: 10px;
+    }
+
+    #ability-score-selection .ability-score-row {
+      width: fit-content;
+      display: flex;
+      align-items: center;
+      margin: 10px;
+    }
+
+    #ability-score-selection .ability-score-row>label {
+      margin-right: 5px;
+      width: 70px;
+      text-align: center;
+    }
+
+    #ability-score-selection .ability-score-row>span {
+      margin-left: 10px;
+      margin-right: 10px;
+      width: 70px;
+      text-align: center;
     }
 
     /* END OF CHARACTER CREATION */
@@ -160,11 +193,69 @@
         <div id="selected-desc"></div>
       </div>
     </div>
-    <div class="selector" id="skills-selector" style="display: none;">
+    <div id="ability-score-selection" style="display:none">
+      <h2>Assign Ability Scores</h2>
+      <p id="points-remaining"> Points remaining: <span id="remainingPointsDisplay">32</span></p>
+      <div id="ability-scores-container">
+        <div class="ability-score-row">
+          <label>Ability:</label>
+          <span></span>
+          <span>Cost</span>
+          <span>Total</span>
+          <span>Mod</span>
+        </div>
+        <div class="ability-score-row">
+          <label for="str">STR:</label>
+          <input type="number" id="str" value="8" min="8" max="18" onchange="gameApi.updateAbilityScoreDisplay()" />
+          <span id="str-cost">0</span>
+          <span id="str-total">8</span>
+          <span id="str-mod">0</span>
+        </div>
+        <div class="ability-score-row">
+          <label for="dex">DEX:</label>
+          <input type="number" id="dex" value="8" min="8" max="18" onchange="gameApi.updateAbilityScoreDisplay()" />
+          <span id="dex-cost">0</span>
+          <span id="dex-total">8</span>
+          <span id="dex-mod">0</span>
+        </div>
+        <div class="ability-score-row">
+          <label for="con">CON:</label>
+          <input type="number" id="con" value="8" min="8" max="18" onchange="gameApi.updateAbilityScoreDisplay()" />
+          <span id="con-cost">0</span>
+          <span id="con-total">8</span>
+          <span id="con-mod">0</span>
+        </div>
+        <div class="ability-score-row">
+          <label for="int">INT:</label>
+          <input type="number" id="int" value="8" min="8" max="18" onchange="gameApi.updateAbilityScoreDisplay()" />
+          <span id="int-cost">0</span>
+          <span id="int-total">8</span>
+          <span id="int-mod">0</span>
+        </div>
+        <div class="ability-score-row">
+          <label for="wis">WIS:</label>
+          <input type="number" id="wis" value="8" min="8" max="18" onchange="gameApi.updateAbilityScoreDisplay()" />
+          <span id="wis-cost">0</span>
+          <span id="wis-total">8</span>
+          <span id="wis-mod">0</span>
+        </div>
+        <div class="ability-score-row">
+          <label for="cha">CHA:</label>
+          <input type="number" id="cha" value="8" min="8" max="18" onchange="gameApi.updateAbilityScoreDisplay()" />
+          <span id="cha-cost">0</span>
+          <span id="cha-total">8</span>
+          <span id="cha-mod">0</span>
+        </div>
+      </div>
+      <button id="roll-ability-scores" onclick="gameApi.rollAbilities()"> Roll scores (3d6) </button>
+      <button id="take-roll-btn" onclick="gameApi.saveAbilities()">Take Roll</button>
     </div>
-    <button style="display: none" id="back-btn" onclick="gameApi.creationPrevStep()">Back</button>
-    <button style="display: none" id="next-btn" onclick="gameApi.creationNextStep()">Next</button>
-    <!-- END OF CHARACTER CREATION -->
+  </div>
+  <div class="selector" id="skills-selector" style="display: none;">
+  </div>
+  <button style="display: none" id="back-btn" onclick="gameApi.creationPrevStep()">Back</button>
+  <button style="display: none" id="next-btn" onclick="gameApi.creationNextStep()">Next</button>
+  <!-- END OF CHARACTER CREATION -->
   </div>
   <div id="campaignSelection" style="display:none;">
     <h1>Campaign Selection</h1>

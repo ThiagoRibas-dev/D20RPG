@@ -1,0 +1,19 @@
+{
+    "name": "Knowledge (History)",
+    "description": "Knowledge (history) covers royalty, wars, colonies, migrations, the founding of cities and also includes knowledge about historic figures, or any information that relates to these concepts through their historic perspective and their effects through different timelines or eras. Knowledge on warfare, command structure of armies, or strategies.",
+    "key_ability": "Int",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "You can use it to recall events or specific details on events or individuals from the past.",
+    "action": "Usually none, the skill usually functions as an informative source for other areas of the game, such as combat, interactions with NPCs, or similar scenarios. Planning, strategies, understanding organizations, may be better prepared by learning what they have been, what was or not successful, what strategies worked and why.",
+    "try_again": "No. You cannot learn things from a past you haven't experienced (or learned/studied).",
+    "special": [],
+    "synergy": [
+        {
+            "skill": "Bardic Knowledge",
+            "bonus": "+2 bonus on bardic knowledge checks"
+        }
+    ],
+    "restriction": "You must be literate to gain full usage from the skill since many details depend on recorded knowledge.",
+    "untrained": "You may vaguely recognize a known fact/date or similar events from history, but those will likely prove very general or completely unusable without specific training."
+}

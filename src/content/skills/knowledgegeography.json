@@ -1,0 +1,19 @@
+{
+    "name": "Knowledge (Geography)",
+    "description": "Knowledge (geography) encompasses lands, terrain, climate, people, routes of travel and specific localizations (cities, areas) and natural conditions",
+    "key_ability": "Int",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "Using the knowledge about a given area, its terrain or climate may help the player to avoid getting lost or use terrain to his or her advantage as well as to improve other checks and interactions with areas based on your experience in those places, also as a requirement for specific actions such as ship piloting. Navigation skills use specific methods related to this Knowledge as its basic requirements.",
+    "action": "Usually none. In specific areas that also impact specific skill types, you will then take actions based on that.",
+    "try_again": "No. You only know information from a certain area, map or similar location, or do not.",
+    "special": [],
+    "synergy": [
+        {
+            "skill": "Survival",
+            "bonus": "+2 on Survival checks made to keep from getting lost or to avoid natural hazards."
+        }
+    ],
+    "restriction": "Requires training",
+    "untrained": "Untrained users cannot understand cartography, the effects of weather conditions and have difficulty using terrain in a favorable manner to travel in unknown territory or by creating strategies to gain an advantage using these conditions."
+}

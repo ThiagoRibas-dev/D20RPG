@@ -1,0 +1,14 @@
+{
+    "name": "Perform (Sing)",
+    "description": "Use this skill to sing a ballad, chant, melody and any type of vocal artistic expression using your voice as the primary source for artistic interpretations or for delivering specific emotions, content or to portray certain characters. As with the rest of these, it requires mastery to do it properly.",
+    "key_ability": "Cha",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "You can deliver a song, poem or specific vocal data (rhythmic/not) through the act of singing, with any degree of skill, but that requires a combination of musical expertise and knowledge of techniques.",
+    "action": "This can be instantaneous for a simple tone or action but takes at least a few rounds to perform a proper act with relevant complexity or any kind of dynamic changes that you choose for your characters. Creating songs may take much longer.",
+    "try_again": "Yes but repetition with an unchanging performance will greatly diminish or nullify any intended effects. Improvisations and modifications with those structures and melodies would count as new checks or, if using those through hardcoded features and specific methods and dynamic data structures/types (following our established pattern, especially for dealing with dynamic `json` categories).",
+    "special": [],
+    "synergy": [],
+    "restriction": "Performance is hard without a functional voice and knowledge on rhythm, voice pitch, tone control and so on. Some performances rely heavily on previous experience. For using magic with those checks make use of class requirements and restrictions as well (implementing them dynamically if not done previously by checking specific ids). Use hardcoded files to follow the general design of your file system, and dynamic file integration with those.",
+    "untrained": "Without previous knowledge and training or an affinity to performance, these may lead to extremely poor renditions that are poorly delivered, with little connection with your targeted audiences/beings or what is intended from the singer. It could even be a disservice if not used properly. But for a placeholder version these, like any other example so far, should do fine until better features are implemented with other functions."
+}

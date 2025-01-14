@@ -1,0 +1,29 @@
+{
+    "name": "Sleight of Hand",
+    "description": "You can cut or lift a purse and hide it on your person, palm an unattended object, hide a light weapon in your clothing, or perform some feat of legerdemain with an object no larger than a hat or a loaf of bread.",
+    "key_ability": "Dex",
+    "trained_only": true,
+    "armor_check_penalty": true,
+    "check": "With Sleight of Hand, you can steal an object from a person without them knowing (or not) by doing checks opposed to those targeted to you. Palming an unattended coin or doing simple magic tricks may be enough with minimal effort.",
+    "action": "Usually, each use requires at least a standard action.",
+    "try_again": "Yes, but with each failure, your next attempt will carry higher DC's with those hardcoded penalties as implemented by previously used files/formats if they follow what was established for categories within `content/` such as when generating items with a given Id (and how this affects gameplay such as using that Id to define weapon proficiency for specific categories of characters or with custom item/file creations)",
+    "special": [
+        {
+            "name": "Deft Hands Feat",
+            "description": "If you have the Deft Hands feat, you get a +2 bonus on Sleight of Hand checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Deft Hands",
+                "value": 2
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Bluff",
+            "bonus": "+2 on Sleight of Hand checks"
+        }
+    ],
+    "restriction": "A user can use a ranged or light weapon or other similarly small items with relative ease but it may have restrictions on the use of two-handed weapons or specific types (if used by hardcoded features within the game)",
+    "untrained": "It requires previous expertise to handle with efficiency so untrained usage might trigger additional checks or unwanted behavior such as falling or breaking items. Those skills can still be applied for simple tasks."
+}

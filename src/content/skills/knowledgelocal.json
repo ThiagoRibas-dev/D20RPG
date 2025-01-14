@@ -1,0 +1,19 @@
+{
+    "name": "Knowledge (Local)",
+    "description": "Knowledge (local) is related to a given place's legends, personalities, inhabitants, laws, customs, and traditions as well as local knowledge of a given area, which can also influence interactions and behavior through specific information you've learned such as by getting familiar with their hierarchy or ways to conduct your affairs there using common customs.",
+    "key_ability": "Int",
+    "trained_only": true,
+    "armor_check_penalty": false,
+    "check": "You can use this skill to make observations or perform relevant checks by using what is considered commonplace knowledge within a given place or specific social context/environment.",
+    "action": "Usually none.",
+    "try_again": "No, as you have a certain degree of information (or you don't), as defined within that given locality.",
+    "special": [],
+    "synergy": [
+        {
+            "skill": "Gather Information",
+            "bonus": "+2 on Gather Information checks."
+        }
+    ],
+    "restriction": "Must have at least a working knowledge of common local habits, rules or common patterns that follow or are dictated by the rules/organization of those locations, even for dynamic or custom created locations that exist on your content data, including those created through user input.",
+    "untrained": "An untrained character may vaguely identify an organization or rule in their given local area, but this may result in little reliable information that may or may not even make sense within a wider context or understanding."
+}

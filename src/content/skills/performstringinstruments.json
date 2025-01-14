@@ -1,0 +1,14 @@
+{
+    "name": "Perform (String Instruments)",
+    "description": "Use this skill to express your artistic talents with a fiddle, harp, lute, mandolin, or similar string-based instrument.",
+    "key_ability": "Cha",
+    "trained_only": false,
+    "armor_check_penalty": false,
+    "check": "Play various types of musical instrument using plucked or other types of string activation to produce sounds that resonate across space. Each style, and use may result in different ways of applying your skills with their given behaviors.",
+    "action": "Requires some rounds (if fast checks are desired) to implement an effective composition (i.e., short, simple musical pieces), hours or whole days for complex performance. If you decide to play a song that must follow certain rules and methods (if any), follow these as a baseline implementation (like with bard spells or any specific content that must be used in order to have these actions work as designed)",
+    "try_again": "Yes, but you must have the energy (physical and mental) to provide it and the audience might be already used to your play style. By using the same technique/composition a performance becomes less appealing for the same crowd if no changes occur (unless performing the most basic forms for specific data sets with minimal interaction)",
+    "special": [],
+    "synergy": [],
+    "restriction": "Requires a certain knowledge of how strings, finger or playing technique must be to provide their effects. Each instrument and implementation can vary according to style or implementation as intended for it within the code through specific IDs or a constructor to load up dynamically created or user defined types or through calls to data through similar formats like we previously designed. Lacking the understanding on specific details, techniques or procedures those implementations, calls, behaviors will likely cause severe usage penalties",
+    "untrained": "An untrained character may use stringed instruments but often lack finesse or even correct notes/tunes/composition to make it anything enjoyable (or to produce a proper effect when using these as requirements for other classes or other magic abilities that use instruments as their implementation of actions, if those rules are called for)."
+}
