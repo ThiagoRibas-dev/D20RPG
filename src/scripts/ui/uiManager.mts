@@ -1,6 +1,7 @@
 // src/scripts/engine/uiManager.mts
+import { calcMod } from "../engine/dataManager.mjs";
 import { ContentItem } from "../engine/entities/contentItem.mjs";
-import { UIHolder } from "../engine/entities/uiholder.mjs";
+import { UIHolder } from "../engine/entities/uiHolder.mjs";
 import { GAME_API, GAME_STATE } from "../index.mjs";
 
 export async function updateCampaignInfo(campaign: any, campaignData: ContentItem, uiScreens: UIHolder) {
@@ -90,33 +91,55 @@ export async function displayClasses(content: ContentItem, classListContainer: H
   }
 }
 
-export async function displaySkills(skillListContainer: HTMLElement, uiScreens: UIHolder) {
+export async function displaySkills(contendData: ContentItem, skillListContainer: HTMLElement, uiScreens: UIHolder) {
   skillListContainer.innerHTML = ""
-  if (!GAME_STATE.player.selectedClass) {
-    console.error("There was an error with class or race implementation. Reverting");
-    GAME_API.creationPrevStep();
-    return;
-  }
-  if (GAME_STATE.player.selectedRace) {
-    console.log("Selected race was:", GAME_STATE.player.selectedRace.name)
+  const player = GAME_STATE.player;
+  const sRace = player.selectedRace;
+  if (sRace) {
+    console.log("Selected race was:", sRace.name)
   } else {
     console.error("Race not found");
     GAME_API.creationPrevStep();
     return;
   }
-  if (GAME_STATE.player.selectedClass) {
-    console.log("Selected class was:", GAME_STATE.player.selectedClass.name)
+  const sClass = player.selectedClass;
+  if (sClass) {
+    console.log("Selected class was:", sClass);
   } else {
     console.error("Class not found.");
     GAME_API.creationPrevStep();
     return;
   }
 
-  let availableSkillsPoints = (2 + 10) * 4;
-  skillListContainer.innerText = `Remaining skills points to distribute: ${availableSkillsPoints}. Placeholders.`;
-  for (let i = 0; i < 10; i++) {
-    const skillItem = uiScreens.els['skills-selector'].ownerDocument.createElement('li');
-    skillItem.textContent = "A generic Skill or attribute (temporary) that has to load from a JSON, using the name of our skill. " + i
+  const intMod = calcMod(player.stats.int);
+  const classSkillPoints = sClass.skill_points_per_level.base;
+  const availableSkillsPoints = (classSkillPoints + intMod) * 4;
+  let currentSkillPoints = availableSkillsPoints;
+  skillListContainer.innerText = `Remaining skills points to distribute: ${currentSkillPoints}/${availableSkillsPoints}.`;
+
+  const skillsCategory = contendData.skills;
+  const skills: string[] = Object.keys(skillsCategory);
+  for (let skillId in skills) {
+    const loadedSkill = skillsCategory[skillId].get();
+
+    const skillItem: HTMLElement = uiScreens.els['skills-selector'].ownerDocument.createElement('li');
+
+    const input: HTMLInputElement = skillItem.ownerDocument.createElement("input");
+    input.type = 'number';
+    input.id = `${skillId}-skill`;
+    input.min = '0';
+    input.max = `${player.level + 3}`;
+    input.value = '0';
+    input.onchange = () => {
+      console.log('Changed', skillId, loadedSkill, currentSkillPoints, input.value);
+    }
+
+    const label: HTMLLabelElement = skillItem.ownerDocument.createElement("label");
+    label.innerText = loadedSkill.name;
+    label.htmlFor = input.id;
+
+    skillItem.appendChild(label);
+    skillItem.appendChild(input);
     skillListContainer.appendChild(skillItem);
   }
   console.log("Set Skills");

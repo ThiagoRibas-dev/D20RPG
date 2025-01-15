@@ -1,6 +1,6 @@
 // src/scripts/engine/dataManager.mts
 import { GAME_STATE } from "../index.mjs";
-import { UIHolder } from "./entities/uiholder.mjs";
+import { UIHolder } from "./entities/uiHolder.mjs";
 import { getRandomInt } from "./utils.mjs";
 
 export function rollAbilities(uiScreens: UIHolder) {
@@ -45,6 +45,10 @@ export function getElAbilityScores(uiScreens: UIHolder): { [key: string]: HTMLIn
     }
 }
 
+export function calcMod(finalValue: any) {
+    return Math.floor((finalValue - 10) / 2);
+}
+
 export function calculateCurrentAbilityPoints(el: { [key: string]: HTMLInputElement }): number {
     let total = 0;
     Object.values(el).forEach((value, i) => {
@@ -87,7 +91,7 @@ export function updateAbilityScoreDisplay(UI: UIHolder) {
         const finalDisplay = UI.els[`${ability}-total`];
 
         costDisplay.innerText = pointBuyCost(baseValue).toString();
-        modDisplay.innerText = Math.floor((finalValue - 10) / 2).toString();
+        modDisplay.innerText = calcMod(finalValue).toString();
         finalDisplay.innerText = `${finalValue} (${baseValue}+${racialMod})`;
     });
 }

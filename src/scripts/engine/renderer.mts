@@ -1,9 +1,9 @@
-// src/scripts/engine/this.mts
+// src/scripts/engine/renderer.mts
+import { updateAbilityScoreDisplay } from "../engine/dataManager.mjs";
+import { ContentItem } from "../engine/entities/contentItem.mjs";
+import { UIHolder } from "../engine/entities/uiHolder.mjs";
 import { GAME_STATE } from "../index.mjs";
 import { displayClasses, displayRaces, displaySkills, setActiveScreen, updateCampaignInfo } from "../ui/uiManager.mjs";
-import { updateAbilityScoreDisplay } from "./dataManager.mjs";
-import { ContentItem } from "./entities/contentItem.mjs";
-import { UIHolder } from "./entities/uiholder.mjs";
 
 export class Renderer {
     private uiScreens: UIHolder;
@@ -27,9 +27,9 @@ export class Renderer {
             return;
         }
 
-        const ctx = gameArea.ownerDocument.createElement("canvas")
-        ctx.setAttribute("width", gameArea.clientWidth.toString())
-        ctx.setAttribute("height", gameArea.clientHeight.toString())
+        const ctx = gameArea.ownerDocument.createElement("canvas");
+        ctx.setAttribute("width", gameArea.clientWidth.toString());
+        ctx.setAttribute("height", gameArea.clientHeight.toString());
 
         gameArea.innerHTML = "";
         gameArea.appendChild(ctx);
@@ -149,7 +149,7 @@ export class Renderer {
 
             btnBack.style.display = "";
             elStepDesc.innerText = "Skills";
-            displaySkills(skillListContainer, this.uiScreens);
+            displaySkills(contentData, skillListContainer, this.uiScreens);
             return;
         }
         if (GAME_STATE.creationStep === 4) {

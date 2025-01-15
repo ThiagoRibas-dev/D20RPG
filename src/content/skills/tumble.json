@@ -1,0 +1,33 @@
+{
+    "name": "Tumble",
+    "description": "You can dive, roll, somersault, flip, and so on, usually for escaping an opponent or other physical obstacles or similar barriers or situations, using a series of complex acrobatic movements. This is more versatile and useful for mobile combat/interaction scenarios or exploration",
+    "key_ability": "Dex",
+    "trained_only": true,
+    "armor_check_penalty": true,
+    "check": "A Tumble check is used for many kinds of evasive actions including to fall with reduced damage, tumbling around, or for climbing or interacting in a location using agility or dexterity based jumps, rolls, twists or acrobatic routines.",
+    "action": "Performing acrobatics requires at least a move action to properly control and handle those difficult/demanding types of physical movements.",
+    "try_again": "Usually no, unless that results from a particular effect (that forces those retries due to specific engine mechanics).",
+    "special": [
+        {
+            "name": "Agile feat",
+            "description": "If you have the Acrobatic feat, you get a +2 bonus on Tumble checks.",
+            "data": {
+                "bonus_type": "feat",
+                "feat_type": "Acrobatic",
+                "value": 2
+            }
+        }
+    ],
+    "synergy": [
+        {
+            "skill": "Balance",
+            "bonus": "+2 on Tumble checks."
+        },
+        {
+            "skill": "Jump",
+            "bonus": "+2 on Tumble checks."
+        }
+    ],
+    "restriction": "To use these skills, users need to have both their mobility free as a movement with no limitations for movement (so any impediment through heavy/bulky gear, conditions, encumbrance may affect those results, following their specified rules, if implemented as such).",
+    "untrained": "Users without prior training on complex bodily movements have low effectiveness and may face significant difficulty in trying to implement more complex or specialized actions that require technique, dexterity and specific timings that are acquired with time and experience (unless that gets replaced by other type of help or other specific data). Untrained tumble is similar to basic dodging, and can usually only be performed by specific class or race if that isn't their normal training such as when falling, and that can reduce falling damage (as designed, by having hardcoded or data defined behavior) or if some specific conditions or hardcoded exceptions to said rules exist. For such behavior to take effect on a trained or untrained player or other elements they may require specialized tests through previously implemented dynamic system, including through a set of specific procedures that might (or might not) trigger said behaviors."
+}

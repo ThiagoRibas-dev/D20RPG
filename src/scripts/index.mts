@@ -2,7 +2,7 @@
 import { ContentLoader } from './engine/contentLoader.mjs';
 import { rollAbilities, saveAbilities, updateAbilityScoreDisplay } from './engine/dataManager.mjs';
 import { GameState } from './engine/entities/gameState.mjs';
-import { UIHolder } from './engine/entities/uiholder.mjs';
+import { UIHolder } from './engine/entities/uiHolder.mjs';
 import { Game } from './engine/game.mjs';
 import { Renderer } from './engine/renderer.mjs';
 

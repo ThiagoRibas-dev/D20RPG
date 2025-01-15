@@ -1,4 +1,4 @@
-import { PlayerCharacter } from "./playercharacter.mjs";
+import { PlayerCharacter } from "./playerCharacter.mjs";
 
 export type GameState = {
     currentScreen: string;
