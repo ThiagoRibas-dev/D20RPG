@@ -6,7 +6,11 @@ import { Game } from "./engine/game.mjs";
 
 export let GAME_API: any = { init: false };
 export let WIN_DOCUMENT: any;
-export let UI_SCREENS: { [key: string]: HTMLElement } = {};
+export let UI_SCREENS: {
+  els: { [key: string]: HTMLElement },
+  inputs: { [key: string]: HTMLInputElement },
+  btns: { [key: string]: HTMLButtonElement }
+};
 
 export const GAME_STATE: GameState = {
   currentScreen: "startMenu",
@@ -88,11 +92,58 @@ function setupGlobals(winObj: any, campaignData: ContentItem, contentData: Conte
   };
 
   UI_SCREENS = {
-    'startMenu': winObj.document.getElementById('startMenu') as HTMLElement,
-    'characterCreation': winObj.document.getElementById('characterCreation') as HTMLElement,
-    'campaignSelection': winObj.document.getElementById('campaignSelection') as HTMLElement,
-    'gameContainer': winObj.document.getElementById('gameContainer') as HTMLElement
+    els: {
+      'startMenu': winObj.document.getElementById('startMenu') as HTMLElement,
+      'characterCreation': winObj.document.getElementById('characterCreation') as HTMLElement,
+      'campaignSelection': winObj.document.getElementById('campaignSelection') as HTMLElement,
+      'gameContainer': winObj.document.getElementById('gameContainer') as HTMLElement,
+      'races-selector': winObj.document.getElementById('races-selector') as HTMLElement,
+      'classes-selector': winObj.document.getElementById('classes-selector') as HTMLElement,
+      'skills-selector': winObj.document.getElementById('skills-selector') as HTMLElement,
+      'ability-score-selection': winObj.document.getElementById('ability-score-selection') as HTMLElement,
+      'step-description': winObj.document.getElementById('step-description') as HTMLElement,
+      'selector-info': winObj.document.getElementById('selector-info') as HTMLElement,
+      'remainingPointsDisplay': winObj.document.getElementById('remainingPointsDisplay') as HTMLElement,
+      'campaign-info': winObj.document.getElementById('campaign-info') as HTMLElement,
+      'campaign-name': winObj.document.getElementById('campaign-name') as HTMLParagraphElement,
+      'campaign-desc': winObj.document.getElementById('campaign-desc') as HTMLParagraphElement,
+      'selected-name': winObj.document.getElementById('selected-name') as HTMLElement,
+      'selected-desc': winObj.document.getElementById('selected-desc') as HTMLElement,
+      'str-cost': winObj.document.getElementById(`str-cost`) as HTMLSpanElement,
+      'dex-cost': winObj.document.getElementById(`dex-cost`) as HTMLSpanElement,
+      'con-cost': winObj.document.getElementById(`con-cost`) as HTMLSpanElement,
+      'int-cost': winObj.document.getElementById(`int-cost`) as HTMLSpanElement,
+      'wis-cost': winObj.document.getElementById(`wis-cost`) as HTMLSpanElement,
+      'cha-cost': winObj.document.getElementById(`cha-cost`) as HTMLSpanElement,
+      'str-total': winObj.document.getElementById(`str-total`) as HTMLSpanElement,
+      'dex-total': winObj.document.getElementById(`dex-total`) as HTMLSpanElement,
+      'con-total': winObj.document.getElementById(`con-total`) as HTMLSpanElement,
+      'int-total': winObj.document.getElementById(`int-total`) as HTMLSpanElement,
+      'wis-total': winObj.document.getElementById(`wis-total`) as HTMLSpanElement,
+      'cha-total': winObj.document.getElementById(`cha-total`) as HTMLSpanElement,
+      'str-mod': winObj.document.getElementById(`str-mod`) as HTMLSpanElement,
+      'dex-mod': winObj.document.getElementById(`dex-mod`) as HTMLSpanElement,
+      'con-mod': winObj.document.getElementById(`con-mod`) as HTMLSpanElement,
+      'int-mod': winObj.document.getElementById(`int-mod`) as HTMLSpanElement,
+      'wis-mod': winObj.document.getElementById(`wis-mod`) as HTMLSpanElement,
+      'cha-mod': winObj.document.getElementById(`cha-mod`) as HTMLSpanElement,
+      'campaign-list-ul': winObj.document.getElementById('campaign-list-ul') as HTMLUListElement
+    },
+    inputs: {
+      "str": winObj.document.getElementById("str") as HTMLInputElement,
+      "dex": winObj.document.getElementById("dex") as HTMLInputElement,
+      "con": winObj.document.getElementById("con") as HTMLInputElement,
+      "int": winObj.document.getElementById("int") as HTMLInputElement,
+      "wis": winObj.document.getElementById("wis") as HTMLInputElement,
+      "cha": winObj.document.getElementById("cha") as HTMLInputElement,
+    },
+    btns: {
+      'back-btn': winObj.document.getElementById('back-btn') as HTMLButtonElement,
+      'next-btn': winObj.document.getElementById('next-btn') as HTMLButtonElement,
+      'campaignSelectBtn': winObj.document.getElementById('campaignSelectBtn') as HTMLButtonElement,
+    }
   };
+
   winObj.gameApi = GAME_API;
   WIN_DOCUMENT = winObj.document;
 }
@@ -112,12 +163,12 @@ function rollAbilities() {
 
 function getElAbilityScores(): { [key: string]: HTMLInputElement } {
   return {
-    str: WIN_DOCUMENT.getElementById("str") as HTMLInputElement,
-    dex: WIN_DOCUMENT.getElementById("dex") as HTMLInputElement,
-    con: WIN_DOCUMENT.getElementById("con") as HTMLInputElement,
-    int: WIN_DOCUMENT.getElementById("int") as HTMLInputElement,
-    wis: WIN_DOCUMENT.getElementById("wis") as HTMLInputElement,
-    cha: WIN_DOCUMENT.getElementById("cha") as HTMLInputElement,
+    str: UI_SCREENS.inputs.str,
+    dex: UI_SCREENS.inputs.dex,
+    con: UI_SCREENS.inputs.con,
+    int: UI_SCREENS.inputs.int,
+    wis: UI_SCREENS.inputs.wis,
+    cha: UI_SCREENS.inputs.cha,
   }
 }
 
@@ -152,9 +203,9 @@ function getRandomInt(min: number, max: number) {
 }
 
 async function updateCampaignInfo(campaign: any, campaignData: ContentItem) {
-  const nameText = WIN_DOCUMENT.getElementById('campaign-name') as HTMLParagraphElement;
-  const descText = WIN_DOCUMENT.getElementById('campaign-desc') as HTMLParagraphElement;
-  const campaignInfoContainer = WIN_DOCUMENT.getElementById('campaign-info') as HTMLDivElement;
+  const nameText = UI_SCREENS.els['campaign-name'];
+  const descText = UI_SCREENS.els['campaign-desc'];
+  const campaignInfoContainer = UI_SCREENS.els['campaign-info'];
   if (campaign && typeof campaign === "string") {
     const currentCampaign = await campaignData[campaign]?.about?.info?.get();
 
@@ -185,9 +236,10 @@ async function renderScreen(campaignData: ContentItem, contentData: ContentItem)
 }
 
 async function doCampaignSelection(campaignsData: ContentItem) {
-  const campaignListContainer = WIN_DOCUMENT.getElementById('campaign-list-ul') as HTMLUListElement;
+  const campaignListContainer = UI_SCREENS.els['campaign-list-ul'];
   campaignListContainer.innerHTML = '';
-  const campaignSelectBtn = WIN_DOCUMENT.getElementById('campaignSelectBtn') as HTMLElement;
+
+  const campaignSelectBtn = UI_SCREENS.btns['campaignSelectBtn'];
   campaignSelectBtn.style.display = "none"
 
   for (var name in campaignsData) {
@@ -199,7 +251,7 @@ async function doCampaignSelection(campaignsData: ContentItem) {
       campaignLi.textContent = campaign?.name || name;
       campaignLi.onclick = async () => {
         await updateCampaignInfo(name, campaignsData)
-        WIN_DOCUMENT.getElementById('campaignSelectBtn')?.removeAttribute('style');
+        UI_SCREENS.btns['campaignSelectBtn'].removeAttribute('style');
       };
       campaignListContainer.appendChild(campaignLi);
     }
@@ -207,14 +259,14 @@ async function doCampaignSelection(campaignsData: ContentItem) {
 }
 
 async function doCharacterCreation(contentData: ContentItem) {
-  const raceListContainer = WIN_DOCUMENT.getElementById('races-selector') as HTMLElement;
-  const abilityScoresContainer = WIN_DOCUMENT.getElementById('ability-score-selection') as HTMLElement;
-  const classListContainer = WIN_DOCUMENT.getElementById('classes-selector') as HTMLElement;
-  const skillListContainer = WIN_DOCUMENT.getElementById('skills-selector') as HTMLElement;
-  const btnBack = WIN_DOCUMENT.getElementById('back-btn') as HTMLButtonElement;
-  const btnNext = WIN_DOCUMENT.getElementById('next-btn') as HTMLButtonElement;
-  const elStepDesc = WIN_DOCUMENT.getElementById('step-description') as HTMLElement;
-  const elSelectionInfo = WIN_DOCUMENT.getElementById('selector-info') as HTMLElement;
+  const raceListContainer = UI_SCREENS.els['races-selector'];
+  const abilityScoresContainer = UI_SCREENS.els['ability-score-selection'];
+  const classListContainer = UI_SCREENS.els['classes-selector'];
+  const skillListContainer = UI_SCREENS.els['skills-selector'];
+  const btnBack = UI_SCREENS.btns['back-btn'];
+  const btnNext = UI_SCREENS.btns['next-btn'];
+  const elStepDesc = UI_SCREENS.els['step-description'];
+  const elSelectionInfo = UI_SCREENS.els['selector-info'];
 
   elSelectionInfo.style.display = "none";
   raceListContainer.style.display = "none";
@@ -276,17 +328,17 @@ function updateAbilityScoreDisplay() {
 
   const currentTotal = calculateCurrentAbilityPoints(asEl); // call this in `onClick`
 
-  const remainingPointsDisplay = WIN_DOCUMENT.getElementById("remainingPointsDisplay") as HTMLElement
-  remainingPointsDisplay.textContent = (totalPoints - currentTotal).toString()
+  const remainingPointsDisplay = UI_SCREENS.els["remainingPointsDisplay"];
+  remainingPointsDisplay.textContent = (totalPoints - currentTotal).toString();
   Object.keys(asEl).map(ability => {
     const baseValue = parseInt(asEl[ability].value) || 0;
 
     const racialMod = GAME_STATE.player.selectedRace?.ability_score_adjustments[ability] || 0;
     const finalValue = baseValue + (racialMod);
 
-    const costDisplay = WIN_DOCUMENT.getElementById(`${ability}-cost`) as HTMLSpanElement;
-    const modDisplay = WIN_DOCUMENT.getElementById(`${ability}-mod`) as HTMLSpanElement;
-    const finalDisplay = WIN_DOCUMENT.getElementById(`${ability}-total`) as HTMLSpanElement;
+    const costDisplay = UI_SCREENS.els[`${ability}-cost`];
+    const modDisplay = UI_SCREENS.els[`${ability}-mod`];
+    const finalDisplay = UI_SCREENS.els[`${ability}-total`];
 
     costDisplay.innerText = pointBuyCost(baseValue).toString(); // Calculating costs using point buy system (using our function above), using an integer value as data input for our previously designed (and working) method/constructor
     modDisplay.innerText = Math.floor((finalValue - 10) / 2).toString(); // Setting the modifier 
@@ -305,9 +357,9 @@ function calculateCurrentAbilityPoints(el: { [key: string]: HTMLInputElement }):
 
 function updateSelectionInfo(itemData: any) {
   console.log('updateSelectionInfo', itemData);
-  const infoContainer = WIN_DOCUMENT.getElementById('selector-info') as HTMLElement; // get your container in index
-  const elName = WIN_DOCUMENT.getElementById('selected-name') as HTMLHeadingElement;
-  const elDesc = WIN_DOCUMENT.getElementById('selected-desc') as HTMLDivElement;
+  const infoContainer = UI_SCREENS.els['selector-info']; // get your container in index
+  const elName = UI_SCREENS.els['selected-name'];
+  const elDesc = UI_SCREENS.els['selected-desc'];
 
   elName.innerText = itemData.name;
   elDesc.innerText = itemData.description
@@ -393,9 +445,14 @@ async function displaySkills(skillListContainer: HTMLElement) {
 }
 
 function setActiveScreen(screenId: string) {
-  for (const id in UI_SCREENS) {
-    UI_SCREENS[id].style.display = (id === screenId) ? '' : 'none';
-  }
+  toggleDisplay('startMenu', screenId);
+  toggleDisplay('campaignSelection', screenId);
+  toggleDisplay('characterCreation', screenId);
 }
 
 initializeGame(window);
+
+function toggleDisplay(key: string, screenId: string) {
+  const el = UI_SCREENS.els[key];
+  el.style.display = (el.id === screenId) ? '' : 'none';
+}
