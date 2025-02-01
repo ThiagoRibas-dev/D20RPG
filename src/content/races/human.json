@@ -22,8 +22,7 @@
   },
   "bonuses": [
     {
-      "type": "skill",
-      "subtype": "all_skills",
+      "type": "extra_skill_points",
       "value": 1,
       "description": "+1 Skill point each level, at each level"
     }

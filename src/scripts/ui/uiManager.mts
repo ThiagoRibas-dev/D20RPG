@@ -32,24 +32,22 @@ export function toggleDisplay(key: string, screenId: string, uiScreens: UIHolder
   el.style.display = (el.id === screenId) ? '' : 'none';
 }
 
-
 export async function displayRaces(content: ContentItem, raceListContainer: HTMLElement, uiScreens: UIHolder) {
   raceListContainer.innerHTML = "";
   const races = await content.races;
   for (const raceKey in races) {
     if (raceKey !== 'type' && raceKey !== 'get') {
-      const race = races[raceKey];
-      const raceData = await race.get();
+      const race = await races[raceKey].get();
       const raceButton = uiScreens.els['races-selector'].ownerDocument.createElement('button');
-      raceButton.textContent = raceData.name;
+      raceButton.textContent = race.name;
 
       raceButton.onclick = async () => {
-        updateSelectionInfo(raceData, uiScreens);
-        GAME_STATE.player.selectedRace = raceData;
+        updateSelectionInfo(race, uiScreens);
+        GAME_STATE.player.selectedRace = race;
       };
-      if (raceData.icon) {
+      if (race.icon) {
         const imgElement = uiScreens.els['races-selector'].ownerDocument.createElement("img");
-        imgElement.src = raceData.icon
+        imgElement.src = race.icon
         raceButton.appendChild(imgElement)
       }
       raceListContainer.appendChild(raceButton)
@@ -59,7 +57,7 @@ export async function displayRaces(content: ContentItem, raceListContainer: HTML
 
 export function updateSelectionInfo(itemData: any, uiScreens: UIHolder) {
   console.log('updateSelectionInfo', itemData);
-  const infoContainer = uiScreens.els['selector-info']; // get your container in index
+  const infoContainer = uiScreens.els['selector-info'];
   const elName = uiScreens.els['selected-name'];
   const elDesc = uiScreens.els['selected-desc'];
 
@@ -71,6 +69,7 @@ export function updateSelectionInfo(itemData: any, uiScreens: UIHolder) {
 export async function displayClasses(content: ContentItem, classListContainer: HTMLElement, uiScreens: UIHolder) {
   classListContainer.innerHTML = "";
   const classes = await content.classes;
+
   for (const classKey in classes) {
     if (classKey !== 'type' && classKey !== 'get') {
       const classData = await classes[classKey].get();
@@ -78,12 +77,24 @@ export async function displayClasses(content: ContentItem, classListContainer: H
       classButton.textContent = classData.name;
 
       classButton.onclick = async () => {
+        // Add class to character with initial level 1
+        GAME_STATE.player.classes.push({
+          class: classData,
+          level: 1,
+          classSkills: classData.class_skills || [],
+          hitDice: classData.hit_dice || 6 // Default to d6 if missing
+        });
+
+        // Update total level
+        GAME_STATE.player.totalLevel = GAME_STATE.player.classes
+          .reduce((sum, cls) => sum + cls.level, 0);
+
         updateSelectionInfo(classData, uiScreens);
-        GAME_STATE.player.selectedClass = classData;
       };
+
       if (classData.icon) {
         const imgElement = uiScreens.els['classes-selector'].ownerDocument.createElement("img");
-        imgElement.src = classData.icon
+        imgElement.src = classData.icon;
         classButton.appendChild(imgElement);
       }
       classListContainer.appendChild(classButton);
@@ -91,56 +102,208 @@ export async function displayClasses(content: ContentItem, classListContainer: H
   }
 }
 
-export async function displaySkills(contendData: ContentItem, skillListContainer: HTMLElement, uiScreens: UIHolder) {
-  skillListContainer.innerHTML = ""
+export async function displaySkills(contentData: ContentItem, skillListContainer: HTMLElement, uiScreens: UIHolder) {
+  skillListContainer.innerHTML = "";
   const player = GAME_STATE.player;
-  const sRace = player.selectedRace;
-  if (sRace) {
-    console.log("Selected race was:", sRace.name)
-  } else {
-    console.error("Race not found");
+
+  if (player.classes.length === 0) {
+    console.error("No class selected");
     GAME_API.creationPrevStep();
     return;
   }
-  const sClass = player.selectedClass;
-  if (sClass) {
-    console.log("Selected class was:", sClass);
-  } else {
-    console.error("Class not found.");
-    GAME_API.creationPrevStep();
-    return;
+  // Calculate total skill points based on D&D 3.5e Rules
+  let totalSkillPoints = player.classes.reduce((sum, cls) => {
+    const classPoints = cls.class.skill_points_per_level?.base || 2;
+    return sum + classPoints;
+  }, 0);
+
+  const intModifier = calcMod(player.stats.int);
+  totalSkillPoints += intModifier;
+
+  if (GAME_STATE.player.totalLevel === 1) {
+    totalSkillPoints *= 4; // Only multiply by 4 on first level
   }
 
-  const intMod = calcMod(player.stats.int);
-  const classSkillPoints = sClass.skill_points_per_level.base;
-  const availableSkillsPoints = (classSkillPoints + intMod) * 4;
-  let currentSkillPoints = availableSkillsPoints;
-  skillListContainer.innerText = `Remaining skills points to distribute: ${currentSkillPoints}/${availableSkillsPoints}.`;
+  // Initialize remaining points only if not set: This was also creating a bug because if you change screen and come back the points would always default to 0.
+  if (player.skillPoints.remaining <= 0) {
+    player.skillPoints.remaining = totalSkillPoints;
+  }
 
-  const skillsCategory = contendData.skills;
-  const skills: string[] = Object.keys(skillsCategory);
-  for (let skillId in skills) {
-    const loadedSkill = skillsCategory[skillId].get();
+  uiScreens.els['skill-points-remaining'].innerText =
+    `Remaining skill points: ${player.skillPoints.remaining}/${totalSkillPoints}`;
 
-    const skillItem: HTMLElement = uiScreens.els['skills-selector'].ownerDocument.createElement('li');
+  const skillItems: Node[] = [];
+  const skillsCategory = contentData.skills;
+  const skillInputs: HTMLInputElement[] = [];
+  for (const skillId in skillsCategory) {
+    if (skillId === 'get' || skillId === 'type') continue;
 
-    const input: HTMLInputElement = skillItem.ownerDocument.createElement("input");
+    const loadedSkill = await skillsCategory[skillId].get();
+    const skillItem = uiScreens.els['skill-container'].ownerDocument.createElement('li');
+    const isClassSkill = player.classes.some(cls =>
+      cls.classSkills.includes(loadedSkill.name)
+    );
+    // Calculate maximum ranks based on character level
+    const maxRanks = player.totalLevel + 3;
+    const displayMax = isClassSkill ? maxRanks : Math.floor(maxRanks / 2);
+
+    const skill: number = player.skillPoints?.allocations?.get(skillId) || 0;
+
+    // Create input element
+    const input = skillItem.ownerDocument.createElement("input");
     input.type = 'number';
-    input.id = `${skillId}-skill`;
     input.min = '0';
-    input.max = `${player.level + 3}`;
-    input.value = '0';
-    input.onchange = () => {
-      console.log('Changed', skillId, loadedSkill, currentSkillPoints, input.value);
-    }
+    input.max = displayMax.toString();
+    input.step = isClassSkill ? '1' : '0.5';
+    input.pattern = isClassSkill ? '\\d*' : '\\d*\\.?5?'; // Allow .5 values
+    input.value = (isClassSkill ? skill : (skill / 2)).toString(); // Display stored value from player allocations, and correctly render "skill ranks", not "points", from allocation.
+    input.dataset.isClassSkill = isClassSkill.toString();
+    input.id = `${skillId}-skill`;
 
-    const label: HTMLLabelElement = skillItem.ownerDocument.createElement("label");
-    label.innerText = loadedSkill.name;
+    // Create labels and indicators
+    const label = skillItem.ownerDocument.createElement("label");
     label.htmlFor = input.id;
+    label.textContent = loadedSkill.name;
 
-    skillItem.appendChild(label);
+    const typeIndicator = skillItem.ownerDocument.createElement("span");
+    typeIndicator.textContent = `(${isClassSkill ? "Class Skill" : "Cross-Class"})`;
+    typeIndicator.style.color = isClassSkill ? "#4CAF50" : "#FF9800";
+
+    const maxIndicator = skillItem.ownerDocument.createElement("span");
+    maxIndicator.textContent = `Max: ${displayMax}`;
+    maxIndicator.style.marginLeft = "1rem";
+    maxIndicator.style.opacity = "0.7";
+
+    input.onchange = () => {
+      const previousPoints = player.skillPoints.allocations.get(skillId) || 0;
+      const rawValue = parseFloat(input.value) || 0;
+      const displayedRanks = Math.min(rawValue, displayMax);
+
+      // Calculate POINTS SPENT, not ranks
+      const currentPoints = isClassSkill ? displayedRanks : Math.ceil(displayedRanks * 2);
+      const pointsDiff = currentPoints - previousPoints
+      const newRemaining = player.skillPoints.remaining - pointsDiff
+
+      if (newRemaining < 0) {
+        input.value = (previousPoints === 0) ? '0' : isClassSkill ? previousPoints.toString() : (previousPoints / 2).toString();
+        return;
+      }
+
+      // Update allocations
+      player.skillPoints.allocations.set(skillId, currentPoints);
+      // Display the new value
+      input.value = isClassSkill ? displayedRanks.toFixed(0) : (currentPoints / 2).toFixed(1);
+
+      player.skillPoints.remaining = newRemaining;
+
+      uiScreens.els['skill-points-remaining'].innerText =
+        `Remaining skill points: ${newRemaining}/${totalSkillPoints}`;
+    };
+
     skillItem.appendChild(input);
-    skillListContainer.appendChild(skillItem);
+    skillItem.appendChild(typeIndicator);
+    skillItem.appendChild(label);
+    skillItem.appendChild(maxIndicator);
+    skillItems.push(skillItem);
+    skillInputs.push(input);
   }
-  console.log("Set Skills");
+
+  skillListContainer.append(...skillItems);
+}
+
+export function getUsedSkillPoints(inputCheckboxes: { input: HTMLInputElement, checkbox: HTMLInputElement }[]): number {
+  let skillPoints = 0
+  inputCheckboxes.forEach(ic => {
+    const value = parseInt(ic.input.value);
+    const isCrossClass = !!ic.checkbox.checked;
+    skillPoints += (isCrossClass ? value * 2 : value) || 0;
+  })
+  return skillPoints
+}
+
+export async function updateCampaignList(
+  campaignData: ContentItem,
+  campaignListContainer: HTMLElement,
+  winDoc: any,
+  uiScreens: UIHolder,
+  selectCampaignCallback: (campaignName: string) => void
+) {
+  campaignListContainer.innerHTML = '';
+  for (var name in campaignData) {
+    if (name !== 'type' && name !== 'get') {
+      const campaignItem = campaignData[name];
+      const campaign = await campaignItem.about.info.get();
+      const campaignLi = winDoc.createElement('li');
+      campaignLi.classList.add('campaign-item');
+      campaignLi.textContent = campaign?.name || name;
+      campaignLi.onclick = async () => {
+        updateCampaignInfo(name, campaignData, uiScreens);
+        uiScreens.btns['campaignSelectBtn'].removeAttribute('style');
+        selectCampaignCallback(name)
+      };
+      campaignListContainer.appendChild(campaignLi);
+    }
+  }
+}
+
+export function showCharacterCreationStep(
+  creationStep: number,
+  contentData: ContentItem,
+  uiScreens: UIHolder,
+) {
+  const raceListContainer = uiScreens.els['races-selector'];
+  const abilityScoresContainer = uiScreens.els['ability-score-selection'];
+  const classListContainer = uiScreens.els['classes-selector'];
+  const skillListContainer = uiScreens.els['skills-selector'];
+  const btnBack = uiScreens.btns['back-btn'];
+  const btnNext = uiScreens.btns['next-btn'];
+  const elStepDesc = uiScreens.els['step-description'];
+  const elSelectionInfo = uiScreens.els['selector-info'];
+
+  elSelectionInfo.style.display = "none";
+  raceListContainer.style.display = "none";
+  classListContainer.style.display = "none";
+  skillListContainer.style.display = "none";
+  abilityScoresContainer.style.display = "none";
+  btnBack.style.display = "none";
+  btnNext.style.display = "none";
+
+  if (creationStep === 0) {
+    raceListContainer.style.display = '';
+
+    btnNext.style.display = "";
+    elStepDesc.innerText = "Choose a Race";
+    displayRaces(contentData, raceListContainer, uiScreens);
+    return
+  }
+  if (creationStep === 1) {
+    abilityScoresContainer.style.display = "";
+
+    btnBack.style.display = "";
+    elStepDesc.innerText = "Set Abilities";
+    return;
+  }
+  if (creationStep === 2) {
+    classListContainer.style.display = "";
+
+    btnBack.style.display = "";
+    btnNext.style.display = "";
+    elStepDesc.innerText = "Choose a Class";
+    displayClasses(contentData, classListContainer, uiScreens);
+    return;
+  }
+  if (creationStep === 3) {
+    skillListContainer.style.display = "";
+
+    btnBack.style.display = "";
+    elStepDesc.innerText = "Skills";
+    displaySkills(contentData, skillListContainer, uiScreens);
+    return;
+  }
+  if (creationStep === 4) {
+    elStepDesc.innerText = "Confirm Character Data";
+    //Here we display an actual character, from game state data.
+    console.log("Character creation is finished. You may go back to the start menu to load your progress", GAME_STATE.player);
+    return;
+  }
 }

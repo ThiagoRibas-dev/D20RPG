@@ -6,14 +6,22 @@ import { UIHolder } from './engine/entities/uiHolder.mjs';
 import { Game } from './engine/game.mjs';
 import { Renderer } from './engine/renderer.mjs';
 
-const NULL_PLAYER = { level: 0, selectedClass: null, selectedRace: null, stats: {} };
+const NULL_PLAYER = {
+  classes: [],
+  totalLevel: 0,
+  selectedRace: null,
+  stats: {},
+  hitPoints: { current: 0, max: 0 },
+  skillPoints: { remaining: 0, allocations: new Map() },
+  feats: [],
+};
 
 export let GAME_API: any = { init: false };
 export const GAME_STATE: GameState = {
   currentScreen: "startMenu",
-  player: NULL_PLAYER,
+  player: {...NULL_PLAYER},
   campaign: "",
-  creationStep: 0
+  creationStep: 0,
 };
 
 async function initializeGame(winObj: any) {
@@ -34,7 +42,7 @@ async function initializeGame(winObj: any) {
     },
     selectCampaign: async () => {
       GAME_STATE.currentScreen = "characterCreation";
-      GAME_STATE.player = NULL_PLAYER;
+      GAME_STATE.player = { ...NULL_PLAYER }; // Reset to initial state
       GAME_STATE.creationStep = 0;
       renderer.renderScreen(campaignData, contentData);
     },
@@ -82,11 +90,14 @@ function getUiScreens(winObj: any): UIHolder {
       'step-description': winObj.document.getElementById('step-description') as HTMLElement,
       'selector-info': winObj.document.getElementById('selector-info') as HTMLElement,
       'remainingPointsDisplay': winObj.document.getElementById('remainingPointsDisplay') as HTMLElement,
+      'campaign-list-ul': winObj.document.getElementById('campaign-list-ul') as HTMLUListElement,
       'campaign-info': winObj.document.getElementById('campaign-info') as HTMLElement,
       'campaign-name': winObj.document.getElementById('campaign-name') as HTMLParagraphElement,
       'campaign-desc': winObj.document.getElementById('campaign-desc') as HTMLParagraphElement,
       'selected-name': winObj.document.getElementById('selected-name') as HTMLElement,
       'selected-desc': winObj.document.getElementById('selected-desc') as HTMLElement,
+      'skill-container': winObj.document.getElementById('skill-container') as HTMLUListElement,
+      'skill-points-remaining': winObj.document.getElementById('skill-points-remaining') as HTMLLabelElement,
       'str-cost': winObj.document.getElementById(`str-cost`) as HTMLSpanElement,
       'dex-cost': winObj.document.getElementById(`dex-cost`) as HTMLSpanElement,
       'con-cost': winObj.document.getElementById(`con-cost`) as HTMLSpanElement,
@@ -105,7 +116,6 @@ function getUiScreens(winObj: any): UIHolder {
       'int-mod': winObj.document.getElementById(`int-mod`) as HTMLSpanElement,
       'wis-mod': winObj.document.getElementById(`wis-mod`) as HTMLSpanElement,
       'cha-mod': winObj.document.getElementById(`cha-mod`) as HTMLSpanElement,
-      'campaign-list-ul': winObj.document.getElementById('campaign-list-ul') as HTMLUListElement
     },
     inputs: {
       "str": winObj.document.getElementById("str") as HTMLInputElement,

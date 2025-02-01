@@ -1,0 +1,275 @@
+Folder PATH listing for volume Downloads
+Volume serial number is 1537-9392
+D:.
+„   .gitignore
+„   favicon.ico
+„   LICENSE
+„   package-lock.json
+„   package.json
+„   pnpm-lock.yaml
+„   README.md
+„   run-codium.bat
+„   tree.txt
+„   tsconfig.json
+„   
+„¥„Ÿoutput
+„   „   favicon.ico
+„   „   index.html
+„   „   
+„   „¥„Ÿcampaigns
+„   „   „¤„ŸMyCampaign
+„   „       „¥„Ÿabout
+„   „       „       info.json
+„   „       „       
+„   „       „¥„Ÿcharacters
+„   „       „¥„Ÿcustom
+„   „       „¥„Ÿmaps
+„   „       „¥„Ÿnpcs
+„   „       „¥„Ÿorganizations
+„   „       „¤„Ÿquests
+„   „¥„Ÿcontent
+„   „   „¥„Ÿclasses
+„   „   „       class.json.template
+„   „   „       cleric.json
+„   „   „       
+„   „   „¥„Ÿdeities
+„   „   „¥„Ÿdomains
+„   „   „¥„Ÿfeats
+„   „   „¥„Ÿitems
+„   „   „¥„Ÿlanguages
+„   „   „¥„Ÿmagic_properties
+„   „   „¥„Ÿprefabs
+„   „   „   „¥„Ÿitems
+„   „   „   „¥„Ÿmonsters
+„   „   „   „¤„Ÿnpcs
+„   „   „¥„Ÿraces
+„   „   „       aasimar.json
+„   „   „       elf.json
+„   „   „       human.json
+„   „   „       race.json.template
+„   „   „       
+„   „   „¥„Ÿskills
+„   „   „       appraise.json
+„   „   „       autohypnosis.json
+„   „   „       balance.json
+„   „   „       bluff.json
+„   „   „       climb.json
+„   „   „       concentration.json
+„   „   „       controlshape.json
+„   „   „       craft.json
+„   „   „       decipherscript.json
+„   „   „       diplomacy.json
+„   „   „       disabledevice.json
+„   „   „       disguise.json
+„   „   „       escapeartist.json
+„   „   „       forgery.json
+„   „   „       gatherinformation.json
+„   „   „       handleanimal.json
+„   „   „       heal.json
+„   „   „       hide.json
+„   „   „       intimidate.json
+„   „   „       jump.json
+„   „   „       knowledgearcana.json
+„   „   „       knowledgearchitectureengineering.json
+„   „   „       knowledgedungeoneering.json
+„   „   „       knowledgegeography.json
+„   „   „       knowledgehistory.json
+„   „   „       knowledgelocal.json
+„   „   „       knowledgenature.json
+„   „   „       knowledgenobilityroyalty.json
+„   „   „       knowledgepsionics.json
+„   „   „       knowledgereligion.json
+„   „   „       knowledgetheplanes.json
+„   „   „       listen.json
+„   „   „       martiallore.json
+„   „   „       movesilently.json
+„   „   „       openlock.json
+„   „   „       performact.json
+„   „   „       performcomedy.json
+„   „   „       performdance.json
+„   „   „       performkeyboardinstruments.json
+„   „   „       performoratory.json
+„   „   „       performpercussioninstruments.json
+„   „   „       performsing.json
+„   „   „       performstringinstruments.json
+„   „   „       performwindinstruments.json
+„   „   „       profession.json
+„   „   „       psicraft.json
+„   „   „       ride.json
+„   „   „       search.json
+„   „   „       sensemotive.json
+„   „   „       skills.json.template
+„   „   „       sleightofhand.json
+„   „   „       speaklanguage.json
+„   „   „       spellcraft.json
+„   „   „       spot.json
+„   „   „       survival.json
+„   „   „       swim.json
+„   „   „       truespeak.json
+„   „   „       tumble.json
+„   „   „       usemagicdevice.json
+„   „   „       usepsionicdevice.json
+„   „   „       userope.json
+„   „   „       
+„   „   „¥„Ÿspells
+„   „   „¤„Ÿtemplates
+„   „¥„Ÿresources
+„   „¥„Ÿscripts
+„   „   „   index.mjs
+„   „   „   index.mjs.map
+„   „   „   
+„   „   „¥„Ÿengine
+„   „   „   „   contentLoader.mjs
+„   „   „   „   contentLoader.mjs.map
+„   „   „   „   dataManager.mjs
+„   „   „   „   dataManager.mjs.map
+„   „   „   „   game.mjs
+„   „   „   „   game.mjs.map
+„   „   „   „   renderer.mjs
+„   „   „   „   renderer.mjs.map
+„   „   „   „   utils.mjs
+„   „   „   „   utils.mjs.map
+„   „   „   „   
+„   „   „   „¤„Ÿentities
+„   „   „           contentItem.mjs
+„   „   „           contentItem.mjs.map
+„   „   „           gameState.mjs
+„   „   „           gameState.mjs.map
+„   „   „           playerCharacter.mjs
+„   „   „           playerCharacter.mjs.map
+„   „   „           uiHolder.mjs
+„   „   „           uiHolder.mjs.map
+„   „   „           
+„   „   „¤„Ÿui
+„   „           uiManager.mjs
+„   „           uiManager.mjs.map
+„   „           
+„   „¤„Ÿserver
+„           server.js
+„           server.js.map
+„           
+„¤„Ÿsrc
+    „   index.html
+    „   
+    „¥„Ÿcampaigns
+    „   „¤„ŸMyCampaign
+    „       „¥„Ÿabout
+    „       „       info.json
+    „       „       
+    „       „¥„Ÿcharacters
+    „       „¥„Ÿcustom
+    „       „¥„Ÿmaps
+    „       „¥„Ÿnpcs
+    „       „¥„Ÿorganizations
+    „       „¤„Ÿquests
+    „¥„Ÿcontent
+    „   „¥„Ÿclasses
+    „   „       class.json.template
+    „   „       cleric.json
+    „   „       
+    „   „¥„Ÿdeities
+    „   „¥„Ÿdomains
+    „   „¥„Ÿfeats
+    „   „¥„Ÿitems
+    „   „¥„Ÿlanguages
+    „   „¥„Ÿmagic_properties
+    „   „¥„Ÿprefabs
+    „   „   „¥„Ÿitems
+    „   „   „¥„Ÿmonsters
+    „   „   „¤„Ÿnpcs
+    „   „¥„Ÿraces
+    „   „       aasimar.json
+    „   „       elf.json
+    „   „       human.json
+    „   „       race.json.template
+    „   „       
+    „   „¥„Ÿskills
+    „   „       appraise.json
+    „   „       autohypnosis.json
+    „   „       balance.json
+    „   „       bluff.json
+    „   „       climb.json
+    „   „       concentration.json
+    „   „       controlshape.json
+    „   „       craft.json
+    „   „       decipherscript.json
+    „   „       diplomacy.json
+    „   „       disabledevice.json
+    „   „       disguise.json
+    „   „       escapeartist.json
+    „   „       forgery.json
+    „   „       gatherinformation.json
+    „   „       handleanimal.json
+    „   „       heal.json
+    „   „       hide.json
+    „   „       intimidate.json
+    „   „       jump.json
+    „   „       knowledgearcana.json
+    „   „       knowledgearchitectureengineering.json
+    „   „       knowledgedungeoneering.json
+    „   „       knowledgegeography.json
+    „   „       knowledgehistory.json
+    „   „       knowledgelocal.json
+    „   „       knowledgenature.json
+    „   „       knowledgenobilityroyalty.json
+    „   „       knowledgepsionics.json
+    „   „       knowledgereligion.json
+    „   „       knowledgetheplanes.json
+    „   „       listen.json
+    „   „       martiallore.json
+    „   „       movesilently.json
+    „   „       openlock.json
+    „   „       performact.json
+    „   „       performcomedy.json
+    „   „       performdance.json
+    „   „       performkeyboardinstruments.json
+    „   „       performoratory.json
+    „   „       performpercussioninstruments.json
+    „   „       performsing.json
+    „   „       performstringinstruments.json
+    „   „       performwindinstruments.json
+    „   „       profession.json
+    „   „       psicraft.json
+    „   „       ride.json
+    „   „       search.json
+    „   „       sensemotive.json
+    „   „       skills.json.template
+    „   „       sleightofhand.json
+    „   „       speaklanguage.json
+    „   „       spellcraft.json
+    „   „       spot.json
+    „   „       survival.json
+    „   „       swim.json
+    „   „       truespeak.json
+    „   „       tumble.json
+    „   „       usemagicdevice.json
+    „   „       usepsionicdevice.json
+    „   „       userope.json
+    „   „       
+    „   „¥„Ÿspells
+    „   „¤„Ÿtemplates
+    „¥„Ÿresources
+    „¥„Ÿscripts
+    „   „   index.mts
+    „   „   
+    „   „¥„Ÿdata
+    „   „¥„Ÿengine
+    „   „   „   contentLoader.mts
+    „   „   „   dataManager.mts
+    „   „   „   game.mts
+    „   „   „   renderer.mts
+    „   „   „   utils.mts
+    „   „   „   
+    „   „   „¤„Ÿentities
+    „   „           contentItem.mts
+    „   „           gameState.mts
+    „   „           playerCharacter.mts
+    „   „           uiHolder.mts
+    „   „           
+    „   „¤„Ÿui
+    „           uiManager.mts
+    „           
+    „¥„Ÿserver
+    „       server.ts
+    „       
+    „¤„Ÿtest

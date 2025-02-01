@@ -81,15 +81,18 @@
       width: 800px;
     }
 
-    #characterCreation .selector {
+    .selector {
+      max-height: 80vh;
+      overflow-y: scroll;
+      padding: 50px;
       display: flex;
       align-items: flex-start;
-      flex-wrap: wrap;
+      flex-direction: column;
       justify-content: center;
       flex: 1;
     }
 
-    #characterCreation .selector>* {
+    .selector>* {
       padding: 10px;
       width: fit-content;
       margin: 10px;
@@ -98,7 +101,13 @@
       align-items: center;
     }
 
-    #characterCreation .selector img {
+    .selector li {
+      flex-direction: row;
+      padding: 0px;
+      margin: 0px;
+    }
+
+    .selector img {
       height: 100px;
       width: 100px;
     }
@@ -143,6 +152,7 @@
       margin: 10px;
     }
 
+
     #ability-score-selection .ability-score-row>label {
       margin-right: 5px;
       width: 70px;
@@ -154,6 +164,10 @@
       margin-right: 10px;
       width: 70px;
       text-align: center;
+    }
+
+    .btnContainer {
+      flex-direction: row;
     }
 
     /* END OF CHARACTER CREATION */
@@ -171,11 +185,11 @@
   <div id="startMenu">
     <h1>Eversummer Days</h1>
     <br>
-    <button onclick="gameApi.newGameClick()">New Game</button>
+    <button aria-label="New Game" onclick="gameApi.newGameClick()">New Game</button>
     <br>
-    <button onclick="gameApi.continueGameClick()">Continue</button>
+    <button aria-label="Continue" onclick="gameApi.continueGameClick()">Continue</button>
     <br>
-    <button onclick="gameApi.exitGameClick()">Exit</button>
+    <button aria-label="Exit" onclick="gameApi.exitGameClick()">Exit</button>
   </div>
   <div id="characterCreation" style="display:none;">
     <!-- CHARACTER CREATION -->
@@ -251,10 +265,16 @@
       <button id="take-roll-btn" onclick="gameApi.saveAbilities()">Take Roll</button>
     </div>
   </div>
-  <ul class="selector" id="skills-selector" style="display: none;">
-  </ul>
-  <button style="display: none" id="back-btn" onclick="gameApi.creationPrevStep()">Back</button>
-  <button style="display: none" id="next-btn" onclick="gameApi.creationNextStep()">Next</button>
+  <div class="selector" id="skills-selector" style="display: none;">
+    Spend your Skill Points.<br>
+    <label id="skill-points-remaining"></label><br>
+    <ul id="skill-container">
+    </ul>
+  </div>
+  <div class="btnContainer">
+    <button style="display: none" id="back-btn" onclick="gameApi.creationPrevStep()">Back</button>
+    <button style="display: none" id="next-btn" onclick="gameApi.creationNextStep()">Next</button>
+  </div>
   <!-- END OF CHARACTER CREATION -->
   </div>
   <div id="campaignSelection" style="display:none;">

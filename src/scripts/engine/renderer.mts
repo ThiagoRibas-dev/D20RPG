@@ -1,9 +1,8 @@
 // src/scripts/engine/renderer.mts
-import { updateAbilityScoreDisplay } from "../engine/dataManager.mjs";
 import { ContentItem } from "../engine/entities/contentItem.mjs";
 import { UIHolder } from "../engine/entities/uiHolder.mjs";
 import { GAME_STATE } from "../index.mjs";
-import { displayClasses, displayRaces, displaySkills, setActiveScreen, updateCampaignInfo } from "../ui/uiManager.mjs";
+import { setActiveScreen, showCharacterCreationStep, updateCampaignInfo, updateCampaignList } from "../ui/uiManager.mjs";
 
 export class Renderer {
     private uiScreens: UIHolder;
@@ -66,10 +65,14 @@ export class Renderer {
         setActiveScreen(GAME_STATE.currentScreen, this.uiScreens);
         if (GAME_STATE.currentScreen === 'campaignSelection') {
             updateCampaignInfo(null, campaignData, this.uiScreens)
-            this.doCampaignSelection(campaignData);
+            updateCampaignList(campaignData, this.uiScreens.els['campaign-list-ul'], this.winDoc, this.uiScreens, (campaignName: string) => {
+                GAME_STATE.campaign = campaignName;
+                this.uiScreens.btns['campaignSelectBtn'].removeAttribute('style');
+                console.log('Campaign selected', GAME_STATE.campaign)
+            });
         }
         if (GAME_STATE.currentScreen === 'characterCreation') {
-            this.doCharacterCreation(contentData);
+            showCharacterCreationStep(GAME_STATE.creationStep, contentData, this.uiScreens)
         }
         console.log("Current Game State:", GAME_STATE.currentScreen);
         if (GAME_STATE.currentScreen === 'gameContainer') {
@@ -78,86 +81,4 @@ export class Renderer {
         }
         return true;
     }
-    public async doCampaignSelection(campaignData: ContentItem) {
-        const campaignListContainer = this.uiScreens.els['campaign-list-ul'];
-        campaignListContainer.innerHTML = '';
-
-        const campaignSelectBtn = this.uiScreens.btns['campaignSelectBtn'];
-        campaignSelectBtn.style.display = "none"
-
-        for (var name in campaignData) {
-            if (name !== 'type' && name !== 'get') {
-                const campaignItem = campaignData[name];
-                const campaign = await campaignItem.about.info.get();
-                const campaignLi = this.winDoc.createElement('li');
-                campaignLi.classList.add('campaign-item');
-                campaignLi.textContent = campaign?.name || name;
-                campaignLi.onclick = async () => {
-                    updateCampaignInfo(name, campaignData, this.uiScreens);
-                    this.uiScreens.btns['campaignSelectBtn'].removeAttribute('style');
-                };
-                campaignListContainer.appendChild(campaignLi);
-            }
-        }
-    }
-
-    public doCharacterCreation(contentData: ContentItem) {
-        const raceListContainer = this.uiScreens.els['races-selector'];
-        const abilityScoresContainer = this.uiScreens.els['ability-score-selection'];
-        const classListContainer = this.uiScreens.els['classes-selector'];
-        const skillListContainer = this.uiScreens.els['skills-selector'];
-        const btnBack = this.uiScreens.btns['back-btn'];
-        const btnNext = this.uiScreens.btns['next-btn'];
-        const elStepDesc = this.uiScreens.els['step-description'];
-        const elSelectionInfo = this.uiScreens.els['selector-info'];
-
-        elSelectionInfo.style.display = "none";
-        raceListContainer.style.display = "none";
-        classListContainer.style.display = "none";
-        skillListContainer.style.display = "none";
-        abilityScoresContainer.style.display = "none"
-
-        btnBack.style.display = "none";
-        btnNext.style.display = "none";
-        if (GAME_STATE.creationStep === 0) {
-            raceListContainer.style.display = '';
-
-            btnNext.style.display = "";
-            elStepDesc.innerText = "Choose a Race";
-            displayRaces(contentData, raceListContainer, this.uiScreens);
-            return
-        }
-        if (GAME_STATE.creationStep === 1) {
-            abilityScoresContainer.style.display = "";
-
-            btnBack.style.display = "";
-            elStepDesc.innerText = "Set Abilities";
-            updateAbilityScoreDisplay(this.uiScreens);
-            return;
-        }
-        if (GAME_STATE.creationStep === 2) {
-            classListContainer.style.display = "";
-
-            btnBack.style.display = "";
-            btnNext.style.display = "";
-            elStepDesc.innerText = "Choose a Class";
-            displayClasses(contentData, classListContainer, this.uiScreens);
-            return;
-        }
-        if (GAME_STATE.creationStep === 3) {
-            skillListContainer.style.display = "";
-
-            btnBack.style.display = "";
-            elStepDesc.innerText = "Skills";
-            displaySkills(contentData, skillListContainer, this.uiScreens);
-            return;
-        }
-        if (GAME_STATE.creationStep === 4) {
-            elStepDesc.innerText = "Confirm Character Data";
-            //Here we display an actual character, from game state data.
-            console.log("Character creation is finished. You may go back to the start menu to load your progress", GAME_STATE.player);
-            return;
-        }
-    }
-
 }

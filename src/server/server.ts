@@ -3,7 +3,7 @@ import * as http from 'http';
 import { extname, join } from 'path';
 
 const PORT = 3000;
-const basePath = process.env.OUT_PATH === 'output' ? './output' :  '.'; // Adjust paths accordingly
+const basePath = process.env.OUT_PATH === 'output' ? './output' : '.'; // Adjust paths accordingly
 
 // Implement and configure basic http server using our index.ts with all data already available at the top
 export function getServer() {
@@ -16,19 +16,21 @@ export function getServer() {
                 return;
             }
 
+            const path = requestUrl.endsWith('mts') ? '.' : basePath;//for debuging with the .mts source files on the browser since we generate the file maps anyway
+
             // Check file path with existing files, otherwise redirect them to `index.html`: This makes it simple to start using that HTML
             if (!requestUrl.startsWith('/')) {
                 // For every request use `/index.html` as a root: That is where your main page is.
-                const filePath = join(basePath, 'index.html');
+                const filePath = join(path, 'index.html');
                 const fileData = await promises.readFile(filePath);
                 res.writeHead(200, { 'Content-Type': 'text/html' });
                 res.end(fileData);
             }
 
             // This allows relative paths in CSS and Javascript using those files relative paths when they request those dynamically or using our new HTML to set those up. So our previously described paths like `game-d20/` can then be easily used. This is set using that path for now. It will use whatever paths the user hardcoded (or will use dynamically if implementing those) when using that html, to access assets, etc.. If creating subfolders to help organizing this logic and using placeholders as previously designed, implement their relative paths here.
-            const filePath = join(basePath, requestUrl);
+            const filePath = join(path, requestUrl);
             const fileExtension = extname(filePath);
-            const isDir = existsSync(filePath) && promises.lstat(filePath).then(res => res.isDirectory()).catch(() => false)
+            const isDir = await promises.stat(filePath).then(stats => stats.isDirectory()).catch(() => false); // Better error swallowing
             if (await isDir) {
                 // If it's a directory create the JSON for files and subdirectories:
                 const files = await readdirSync(filePath, { withFileTypes: true })

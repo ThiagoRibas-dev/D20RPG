@@ -31,7 +31,42 @@ export function saveAbilities(uiScreens: UIHolder) {
         int: parseInt(asEl.int.value, 10),
         wis: parseInt(asEl.wis.value, 10),
         cha: parseInt(asEl.cha.value, 10),
+    };
+
+    // Initialize hit points if first save
+    if (GAME_STATE.player.hitPoints.max === 0) {
+        GAME_STATE.player.hitPoints = calculateBaseHitPoints();
     }
+}
+
+export function saveSkills(uiScreens: UIHolder) {
+    const skillInputs = Array.from(
+        uiScreens.els['skill-container'].querySelectorAll('input[type="number"]')
+    ) as HTMLInputElement[];
+
+    const newAllocations = new Map<string, number>();
+    skillInputs.forEach(input => {
+        const skillId = input.id.replace('-skill', '');
+        const value = parseFloat(input.value) || 0;
+        newAllocations.set(skillId, value);
+    });
+
+    GAME_STATE.player.skillPoints.allocations = newAllocations;
+}
+
+// New helper function
+function calculateBaseHitPoints(): { current: number; max: number } {
+    let total = 0;
+    GAME_STATE.player.classes.forEach(cls => {
+        const conMod = calcMod(GAME_STATE.player.stats.con);
+        total += Math.max(1, cls.hitDice + conMod);
+    });
+    return { current: total, max: total };
+}
+
+// Update ability modifier calculation
+export function calcMod(finalValue: number): number {
+    return Math.floor((finalValue - 10) / 2);
 }
 
 export function getElAbilityScores(uiScreens: UIHolder): { [key: string]: HTMLInputElement } {
@@ -42,11 +77,7 @@ export function getElAbilityScores(uiScreens: UIHolder): { [key: string]: HTMLIn
         int: uiScreens.inputs.int,
         wis: uiScreens.inputs.wis,
         cha: uiScreens.inputs.cha,
-    }
-}
-
-export function calcMod(finalValue: any) {
-    return Math.floor((finalValue - 10) / 2);
+    };
 }
 
 export function calculateCurrentAbilityPoints(el: { [key: string]: HTMLInputElement }): number {
@@ -96,12 +127,16 @@ export function updateAbilityScoreDisplay(UI: UIHolder) {
     });
 }
 
-export async function updateSelectionInfo(itemData: any, UI: any) {
-    const infoContainer = UI.els['selector-info'];
-    const elName = UI.els['selected-name'];
-    const elDesc = UI.els['selected-desc'];
-
-    elName.innerText = itemData.name;
-    elDesc.innerText = itemData.description
-    infoContainer.style.display = "";
+/**
+ * Calculates effective skill ranks for checks/display
+ * @param skillId - ID from content/skills
+ * @returns Effective ranks (including cross-class penalties)
+ */
+export function getSkillRank(skillId: string): number {
+    const player = GAME_STATE.player;
+    const pointsSpent = player.skillPoints.allocations.get(skillId) || 0;
+    const isClassSkill = player.classes.some(cls =>
+        cls.classSkills.includes(skillId)
+    );
+    return isClassSkill ? pointsSpent : pointsSpent / 2;
 }

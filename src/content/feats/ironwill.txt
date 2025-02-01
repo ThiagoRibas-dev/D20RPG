@@ -1,0 +1,7 @@
+{
+  "name": "Iron Will",
+  "description": "You have a stronger will than normal.",
+  "type": ["General"],
+  "prerequisites": [],
+  "benefit": "You get a +2 bonus on all Will saving throws."
+}
