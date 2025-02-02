@@ -1,0 +1,33 @@
+{
+  "name": "Map Name",
+  "description": "Brief description of the map.",
+  "tiles": [  
+    // 2D array of strings, each string representing a row of tiles.
+    // Use characters to represent different tile types (ASCII art).
+    // Example: 
+    // "############", 
+    // "#........#", 
+    // "#........#", 
+    // "############" 
+  ],
+  "tileTypes": { 
+    // (Optional for MVP, but good for future expansion)
+    // Define what each character in the "tiles" array represents.
+    // Example:
+    // "#": "wall",
+    // ".": "floor",
+    // ">": "trigger" 
+  },
+  "triggers": [ 
+    // (Optional for MVP, implement when you need map transitions)
+    // Array of trigger tile definitions. 
+    // Each trigger defines a special tile that, when activated, 
+    // causes an action (e.g., map change, event trigger).
+    {
+      "symbol": ">", // Character in "tiles" array representing this trigger tile
+      "targetMap": "next_map_filename.json", // Filename of the target map JSON
+      "targetLocation": { "x": 10, "y": 5 } // Coordinates in the target map to place the player
+    }
+  ]
+  // (Optional) startingPlayerLocation: { "x": 1, "y": 1 } // Define player start position on this map, or can be hardcoded.
+}

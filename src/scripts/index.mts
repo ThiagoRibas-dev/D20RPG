@@ -5,6 +5,7 @@ import { GameState } from './engine/entities/gameState.mjs';
 import { UIHolder } from './engine/entities/uiHolder.mjs';
 import { Game } from './engine/game.mjs';
 import { Renderer } from './engine/renderer.mjs';
+import { MOVE_DIRECTIONS, PlayerPosition } from './engine/utils.mjs';
 
 const NULL_PLAYER = {
   classes: [],
@@ -14,14 +15,24 @@ const NULL_PLAYER = {
   hitPoints: { current: 0, max: 0 },
   skillPoints: { remaining: 0, allocations: new Map() },
   feats: [],
+  position: { x: 1, y: 1 },
 };
 
 export let GAME_API: any = { init: false };
 export const GAME_STATE: GameState = {
   currentScreen: "startMenu",
-  player: {...NULL_PLAYER},
+  player: NULL_PLAYER,
   campaign: "",
   creationStep: 0,
+  creationSteps: [ // Define creation steps here
+    "raceSelection",
+    "abilityScoreSelection",
+    "classSelection",
+    "skillSelection",
+    "featSelection",
+    "characterSummary"
+  ],
+  currentMapData: null,
 };
 
 async function initializeGame(winObj: any) {
@@ -29,7 +40,7 @@ async function initializeGame(winObj: any) {
   const winDoc = winObj.document;
   const uiScreens: UIHolder = getUiScreens(winObj);
   const contentLoader = new ContentLoader();
-  const renderer = new Renderer(uiScreens, winDoc);
+  const renderer = new Renderer(uiScreens, winDoc, contentLoader);
 
   const contentData = await contentLoader.getContent();
   const campaignData = await contentLoader.getCampaigns();
@@ -49,11 +60,13 @@ async function initializeGame(winObj: any) {
     creationNextStep: () => {
       console.log('Next step', GAME_STATE.creationStep);
       GAME_STATE.creationStep = GAME_STATE.creationStep + 1;
+      if (GAME_STATE.creationStep >= GAME_STATE.creationSteps.length) GAME_STATE.creationStep = GAME_STATE.creationSteps.length - 1; // Use array length
       renderer.renderScreen(campaignData, contentData);
     },
     creationPrevStep: () => {
       console.log('Prev step', GAME_STATE.creationStep);
       GAME_STATE.creationStep = GAME_STATE.creationStep - 1;
+      if (GAME_STATE.creationStep < 0) GAME_STATE.creationStep = 0;
       renderer.renderScreen(campaignData, contentData);
     },
     saveAbilities: () => {
@@ -68,9 +81,96 @@ async function initializeGame(winObj: any) {
     exitGameClick: () => {
       console.log("Exiting game.");
     },
+    movePlayer: (direction: PlayerPosition) => {
+      console.log("movePlayer called, direction:", direction);
+      const currentPlayerPosition = GAME_STATE.player.position;
+      const intendedNewPosition = { // Calculate intended new position
+        x: currentPlayerPosition.x + direction.x,
+        y: currentPlayerPosition.y + direction.y,
+      };
+
+      const mapTiles = GAME_STATE.currentMapData.tiles; // Get map tiles
+      const mapHeight = mapTiles.length;
+      const mapWidth = mapTiles[0].length;
+      const tileDefinitions = contentLoader.tileDefinitions; // Get tile definitions
+      const isValidMovement: boolean = intendedNewPosition.x >= 0
+        && intendedNewPosition.x < mapWidth
+        && intendedNewPosition.y >= 0
+        && intendedNewPosition.y < mapHeight;
+
+      if (!isValidMovement) {
+        // Do NOT update player position - boundary collision
+        console.log("Movement blocked by map boundary");
+        return;
+      }
+
+      const tileSymbolAtNewPosition = mapTiles[intendedNewPosition.y][intendedNewPosition.x];
+      const tileDef = tileDefinitions?.find(def => def.symbol === tileSymbolAtNewPosition);
+      const isBlockingTile = tileDef ? tileDef.isBlocking : false;
+
+      if (isBlockingTile) {
+        // Do NOT update player position - wall collision
+        console.log("Movement blocked by wall:", tileDef?.name || "Wall");
+        return;
+      }
+
+      // Valid move - update player position
+      GAME_STATE.player.position = intendedNewPosition;
+
+      if (tileDef && tileDef.isTrigger) {
+        console.log("Stepped on a trigger tile!");
+
+        const triggerSymbol = tileSymbolAtNewPosition;
+        const trigger = GAME_STATE.currentMapData.triggers.find(
+          (triggerDef: any) => triggerDef.symbol === triggerSymbol
+        );
+
+        if (trigger) {
+          const targetMapName = trigger.targetMap;
+          const targetLocation = trigger.targetLocation;
+
+          contentLoader.loadMap(GAME_STATE.campaign, targetMapName)
+            .then(newMapData => {
+              if (newMapData) {
+                GAME_STATE.currentMapData = newMapData;
+                GAME_STATE.player.position = targetLocation;
+                renderer.renderScreen(campaignData, contentData); // Re-render with new map
+              } else {
+                console.error("Failed to load target map:", targetMapName);
+              }
+            })
+            .catch(error => {
+              console.error("Error loading target map:", targetMapName, error);
+            });
+          return;
+        } else {
+          console.error("Trigger definition not found for symbol:", triggerSymbol);
+        }
+      }
+
+      renderer.renderScreen(campaignData, contentData); // Re-render for normal movement (or after transition)
+    },
     gameState: GAME_STATE,
   };
   GAME_API = winObj.gameApi
+
+  window.addEventListener('keydown', (event) => {
+    switch (event.key) {
+      case "ArrowUp":
+        winObj.gameApi.movePlayer(MOVE_DIRECTIONS.UP);
+        break;
+      case "ArrowDown":
+        winObj.gameApi.movePlayer(MOVE_DIRECTIONS.DOWN);
+        break;
+      case "ArrowLeft":
+        winObj.gameApi.movePlayer(MOVE_DIRECTIONS.LEFT);
+        break;
+      case "ArrowRight":
+        winObj.gameApi.movePlayer(MOVE_DIRECTIONS.RIGHT);
+        break;
+      // ... (default case - can be removed or kept for other key handling) ...
+    }
+  });
 
   renderer.renderScreen(campaignData, contentData);
   new Game().start();
@@ -116,6 +216,8 @@ function getUiScreens(winObj: any): UIHolder {
       'int-mod': winObj.document.getElementById(`int-mod`) as HTMLSpanElement,
       'wis-mod': winObj.document.getElementById(`wis-mod`) as HTMLSpanElement,
       'cha-mod': winObj.document.getElementById(`cha-mod`) as HTMLSpanElement,
+      'feats-selector': winObj.document.getElementById('feats-selector') as HTMLElement,
+      'character-summary': winObj.document.getElementById('character-summary') as HTMLElement,
     },
     inputs: {
       "str": winObj.document.getElementById("str") as HTMLInputElement,
@@ -131,6 +233,6 @@ function getUiScreens(winObj: any): UIHolder {
       'campaignSelectBtn': winObj.document.getElementById('campaignSelectBtn') as HTMLButtonElement,
     }
   };
-}
+};
 
 initializeGame(window);

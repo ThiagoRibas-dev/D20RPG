@@ -1,7 +1,10 @@
 // src/scripts/engine/uiManager.mts
-import { calcMod } from "../engine/dataManager.mjs";
+import { calcMod, getSkillRank } from "../engine/dataManager.mjs";
 import { ContentItem } from "../engine/entities/contentItem.mjs";
+import { GameState } from "../engine/entities/gameState.mjs";
+import { PlayerClass } from "../engine/entities/playerCharacter.mjs";
 import { UIHolder } from "../engine/entities/uiHolder.mjs";
+import { Renderer } from "../engine/renderer.mjs";
 import { GAME_API, GAME_STATE } from "../index.mjs";
 
 export async function updateCampaignInfo(campaign: any, campaignData: ContentItem, uiScreens: UIHolder) {
@@ -249,12 +252,16 @@ export async function updateCampaignList(
 export function showCharacterCreationStep(
   creationStep: number,
   contentData: ContentItem,
+  campaignData: ContentItem,
   uiScreens: UIHolder,
+  renderer: Renderer,
 ) {
   const raceListContainer = uiScreens.els['races-selector'];
   const abilityScoresContainer = uiScreens.els['ability-score-selection'];
   const classListContainer = uiScreens.els['classes-selector'];
   const skillListContainer = uiScreens.els['skills-selector'];
+  const featListContainer = uiScreens.els['feats-selector'];
+  const characterSummary = uiScreens.els['character-summary']; // Get summary screen element
   const btnBack = uiScreens.btns['back-btn'];
   const btnNext = uiScreens.btns['next-btn'];
   const elStepDesc = uiScreens.els['step-description'];
@@ -265,45 +272,183 @@ export function showCharacterCreationStep(
   classListContainer.style.display = "none";
   skillListContainer.style.display = "none";
   abilityScoresContainer.style.display = "none";
+  featListContainer.style.display = "none";
+  characterSummary.style.display = "none"; // Hide summary screen initially
   btnBack.style.display = "none";
   btnNext.style.display = "none";
 
-  if (creationStep === 0) {
-    raceListContainer.style.display = '';
+  const currentStepName = GAME_STATE.creationSteps[creationStep]; // Get current step name
 
-    btnNext.style.display = "";
-    elStepDesc.innerText = "Choose a Race";
-    displayRaces(contentData, raceListContainer, uiScreens);
-    return
+  switch (currentStepName) {
+    case "raceSelection":
+      raceListContainer.style.display = '';
+      btnNext.style.display = "";
+      elStepDesc.innerText = "Choose a Race";
+      displayRaces(contentData, raceListContainer, uiScreens);
+      break;
+    case "abilityScoreSelection":
+      abilityScoresContainer.style.display = "";
+      btnBack.style.display = "";
+      elStepDesc.innerText = "Set Abilities";
+      break;
+    case "classSelection":
+      classListContainer.style.display = "";
+      btnBack.style.display = "";
+      btnNext.style.display = "";
+      elStepDesc.innerText = "Choose a Class";
+      displayClasses(contentData, classListContainer, uiScreens);
+      break;
+    case "skillSelection":
+      skillListContainer.style.display = "";
+      btnBack.style.display = "";
+      btnNext.style.display = "";
+      elStepDesc.innerText = "Skills";
+      displaySkills(contentData, skillListContainer, uiScreens);
+      break;
+    case "featSelection":
+      featListContainer.style.display = "";
+      btnBack.style.display = "";
+      btnNext.style.display = "";
+      elStepDesc.innerText = "Choose Feats";
+      displayFeats(contentData, featListContainer, uiScreens);
+      break;
+    case "characterSummary": // New case for summary screen
+      characterSummary.style.display = "";
+      btnBack.style.display = "";
+      btnNext.style.display = "none"; // Hide "Next" on summary, maybe "Confirm" instead?
+      elStepDesc.innerText = "Character Summary";
+      displayCharacterSummary(contentData, campaignData, GAME_STATE, uiScreens, renderer); // Call summary display function
+      break;
+    default:
+      console.error("Unknown creation step:", currentStepName);
+      break;
   }
-  if (creationStep === 1) {
-    abilityScoresContainer.style.display = "";
+}
 
-    btnBack.style.display = "";
-    elStepDesc.innerText = "Set Abilities";
+export async function displayFeats(content: ContentItem, featListContainer: HTMLElement, uiScreens: UIHolder) {
+  featListContainer.innerHTML = "";
+  const feats = await content.feats;
+  for (const featKey in feats) {
+    if (featKey !== 'type' && featKey !== 'get') {
+      const feat = await feats[featKey].get();
+      const featButton = uiScreens.els['feats-selector'].ownerDocument.createElement('button');
+      featButton.textContent = feat.name;
+
+      featButton.onclick = async () => {
+        updateSelectionInfo(feat, uiScreens);
+        GAME_STATE.player.feats.push(feat); // Store the feat in GAME_STATE
+      };
+      if (feat.icon) { // If you decide to add icons for feats later
+        const imgElement = uiScreens.els['feats-selector'].ownerDocument.createElement("img");
+        imgElement.src = feat.icon
+        featButton.appendChild(imgElement)
+      }
+      featListContainer.appendChild(featButton)
+    }
+  }
+}
+
+export async function displayCharacterSummary(contentData: ContentItem, campaignData: ContentItem, gameState: GameState, uiScreens: UIHolder, renderer: Renderer) {
+  const player = gameState.player;
+  const summaryContainer = uiScreens.els['character-summary'];
+  summaryContainer.innerHTML = ''; // Clear previous content
+
+  if (!gameState.player.selectedRace || gameState.player.classes.length === 0) {
+    summaryContainer.textContent = "Character data is incomplete.";
     return;
   }
-  if (creationStep === 2) {
-    classListContainer.style.display = "";
 
-    btnBack.style.display = "";
-    btnNext.style.display = "";
-    elStepDesc.innerText = "Choose a Class";
-    displayClasses(contentData, classListContainer, uiScreens);
-    return;
-  }
-  if (creationStep === 3) {
-    skillListContainer.style.display = "";
+  // --- Race Section ---
+  const raceHeader = summaryContainer.ownerDocument.createElement('h3');
+  raceHeader.textContent = "Race";
+  summaryContainer.appendChild(raceHeader);
 
-    btnBack.style.display = "";
-    elStepDesc.innerText = "Skills";
-    displaySkills(contentData, skillListContainer, uiScreens);
-    return;
+  const raceName = summaryContainer.ownerDocument.createElement('p');
+  raceName.textContent = player.selectedRace?.name;
+  summaryContainer.appendChild(raceName);
+
+  // --- Class Section ---
+  const classHeader = summaryContainer.ownerDocument.createElement('h3');
+  classHeader.textContent = "Class(es)";
+  summaryContainer.appendChild(classHeader);
+
+  const classList = summaryContainer.ownerDocument.createElement('ul');
+  player.classes.forEach((classInfo: PlayerClass) => {
+    const classItem = summaryContainer.ownerDocument.createElement('li');
+    classItem.textContent = `${classInfo.class.name} Level ${classInfo.level}`;
+    classList.appendChild(classItem);
+  });
+  summaryContainer.appendChild(classList);
+
+  // --- Abilities Section ---
+  const abilitiesHeader = summaryContainer.ownerDocument.createElement('h3');
+  abilitiesHeader.textContent = "Abilities";
+  summaryContainer.appendChild(abilitiesHeader);
+
+  const abilitiesList = summaryContainer.ownerDocument.createElement('ul');
+  for (const ability in player.stats) {
+    const abilityItem = summaryContainer.ownerDocument.createElement('li');
+    const mod = calcMod(player.stats[ability]); // Assuming calcMod is imported or defined
+    abilityItem.textContent = `${ability.toUpperCase()}: ${player.stats[ability]} (Mod: ${mod})`;
+    abilitiesList.appendChild(abilityItem);
   }
-  if (creationStep === 4) {
-    elStepDesc.innerText = "Confirm Character Data";
-    //Here we display an actual character, from game state data.
-    console.log("Character creation is finished. You may go back to the start menu to load your progress", GAME_STATE.player);
-    return;
+  summaryContainer.appendChild(abilitiesList);
+
+  // --- Skills Section ---
+  const skillsHeader = summaryContainer.ownerDocument.createElement('h3');
+  skillsHeader.textContent = "Skills";
+  summaryContainer.appendChild(skillsHeader);
+
+  const skillsList = summaryContainer.ownerDocument.createElement('ul');
+  for (const [skillId, points] of player.skillPoints.allocations.entries()) {
+    const skillItem = summaryContainer.ownerDocument.createElement('li');
+    const skillName = skillId; // Assuming skillId is the skill name, adjust if needed
+    const skillRanks = getSkillRank(skillId);
+    skillItem.textContent = `${skillName}: Ranks ${skillRanks} (Points: ${points})`;
+    skillsList.appendChild(skillItem);
   }
+  summaryContainer.appendChild(skillsList);
+
+  // --- Feats Section ---
+  const featsHeader = summaryContainer.ownerDocument.createElement('h3');
+  featsHeader.textContent = "Feats";
+  summaryContainer.appendChild(featsHeader);
+
+  if (player.feats && player.feats.length > 0) {
+    const featsList = summaryContainer.ownerDocument.createElement('ul');
+    player.feats.forEach((feat: ContentItem) => {
+      const featItem = summaryContainer.ownerDocument.createElement('li');
+      featItem.textContent = feat.name;
+      featsList.appendChild(featItem);
+    });
+    summaryContainer.appendChild(featsList);
+  } else {
+    const noFeats = summaryContainer.ownerDocument.createElement('p');
+    noFeats.textContent = "No feats selected.";
+    summaryContainer.appendChild(noFeats);
+  }
+
+  // --- Hit Points Section ---
+  const hpHeader = summaryContainer.ownerDocument.createElement('h3');
+  hpHeader.textContent = "Hit Points";
+  summaryContainer.appendChild(hpHeader);
+
+  const hpDisplay = summaryContainer.ownerDocument.createElement('p');
+  hpDisplay.textContent = `Max HP: ${player.hitPoints.max}`; // Just max HP for summary
+  summaryContainer.appendChild(hpDisplay);
+
+  // --- Confirm Button (Optional for now, add later if needed) ---
+  const confirmButton = summaryContainer.ownerDocument.createElement('button');
+  confirmButton.textContent = "Confirm Character";
+  confirmButton.onclick = () => {
+    const btnBack = uiScreens.btns['back-btn'];
+    const btnNext = uiScreens.btns['next-btn'];
+    btnBack.style.display = "none";
+    btnNext.style.display = "none";
+
+    GAME_STATE.currentScreen = "gameContainer"; // Set game state to gameContainer
+    renderer.renderScreen(campaignData, contentData); // Trigger screen render, which will now load the map
+    setActiveScreen('gameContainer', uiScreens); // Make sure gameContainer screen is active (visible) - IMPORTANT
+  };
+  summaryContainer.appendChild(confirmButton);
 }

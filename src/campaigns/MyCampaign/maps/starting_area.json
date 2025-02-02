@@ -1,0 +1,28 @@
+{
+  "name": "Starting Area",
+  "description": "The initial area of the game.",
+  "tiles": [
+    "############",
+    "#........#",
+    "#........#",
+    "#.>.......#",
+    "#........#",
+    "#........#",
+    "############"
+  ],
+  "tileTypes": {
+    "#": "wall",
+    ".": "floor",
+    ">": "trigger"
+  },
+  "triggers": [
+    {
+      "symbol": ">",
+      "targetMap": "town_square.json",
+      "targetLocation": {
+        "x": 5,
+        "y": 2
+      }
+    }
+  ]
+}

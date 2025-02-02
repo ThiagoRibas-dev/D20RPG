@@ -1,0 +1,50 @@
+[
+  {
+    "symbol": "#",
+    "name": "Wall",
+    "isBlocking": true,
+    "isTrigger": false,
+    "tileColor": "brown",
+    "tileChar": "#"
+  },
+  {
+    "symbol": ".",
+    "name": "Floor",
+    "isBlocking": false,
+    "isTrigger": false,
+    "tileColor": "lightgray",
+    "tileChar": "."
+  },
+  {
+    "symbol": ">",
+    "name": "Trigger Tile",
+    "isBlocking": false,
+    "isTrigger": true,
+    "tileColor": "green",
+    "tileChar": ">"
+  },
+  {
+    "symbol": "-",
+    "name": "Road",
+    "isBlocking": false,
+    "isTrigger": false,
+    "tileColor": "darkgray",
+    "tileChar": "-"
+  },
+  {
+    "symbol": "@",
+    "name": "Player Start",
+    "isBlocking": false,
+    "isTrigger": false,
+    "tileColor": "yellow",
+    "tileChar": "@"
+  },
+  {
+    "symbol": "?",
+    "name": "Unknown",
+    "isBlocking": true,
+    "isTrigger": false,
+    "tileColor": "black",
+    "tileChar": "?"
+  }
+]
