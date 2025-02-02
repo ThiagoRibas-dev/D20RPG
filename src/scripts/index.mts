@@ -2,6 +2,7 @@
 import { ContentLoader } from './engine/contentLoader.mjs';
 import { rollAbilities, saveAbilities, updateAbilityScoreDisplay } from './engine/dataManager.mjs';
 import { GameState } from './engine/entities/gameState.mjs';
+import { MapTile } from './engine/entities/mapTile.mjs';
 import { UIHolder } from './engine/entities/uiHolder.mjs';
 import { Game } from './engine/game.mjs';
 import { Renderer } from './engine/renderer.mjs';
@@ -101,6 +102,7 @@ async function initializeGame(winObj: any) {
       if (!isValidMovement) {
         // Do NOT update player position - boundary collision
         console.log("Movement blocked by map boundary");
+        renderer.renderPlayer(); // Still render player even on blocked move, for animation/feedback if needed
         return;
       }
 
@@ -111,10 +113,12 @@ async function initializeGame(winObj: any) {
       if (isBlockingTile) {
         // Do NOT update player position - wall collision
         console.log("Movement blocked by wall:", tileDef?.name || "Wall");
+        renderer.renderPlayer(); // Still render player even on blocked move
         return;
       }
 
       // Valid move - update player position
+      const prevPlayerPosition = { ...GAME_STATE.player.position }; // Store previous position for redraw
       GAME_STATE.player.position = intendedNewPosition;
 
       if (tileDef && tileDef.isTrigger) {
@@ -122,7 +126,7 @@ async function initializeGame(winObj: any) {
 
         const triggerSymbol = tileSymbolAtNewPosition;
         const trigger = GAME_STATE.currentMapData.triggers.find(
-          (triggerDef: any) => triggerDef.symbol === triggerSymbol
+          (triggerDef: MapTile) => triggerDef.symbol === triggerSymbol
         );
 
         if (trigger) {
@@ -134,7 +138,7 @@ async function initializeGame(winObj: any) {
               if (newMapData) {
                 GAME_STATE.currentMapData = newMapData;
                 GAME_STATE.player.position = targetLocation;
-                renderer.renderScreen(campaignData, contentData); // Re-render with new map
+                renderer.renderScreen(campaignData, contentData); // Full re-render for map transition
               } else {
                 console.error("Failed to load target map:", targetMapName);
               }
@@ -142,13 +146,14 @@ async function initializeGame(winObj: any) {
             .catch(error => {
               console.error("Error loading target map:", targetMapName, error);
             });
-          return;
+          return; // Exit after map transition
         } else {
           console.error("Trigger definition not found for symbol:", triggerSymbol);
         }
       }
 
-      renderer.renderScreen(campaignData, contentData); // Re-render for normal movement (or after transition)
+      renderer.redrawTiles(prevPlayerPosition, intendedNewPosition); // Partial redraw for normal movement
+      renderer.renderPlayer(); // Re-render player on top
     },
     gameState: GAME_STATE,
   };

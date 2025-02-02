@@ -35,6 +35,7 @@ export class Renderer {
         console.log("Game area is rendered:", gameArea);
     }
 
+    // src/scripts/engine/renderer.mts
     public async renderScreen(campaignData: ContentItem, contentData: ContentItem) {
         if (!this.winDoc) {
             console.error('this.winDoc not initialized');
@@ -60,10 +61,10 @@ export class Renderer {
             const mapData: ContentItem = await this.contentLoader.loadMap(GAME_STATE.campaign, "starting_area");
             if (mapData) { // Check if mapData is not null before using it
                 console.log("Loaded Map Data:", mapData);
-                GAME_STATE.currentMapData = mapData; // Store map data in GAME_STATE <--- ADD THIS
+                GAME_STATE.currentMapData = mapData; // Store map data in GAME_STATE
 
-                // ... proceed with rendering map ... 
-                this.renderMap(mapData); // Call renderMap to draw the map!
+                this.renderMap(mapData); // Call renderMap to clear canvas only now
+                this.renderPlayer(); // Call renderPlayer to render player
             } else {
                 console.error("Failed to load map data."); // Handle null mapData
             }
@@ -129,14 +130,87 @@ export class Renderer {
         context.textBaseline = 'middle';
         context.fillText(playerChar, playerCanvasX + tileSize / 2, playerCanvasY + tileSize / 2);
     }
-    private getTileDef(tileDefinitions: MapTile[], tileSymbol: string): MapTile { // Added type annotation for tileDefinitions and return type <---
+
+    private getTileDef(tileDefinitions: MapTile[], tileSymbol: string): MapTile { // Added type annotation for tileDefinitions and return type
+
         return tileDefinitions.find(def => def.symbol === tileSymbol) || {
-            symbol: '?',         // Default symbol is '?' for unknown <---
+            symbol: '?',         // Default symbol is '?' for unknown
             name: 'Unknown',      // Added default name, isBlocking, isTrigger, tileColor too for completeness of TileDefinition
             isBlocking: true,
             isTrigger: false,
             tileColor: 'black',
-            tileChar: '?'          // Default tileChar is '?' for unknown <--- (was 'F', changed to '?')
+            tileChar: '?'          // Default tileChar is '?' for unknown
         } as MapTile; //Explicit cast to TileDefinition for type safety of the default return.
+    }
+
+    public redrawTiles(prevPosition: { x: number, y: number }, newPosition: { x: number, y: number }) { // New redrawTiles function
+
+        const mapData = GAME_STATE.currentMapData; // Get map data from GAME_STATE
+        const tileDefinitions = this.contentLoader.tileDefinitions; // Get tile definitions
+        if (!mapData || !mapData.tiles || !tileDefinitions) {
+            console.error("Cannot redraw tiles: mapData or tileDefinitions missing.");
+            return;
+        }
+
+        const gameArea: HTMLElement = this.uiScreens.els['gameContainer'];
+        const canvas: HTMLCanvasElement = gameArea.firstElementChild as HTMLCanvasElement;
+        const context = canvas.getContext('2d');
+        if (!context) {
+            console.error('Canvas 2d Context is null');
+            return;
+        }
+
+        const tileSize = 32;
+        const startX = 10;
+        const startY = 50;
+
+        const redrawTileAtPosition = (position: { x: number, y: number }) => { // Helper function to redraw a single tile
+            const tileX = startX + position.x * tileSize;
+            const tileY = startY + position.y * tileSize;
+            const tileSymbol = mapData.tiles[position.y][position.x];
+            const tileDef = this.getTileDef(tileDefinitions, tileSymbol);
+            const tileColor = tileDef.tileColor;
+            const tileChar = tileDef.tileChar;
+
+            context.clearRect(tileX, tileY, tileSize, tileSize); // Partially clear tile area
+
+            context.fillStyle = tileColor;
+            context.fillRect(tileX, tileY, tileSize, tileSize);
+
+            context.fillStyle = "white";
+            context.font = '24px monospace';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(tileChar, tileX + tileSize / 2, tileY + tileSize / 2);
+        };
+
+        redrawTileAtPosition(prevPosition);
+        redrawTileAtPosition(newPosition);
+    }
+
+    public renderPlayer() {
+        const gameArea: HTMLElement = this.uiScreens.els['gameContainer'];
+        const canvas: HTMLCanvasElement = gameArea.firstElementChild as HTMLCanvasElement;
+        const context = canvas.getContext('2d');
+        if (!context) {
+            console.error('Canvas 2d Context is null');
+            return;
+        }
+        const tileSize = 32;
+        const startX = 10;
+        const startY = 50;
+
+        const playerX = GAME_STATE.player.position.x;
+        const playerY = GAME_STATE.player.position.y;
+
+        const playerCanvasX = startX + playerX * tileSize;
+        const playerCanvasY = startY + playerY * tileSize;
+
+        const playerChar = '@';
+        context.fillStyle = "yellow";
+        context.font = '24px monospace';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillText(playerChar, playerCanvasX + tileSize / 2, playerCanvasY + tileSize / 2);
     }
 }

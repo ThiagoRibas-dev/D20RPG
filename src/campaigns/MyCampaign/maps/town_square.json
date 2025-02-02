@@ -18,7 +18,7 @@
   "triggers": [
     {
       "symbol": "<",
-      "targetMap": "starting_area.json",
+      "targetMap": "starting_area",
       "targetLocation": {
         "x": 3,
         "y": 3

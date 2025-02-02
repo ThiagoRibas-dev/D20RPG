@@ -18,7 +18,7 @@
   "triggers": [
     {
       "symbol": ">",
-      "targetMap": "town_square.json",
+      "targetMap": "town_square",
       "targetLocation": {
         "x": 5,
         "y": 2
