@@ -35,8 +35,7 @@ export class Renderer {
         console.log("Game area is rendered:", gameArea);
     }
 
-    // src/scripts/engine/renderer.mts
-    public async renderScreen(campaignData: ContentItem, contentData: ContentItem) {
+    public async renderScreen(allCampaignData: ContentItem, contentData: ContentItem) {
         if (!this.winDoc) {
             console.error('this.winDoc not initialized');
             return false;
@@ -44,32 +43,93 @@ export class Renderer {
         setActiveScreen(GAME_STATE.currentScreen, this.uiScreens);
         console.log("Current Game State:", GAME_STATE.currentScreen);
         if (GAME_STATE.currentScreen === 'campaignSelection') {
-            updateCampaignInfo(null, campaignData, this.uiScreens)
-            updateCampaignList(campaignData, this.uiScreens.els['campaign-list-ul'], this.winDoc, this.uiScreens, (campaignName: string) => {
-                GAME_STATE.campaign = campaignName;
+            const fnUpdateCampaign = (campaignName: string) => {
+                GAME_STATE.currentCampaignData = allCampaignData[campaignName];
                 this.uiScreens.btns['campaignSelectBtn'].removeAttribute('style');
-                console.log('Campaign selected', GAME_STATE.campaign)
-            });
+                console.log('Campaign selected', campaignName, GAME_STATE.currentCampaignData);
+            }
+
+            updateCampaignInfo(null, allCampaignData, this.uiScreens)
+            updateCampaignList(allCampaignData, this.uiScreens.els['campaign-list-ul'], this.winDoc, this.uiScreens, fnUpdateCampaign);
         }
         if (GAME_STATE.currentScreen === 'characterCreation') {
-            showCharacterCreationStep(GAME_STATE.creationStep, contentData, campaignData, this.uiScreens, this)
+            showCharacterCreationStep(GAME_STATE.creationStep, contentData, allCampaignData, this.uiScreens, this)
         }
         if (GAME_STATE.currentScreen === 'gameContainer') {
-            this.draw();
-            console.log("Loaded data from a valid file system path as planned for this new game step using placeholder assets. The new render step will now make it show properly by accessing dynamic or user generated json files under all previously defined data, engine implementation and file systems or calls and methods/functions")
-
-            const mapData: ContentItem = await this.contentLoader.loadMap(GAME_STATE.campaign, "starting_area");
-            if (mapData) { // Check if mapData is not null before using it
-                console.log("Loaded Map Data:", mapData);
-                GAME_STATE.currentMapData = mapData; // Store map data in GAME_STATE
-
-                this.renderMap(mapData); // Call renderMap to clear canvas only now
-                this.renderPlayer(); // Call renderPlayer to render player
-            } else {
-                console.error("Failed to load map data."); // Handle null mapData
+            const mapData: ContentItem = await GAME_STATE.currentCampaignData?.maps["starting_area"].get();
+            if (!mapData) {
+                console.error("Map not loaded.");
             }
+            console.log("Loaded Map Data:", mapData);
+            GAME_STATE.currentMapData = mapData; // Store map data in GAME_STATE
+            this.renderMapFull(mapData);
         }
         return true;
+    }
+
+    public renderMapFull(mapData: ContentItem) {
+        try {
+            console.log('Rendering', mapData);
+            this.draw();
+            this.renderMap(mapData);
+            this.renderPlayer();
+        } catch (error) {
+            console.error("Error in renderScreen loading map:", error);
+        }
+    }
+
+    private renderTile(
+        context: CanvasRenderingContext2D,
+        tileSymbol: string,
+        tileX: number,
+        tileY: number,
+        tileSize: number,
+        tileDefinitions: MapTile[]
+    ) {
+        const tileDef = this.getTileDef(tileDefinitions, tileSymbol);
+
+        let tileColor = "black"; // Default color for unknown tiles
+        let tileChar = "?";     // Default char for unknown tiles
+
+        if (tileDef) { // Check if tileDef is valid (not undefined)
+            tileColor = tileDef.tileColor; // Use color from tileDef if found
+            tileChar = tileDef.tileChar;   // Use char from tileDef if found
+        } else {
+            console.warn(`Tile definition not found for symbol: ${tileSymbol}. Using default.`); // Optional: Warn in console for missing definitions
+        }
+
+        context.fillStyle = tileColor;
+        context.fillRect(tileX, tileY, tileSize, tileSize);
+
+        context.fillStyle = "white";
+        context.font = '24px monospace';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillText(tileChar, tileX + tileSize / 2, tileY + tileSize / 2);
+    }
+
+    private renderEntity(
+        context: CanvasRenderingContext2D,
+        entity: any, // For MVP, use 'any' for entity type, refine later if needed
+        char: string,
+        color: string
+    ) {
+        const tileSize = 32;
+        const startX = 10;
+        const startY = 50;
+
+        const entityX = entity.position.x; // Get entity x from entity.position
+        const entityY = entity.position.y; // Get entity y from entity.position
+
+        const entityCanvasX = startX + entityX * tileSize;
+        const entityCanvasY = startY + entityY * tileSize;
+
+
+        context.fillStyle = color; // Use color parameter
+        context.font = '24px monospace';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillText(char, entityCanvasX + tileSize / 2, entityCanvasY + tileSize / 2); // Use char parameter
     }
 
     private renderMap(mapData: any) {
@@ -101,34 +161,12 @@ export class Renderer {
             row.split('').forEach((tileSymbol: string, colIndex: number) => {
                 const tileX = startX + colIndex * tileSize;
                 const tileY = startY + rowIndex * tileSize;
-                const tileDef = this.getTileDef(tileDefinitions, tileSymbol);
-                const tileColor = tileDef.tileColor;
-                const tileChar = tileDef.tileChar;
-
-                context.fillStyle = tileColor;
-                context.fillRect(tileX, tileY, tileSize, tileSize);
-
-                context.fillStyle = "white";
-                context.font = '24px monospace';
-                context.textAlign = 'center';
-                context.textBaseline = 'middle';
-                context.fillText(tileChar, tileX + tileSize / 2, tileY + tileSize / 2);
+                this.renderTile(context, tileSymbol, tileX, tileY, tileSize, tileDefinitions);
             });
         });
 
         // --- Render Player Character --- (No changes needed here)
-        const playerX = GAME_STATE.player.position.x;
-        const playerY = GAME_STATE.player.position.y;
-
-        const playerCanvasX = startX + playerX * tileSize;
-        const playerCanvasY = startY + playerY * tileSize;
-
-        const playerChar = '@';
-        context.fillStyle = "yellow";
-        context.font = '24px monospace';
-        context.textAlign = 'center';
-        context.textBaseline = 'middle';
-        context.fillText(playerChar, playerCanvasX + tileSize / 2, playerCanvasY + tileSize / 2);
+        this.renderEntity(context, GAME_STATE.player, '@', 'yellow');
     }
 
     private getTileDef(tileDefinitions: MapTile[], tileSymbol: string): MapTile { // Added type annotation for tileDefinitions and return type
@@ -144,7 +182,6 @@ export class Renderer {
     }
 
     public redrawTiles(prevPosition: { x: number, y: number }, newPosition: { x: number, y: number }) { // New redrawTiles function
-
         const mapData = GAME_STATE.currentMapData; // Get map data from GAME_STATE
         const tileDefinitions = this.contentLoader.tileDefinitions; // Get tile definitions
         if (!mapData || !mapData.tiles || !tileDefinitions) {
@@ -168,20 +205,7 @@ export class Renderer {
             const tileX = startX + position.x * tileSize;
             const tileY = startY + position.y * tileSize;
             const tileSymbol = mapData.tiles[position.y][position.x];
-            const tileDef = this.getTileDef(tileDefinitions, tileSymbol);
-            const tileColor = tileDef.tileColor;
-            const tileChar = tileDef.tileChar;
-
-            context.clearRect(tileX, tileY, tileSize, tileSize); // Partially clear tile area
-
-            context.fillStyle = tileColor;
-            context.fillRect(tileX, tileY, tileSize, tileSize);
-
-            context.fillStyle = "white";
-            context.font = '24px monospace';
-            context.textAlign = 'center';
-            context.textBaseline = 'middle';
-            context.fillText(tileChar, tileX + tileSize / 2, tileY + tileSize / 2);
+            this.renderTile(context, tileSymbol, tileX, tileY, tileSize, tileDefinitions);
         };
 
         redrawTileAtPosition(prevPosition);
@@ -189,6 +213,12 @@ export class Renderer {
     }
 
     public renderPlayer() {
+        const player = GAME_STATE.player;
+        if (!player) {
+            console.log("Player is not initialized");
+            return;
+        }
+
         const gameArea: HTMLElement = this.uiScreens.els['gameContainer'];
         const canvas: HTMLCanvasElement = gameArea.firstElementChild as HTMLCanvasElement;
         const context = canvas.getContext('2d');
@@ -200,8 +230,8 @@ export class Renderer {
         const startX = 10;
         const startY = 50;
 
-        const playerX = GAME_STATE.player.position.x;
-        const playerY = GAME_STATE.player.position.y;
+        const playerX = player.position.x;
+        const playerY = player.position.y;
 
         const playerCanvasX = startX + playerX * tileSize;
         const playerCanvasY = startY + playerY * tileSize;

@@ -24,7 +24,13 @@ function roll3d6(): number {
 
 export function saveAbilities(uiScreens: UIHolder) {
     const asEl = getElAbilityScores(uiScreens);
-    GAME_STATE.player.stats = {
+    const player = GAME_STATE.player;
+    if (!player) {
+        console.log("Player is not initialized");
+        return;
+    }
+
+    player.stats = {
         str: parseInt(asEl.str.value, 10),
         dex: parseInt(asEl.dex.value, 10),
         con: parseInt(asEl.con.value, 10),
@@ -34,12 +40,18 @@ export function saveAbilities(uiScreens: UIHolder) {
     };
 
     // Initialize hit points if first save
-    if (GAME_STATE.player.hitPoints.max === 0) {
-        GAME_STATE.player.hitPoints = calculateBaseHitPoints();
+    if (player.hitPoints.max === 0) {
+        player.hitPoints = calculateBaseHitPoints();
     }
 }
 
 export function saveSkills(uiScreens: UIHolder) {
+    const player = GAME_STATE.player;
+    if (!player) {
+        console.log("Player is not initialized");
+        return;
+    }
+
     const skillInputs = Array.from(
         uiScreens.els['skill-container'].querySelectorAll('input[type="number"]')
     ) as HTMLInputElement[];
@@ -51,14 +63,20 @@ export function saveSkills(uiScreens: UIHolder) {
         newAllocations.set(skillId, value);
     });
 
-    GAME_STATE.player.skillPoints.allocations = newAllocations;
+    player.skillPoints.allocations = newAllocations;
 }
 
 // New helper function
 function calculateBaseHitPoints(): { current: number; max: number } {
+    const player = GAME_STATE.player;
+    if (!player) {
+        console.log("Player is not initialized");
+        return { current: 0, max: 0 };
+    }
+
     let total = 0;
-    GAME_STATE.player.classes.forEach(cls => {
-        const conMod = calcMod(GAME_STATE.player.stats.con);
+    player.classes.forEach(cls => {
+        const conMod = calcMod(player.stats.con);
         total += Math.max(1, cls.hitDice + conMod);
     });
     return { current: total, max: total };
@@ -105,6 +123,12 @@ export function pointBuyCost(roll: number) {
 }
 
 export function updateAbilityScoreDisplay(UI: UIHolder) {
+    const player = GAME_STATE.player;
+    if (!player) {
+        console.log("Player is not initialized");
+        return;
+    }
+
     const asEl: { [key: string]: HTMLInputElement } = getElAbilityScores(UI)
     const totalPoints: number = 32;
     const remainingPointsDisplay = UI.els["remainingPointsDisplay"];
@@ -114,7 +138,7 @@ export function updateAbilityScoreDisplay(UI: UIHolder) {
     Object.keys(asEl).map(ability => {
         const baseValue = parseInt(asEl[ability].value) || 0;
 
-        const racialMod = GAME_STATE.player.selectedRace?.ability_score_adjustments[ability] || 0;
+        const racialMod = player.selectedRace?.ability_score_adjustments[ability] || 0;
         const finalValue = baseValue + (racialMod);
 
         const costDisplay = UI.els[`${ability}-cost`];
@@ -134,6 +158,11 @@ export function updateAbilityScoreDisplay(UI: UIHolder) {
  */
 export function getSkillRank(skillId: string): number {
     const player = GAME_STATE.player;
+    if (!player) {
+        console.log("Player is not initialized");
+        return 0;
+    }
+
     const pointsSpent = player.skillPoints.allocations.get(skillId) || 0;
     const isClassSkill = player.classes.some(cls =>
         cls.classSkills.includes(skillId)

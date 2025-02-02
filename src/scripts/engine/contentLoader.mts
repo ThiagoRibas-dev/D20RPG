@@ -68,10 +68,10 @@ export class ContentLoader {
                 throw new Error(`HTTP error: ${response.status}`);
             }
             const data = await response.json();
-            return data as MapTile[]; // Cast to TileDefinition[]
+            return data as MapTile[];
         } catch (error) {
             console.error("Error loading tile definitions:", error);
-            return []; // Or throw error, depending on how critical tile definitions are for game to start
+            throw error;
         }
     }
 
@@ -102,13 +102,5 @@ export class ContentLoader {
             console.error("Could not fetch data: ", e);
         }
         return this.campaignData;
-    }
-    public async loadMap(campaignName: string, mapName: string): Promise<ContentItem> {
-        const mapPath = `./campaigns/${campaignName}/maps/${mapName}.json`;
-        const mapItem = this.createContentItem(mapPath);
-        if (!mapItem.get) {
-            return await new Promise<ContentItem>(() => null);
-        }
-        return await mapItem.get(); // Reuse createContentItem and get()
     }
 }

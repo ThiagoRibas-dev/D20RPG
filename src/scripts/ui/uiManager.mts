@@ -1,10 +1,10 @@
 // src/scripts/engine/uiManager.mts
 import { calcMod, getSkillRank } from "../engine/dataManager.mjs";
 import { ContentItem } from "../engine/entities/contentItem.mjs";
-import { GameState } from "../engine/entities/gameState.mjs";
 import { PlayerClass } from "../engine/entities/playerCharacter.mjs";
 import { UIHolder } from "../engine/entities/uiHolder.mjs";
 import { Renderer } from "../engine/renderer.mjs";
+import { getRandomInt } from "../engine/utils.mjs";
 import { GAME_API, GAME_STATE } from "../index.mjs";
 
 export async function updateCampaignInfo(campaign: any, campaignData: ContentItem, uiScreens: UIHolder) {
@@ -45,8 +45,13 @@ export async function displayRaces(content: ContentItem, raceListContainer: HTML
       raceButton.textContent = race.name;
 
       raceButton.onclick = async () => {
+        const player = GAME_STATE.player;
+        if (!player) {
+          console.log("Player is not initialized");
+          return;
+        }
         updateSelectionInfo(race, uiScreens);
-        GAME_STATE.player.selectedRace = race;
+        player.selectedRace = race;
       };
       if (race.icon) {
         const imgElement = uiScreens.els['races-selector'].ownerDocument.createElement("img");
@@ -80,8 +85,13 @@ export async function displayClasses(content: ContentItem, classListContainer: H
       classButton.textContent = classData.name;
 
       classButton.onclick = async () => {
+        const player = GAME_STATE.player;
+        if (!player) {
+          console.log("Player is not initialized");
+          return;
+        }
         // Add class to character with initial level 1
-        GAME_STATE.player.classes.push({
+        player.classes.push({
           class: classData,
           level: 1,
           classSkills: classData.class_skills || [],
@@ -89,8 +99,12 @@ export async function displayClasses(content: ContentItem, classListContainer: H
         });
 
         // Update total level
-        GAME_STATE.player.totalLevel = GAME_STATE.player.classes
+        player.totalLevel = player.classes
           .reduce((sum, cls) => sum + cls.level, 0);
+
+        const lvlHp = getRandomInt(1, classData.hit_dice);
+        player.hitPoints.current += lvlHp;
+        player.hitPoints.max += lvlHp;
 
         updateSelectionInfo(classData, uiScreens);
       };
@@ -107,7 +121,12 @@ export async function displayClasses(content: ContentItem, classListContainer: H
 
 export async function displaySkills(contentData: ContentItem, skillListContainer: HTMLElement, uiScreens: UIHolder) {
   skillListContainer.innerHTML = "";
+
   const player = GAME_STATE.player;
+  if (!player) {
+    console.log("Player is not initialized");
+    return;
+  }
 
   if (player.classes.length === 0) {
     console.error("No class selected");
@@ -123,7 +142,7 @@ export async function displaySkills(contentData: ContentItem, skillListContainer
   const intModifier = calcMod(player.stats.int);
   totalSkillPoints += intModifier;
 
-  if (GAME_STATE.player.totalLevel === 1) {
+  if (player.totalLevel === 1) {
     totalSkillPoints *= 4; // Only multiply by 4 on first level
   }
 
@@ -317,7 +336,7 @@ export function showCharacterCreationStep(
       btnBack.style.display = "";
       btnNext.style.display = "none"; // Hide "Next" on summary, maybe "Confirm" instead?
       elStepDesc.innerText = "Character Summary";
-      displayCharacterSummary(contentData, campaignData, GAME_STATE, uiScreens, renderer); // Call summary display function
+      displayCharacterSummary(contentData, campaignData, uiScreens, renderer); // Call summary display function
       break;
     default:
       console.error("Unknown creation step:", currentStepName);
@@ -335,8 +354,14 @@ export async function displayFeats(content: ContentItem, featListContainer: HTML
       featButton.textContent = feat.name;
 
       featButton.onclick = async () => {
+        const player = GAME_STATE.player;
+        if (!player) {
+          console.log("Player is not initialized");
+          return;
+        }
+
         updateSelectionInfo(feat, uiScreens);
-        GAME_STATE.player.feats.push(feat); // Store the feat in GAME_STATE
+        player.feats.push(feat); // Store the feat in GAME_STATE
       };
       if (feat.icon) { // If you decide to add icons for feats later
         const imgElement = uiScreens.els['feats-selector'].ownerDocument.createElement("img");
@@ -348,12 +373,17 @@ export async function displayFeats(content: ContentItem, featListContainer: HTML
   }
 }
 
-export async function displayCharacterSummary(contentData: ContentItem, campaignData: ContentItem, gameState: GameState, uiScreens: UIHolder, renderer: Renderer) {
-  const player = gameState.player;
+export async function displayCharacterSummary(contentData: ContentItem, campaignData: ContentItem, uiScreens: UIHolder, renderer: Renderer) {
+  const player = GAME_STATE.player;
+  if (!player) {
+    console.log("Player is not initialized");
+    return;
+  }
+
   const summaryContainer = uiScreens.els['character-summary'];
   summaryContainer.innerHTML = ''; // Clear previous content
 
-  if (!gameState.player.selectedRace || gameState.player.classes.length === 0) {
+  if (!player.selectedRace || player.classes.length === 0) {
     summaryContainer.textContent = "Character data is incomplete.";
     return;
   }

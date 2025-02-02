@@ -1,6 +1,7 @@
 // src/scripts/index.mts
 import { ContentLoader } from './engine/contentLoader.mjs';
 import { rollAbilities, saveAbilities, updateAbilityScoreDisplay } from './engine/dataManager.mjs';
+import { ContentItem } from './engine/entities/contentItem.mjs';
 import { GameState } from './engine/entities/gameState.mjs';
 import { MapTile } from './engine/entities/mapTile.mjs';
 import { UIHolder } from './engine/entities/uiHolder.mjs';
@@ -8,7 +9,7 @@ import { Game } from './engine/game.mjs';
 import { Renderer } from './engine/renderer.mjs';
 import { MOVE_DIRECTIONS, PlayerPosition } from './engine/utils.mjs';
 
-const NULL_PLAYER = {
+const NULL_PLAYER = { // Keep NULL_PLAYER definition for resetting player data during new game
   classes: [],
   totalLevel: 0,
   selectedRace: null,
@@ -22,10 +23,9 @@ const NULL_PLAYER = {
 export let GAME_API: any = { init: false };
 export const GAME_STATE: GameState = {
   currentScreen: "startMenu",
-  player: NULL_PLAYER,
-  campaign: "",
+  player: null, // Modified: Initialize player to null <---
   creationStep: 0,
-  creationSteps: [ // Define creation steps here
+  creationSteps: [
     "raceSelection",
     "abilityScoreSelection",
     "classSelection",
@@ -34,6 +34,9 @@ export const GAME_STATE: GameState = {
     "characterSummary"
   ],
   currentMapData: null,
+  currentCampaignData: null,
+  monsters: [],
+  npcs: [],
 };
 
 async function initializeGame(winObj: any) {
@@ -44,31 +47,31 @@ async function initializeGame(winObj: any) {
   const renderer = new Renderer(uiScreens, winDoc, contentLoader);
 
   const contentData = await contentLoader.getContent();
-  const campaignData = await contentLoader.getCampaigns();
+  const allCampaignData = await contentLoader.getCampaigns();
 
   winObj.gameApi = {
     init: true,
     newGameClick: () => {
       GAME_STATE.currentScreen = "campaignSelection";
-      renderer.renderScreen(campaignData, contentData);
+      renderer.renderScreen(allCampaignData, contentData);
     },
     selectCampaign: async () => {
       GAME_STATE.currentScreen = "characterCreation";
-      GAME_STATE.player = { ...NULL_PLAYER }; // Reset to initial state
+      GAME_STATE.player = { ...NULL_PLAYER }; // Reset player to NULL_PLAYER
       GAME_STATE.creationStep = 0;
-      renderer.renderScreen(campaignData, contentData);
+      renderer.renderScreen(allCampaignData, contentData);
     },
     creationNextStep: () => {
       console.log('Next step', GAME_STATE.creationStep);
       GAME_STATE.creationStep = GAME_STATE.creationStep + 1;
       if (GAME_STATE.creationStep >= GAME_STATE.creationSteps.length) GAME_STATE.creationStep = GAME_STATE.creationSteps.length - 1; // Use array length
-      renderer.renderScreen(campaignData, contentData);
+      renderer.renderScreen(allCampaignData, contentData);
     },
     creationPrevStep: () => {
       console.log('Prev step', GAME_STATE.creationStep);
       GAME_STATE.creationStep = GAME_STATE.creationStep - 1;
       if (GAME_STATE.creationStep < 0) GAME_STATE.creationStep = 0;
-      renderer.renderScreen(campaignData, contentData);
+      renderer.renderScreen(allCampaignData, contentData);
     },
     saveAbilities: () => {
       saveAbilities(uiScreens);
@@ -82,79 +85,7 @@ async function initializeGame(winObj: any) {
     exitGameClick: () => {
       console.log("Exiting game.");
     },
-    movePlayer: (direction: PlayerPosition) => {
-      console.log("movePlayer called, direction:", direction);
-      const currentPlayerPosition = GAME_STATE.player.position;
-      const intendedNewPosition = { // Calculate intended new position
-        x: currentPlayerPosition.x + direction.x,
-        y: currentPlayerPosition.y + direction.y,
-      };
-
-      const mapTiles = GAME_STATE.currentMapData.tiles; // Get map tiles
-      const mapHeight = mapTiles.length;
-      const mapWidth = mapTiles[0].length;
-      const tileDefinitions = contentLoader.tileDefinitions; // Get tile definitions
-      const isValidMovement: boolean = intendedNewPosition.x >= 0
-        && intendedNewPosition.x < mapWidth
-        && intendedNewPosition.y >= 0
-        && intendedNewPosition.y < mapHeight;
-
-      if (!isValidMovement) {
-        // Do NOT update player position - boundary collision
-        console.log("Movement blocked by map boundary");
-        renderer.renderPlayer(); // Still render player even on blocked move, for animation/feedback if needed
-        return;
-      }
-
-      const tileSymbolAtNewPosition = mapTiles[intendedNewPosition.y][intendedNewPosition.x];
-      const tileDef = tileDefinitions?.find(def => def.symbol === tileSymbolAtNewPosition);
-      const isBlockingTile = tileDef ? tileDef.isBlocking : false;
-
-      if (isBlockingTile) {
-        // Do NOT update player position - wall collision
-        console.log("Movement blocked by wall:", tileDef?.name || "Wall");
-        renderer.renderPlayer(); // Still render player even on blocked move
-        return;
-      }
-
-      // Valid move - update player position
-      const prevPlayerPosition = { ...GAME_STATE.player.position }; // Store previous position for redraw
-      GAME_STATE.player.position = intendedNewPosition;
-
-      if (tileDef && tileDef.isTrigger) {
-        console.log("Stepped on a trigger tile!");
-
-        const triggerSymbol = tileSymbolAtNewPosition;
-        const trigger = GAME_STATE.currentMapData.triggers.find(
-          (triggerDef: MapTile) => triggerDef.symbol === triggerSymbol
-        );
-
-        if (trigger) {
-          const targetMapName = trigger.targetMap;
-          const targetLocation = trigger.targetLocation;
-
-          contentLoader.loadMap(GAME_STATE.campaign, targetMapName)
-            .then(newMapData => {
-              if (newMapData) {
-                GAME_STATE.currentMapData = newMapData;
-                GAME_STATE.player.position = targetLocation;
-                renderer.renderScreen(campaignData, contentData); // Full re-render for map transition
-              } else {
-                console.error("Failed to load target map:", targetMapName);
-              }
-            })
-            .catch(error => {
-              console.error("Error loading target map:", targetMapName, error);
-            });
-          return; // Exit after map transition
-        } else {
-          console.error("Trigger definition not found for symbol:", triggerSymbol);
-        }
-      }
-
-      renderer.redrawTiles(prevPlayerPosition, intendedNewPosition); // Partial redraw for normal movement
-      renderer.renderPlayer(); // Re-render player on top
-    },
+    movePlayer: getFnMovePlayer(contentLoader, renderer, allCampaignData, contentData),
     gameState: GAME_STATE,
   };
   GAME_API = winObj.gameApi
@@ -177,8 +108,86 @@ async function initializeGame(winObj: any) {
     }
   });
 
-  renderer.renderScreen(campaignData, contentData);
+  renderer.renderScreen(allCampaignData, contentData);
   new Game().start();
+}
+
+function getFnMovePlayer(contentLoader: ContentLoader, renderer: Renderer, campaignData: ContentItem, contentData: ContentItem) {
+  return async (direction: PlayerPosition) => {
+    console.log("movePlayer called, direction:", direction);
+    const player = GAME_STATE.player;
+    if (!player) {
+      console.log("Player is not initialized");
+      return;
+    }
+
+    const currentPlayerPosition = player.position;
+    const intendedNewPosition = {
+      x: currentPlayerPosition.x + direction.x,
+      y: currentPlayerPosition.y + direction.y,
+    };
+
+    const mapTiles = GAME_STATE.currentMapData.tiles; // Get map tiles
+    const mapHeight = mapTiles.length;
+    const mapWidth = mapTiles[0].length;
+    const tileDefinitions = contentLoader.tileDefinitions; // Get tile definitions
+    const isValidMovement: boolean = intendedNewPosition.x >= 0
+      && intendedNewPosition.x < mapWidth
+      && intendedNewPosition.y >= 0
+      && intendedNewPosition.y < mapHeight;
+
+    if (!isValidMovement) {
+      // Do NOT update player position - boundary collision
+      console.log("Movement blocked by map boundary");
+      renderer.renderPlayer(); // Still render player even on blocked move, for animation/feedback if needed
+      return;
+    }
+
+    const tileSymbolAtNewPosition = mapTiles[intendedNewPosition.y][intendedNewPosition.x];
+    const tileDef = tileDefinitions?.find(def => def.symbol === tileSymbolAtNewPosition);
+    const isBlockingTile = tileDef ? tileDef.isBlocking : false;
+
+    if (isBlockingTile) {
+      // Do NOT update player position - wall collision
+      console.log("Movement blocked by wall:", tileDef?.name || "Wall");
+      renderer.renderPlayer(); // Still render player even on blocked move
+      return;
+    }
+
+    // Valid move - update player position
+    const prevPlayerPosition = { ...player.position }; // Store previous position for redraw
+    player.position = intendedNewPosition;
+
+    if (tileDef && tileDef.isTrigger) {
+      console.log("Stepped on a trigger tile!");
+
+      const triggerSymbol = tileSymbolAtNewPosition;
+      const trigger = GAME_STATE.currentMapData.triggers.find(
+        (triggerDef: MapTile) => triggerDef.symbol === triggerSymbol
+      );
+
+      if (trigger) {
+        const targetMapName = trigger.targetMap;
+        const targetLocation = trigger.targetLocation;
+        console.log('Hit trigger', targetMapName, targetLocation);
+
+        const newMapData = await GAME_STATE.currentCampaignData?.maps[targetMapName].get();
+        if (!newMapData) {
+          console.error("Failed to load target map:", targetMapName);
+        }
+
+        player.position = targetLocation;
+        GAME_STATE.currentMapData = newMapData;
+        renderer.renderMapFull(newMapData);
+        return; // Exi1t after map transition
+      } else {
+        console.error("Trigger definition not found for symbol:", triggerSymbol);
+      }
+    }
+
+    renderer.redrawTiles(prevPlayerPosition, intendedNewPosition); // Partial redraw for normal movement
+    renderer.renderPlayer();
+  };
 }
 
 function getUiScreens(winObj: any): UIHolder {
