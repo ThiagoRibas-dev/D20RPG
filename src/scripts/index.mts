@@ -4,21 +4,12 @@ import { rollAbilities, saveAbilities, updateAbilityScoreDisplay } from './engin
 import { ContentItem } from './engine/entities/contentItem.mjs';
 import { GameState } from './engine/entities/gameState.mjs';
 import { MapTile } from './engine/entities/mapTile.mjs';
+import { Monster } from './engine/entities/monster.mjs';
+import { PlayerCharacter } from './engine/entities/playerCharacter.mjs';
 import { UIHolder } from './engine/entities/uiHolder.mjs';
 import { Game } from './engine/game.mjs';
 import { Renderer } from './engine/renderer.mjs';
-import { MOVE_DIRECTIONS, PlayerPosition } from './engine/utils.mjs';
-
-const NULL_PLAYER = { // Keep NULL_PLAYER definition for resetting player data during new game
-  classes: [],
-  totalLevel: 0,
-  selectedRace: null,
-  stats: {},
-  hitPoints: { current: 0, max: 0 },
-  skillPoints: { remaining: 0, allocations: new Map() },
-  feats: [],
-  position: { x: 1, y: 1 },
-};
+import { EntityPosition, MOVE_DIRECTIONS } from './engine/utils.mjs';
 
 export let GAME_API: any = { init: false };
 export const GAME_STATE: GameState = {
@@ -57,7 +48,7 @@ async function initializeGame(winObj: any) {
     },
     selectCampaign: async () => {
       GAME_STATE.currentScreen = "characterCreation";
-      GAME_STATE.player = { ...NULL_PLAYER }; // Reset player to NULL_PLAYER
+      GAME_STATE.player = new PlayerCharacter(); // Reset player to NULL_PLAYER
       GAME_STATE.creationStep = 0;
       renderer.renderScreen(allCampaignData, contentData);
     },
@@ -86,6 +77,31 @@ async function initializeGame(winObj: any) {
       console.log("Exiting game.");
     },
     movePlayer: getFnMovePlayer(contentLoader, renderer, allCampaignData, contentData),
+    spawnTestMonsters: async () => {
+      GAME_STATE.monsters = []; // Clear monsters array
+
+      const content = await contentLoader.getContent(); // Load content data
+
+      // Load Goblin Prefab and Create Monster Instance
+      const goblinPrefab = await content.prefabs.monsters["goblin_warrior"].get() as Monster;
+      if (goblinPrefab) {
+        goblinPrefab.position = { x: 8, y: 3 };
+        GAME_STATE.monsters.push(goblinPrefab);
+      } else {
+        console.error("Failed to load goblin prefab: goblin-warrior.json");
+      }
+
+      // Load Orc Prefab and Create Monster Instance
+      const orcPrefab = await content.prefabs.monsters["orc_warrior"].get() as Monster;
+      if (orcPrefab) {
+        orcPrefab.position = { x: 12, y: 6 };
+        GAME_STATE.monsters.push(orcPrefab);
+      } else {
+        console.error("Failed to load orc prefab: orc-warrior.json");
+      }
+
+      renderer.renderScreen(allCampaignData, contentData);
+    },
     gameState: GAME_STATE,
   };
   GAME_API = winObj.gameApi
@@ -113,7 +129,7 @@ async function initializeGame(winObj: any) {
 }
 
 function getFnMovePlayer(contentLoader: ContentLoader, renderer: Renderer, campaignData: ContentItem, contentData: ContentItem) {
-  return async (direction: PlayerPosition) => {
+  return async (direction: EntityPosition) => {
     console.log("movePlayer called, direction:", direction);
     const player = GAME_STATE.player;
     if (!player) {
@@ -136,6 +152,11 @@ function getFnMovePlayer(contentLoader: ContentLoader, renderer: Renderer, campa
       && intendedNewPosition.y >= 0
       && intendedNewPosition.y < mapHeight;
 
+    if (!tileDefinitions) {
+      console.error('Tile definitions not loaded');
+      return;
+    }
+
     if (!isValidMovement) {
       // Do NOT update player position - boundary collision
       console.log("Movement blocked by map boundary");
@@ -144,8 +165,8 @@ function getFnMovePlayer(contentLoader: ContentLoader, renderer: Renderer, campa
     }
 
     const tileSymbolAtNewPosition = mapTiles[intendedNewPosition.y][intendedNewPosition.x];
-    const tileDef = tileDefinitions?.find(def => def.symbol === tileSymbolAtNewPosition);
-    const isBlockingTile = tileDef ? tileDef.isBlocking : false;
+    const tileDef = tileDefinitions.find(def => def.symbol === tileSymbolAtNewPosition) || tileDefinitions[5];
+    const isBlockingTile = tileDef.isBlocking;
 
     if (isBlockingTile) {
       // Do NOT update player position - wall collision

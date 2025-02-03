@@ -26,7 +26,7 @@ function Get-DirectoryTreeString {
 }
 
 [string[]]$excludeFolderList = @( # Exclusion list
-    "*list_dirs_and_files.txt",
+    "*list_dirs_and_files*",
     "*node_modules*",
     "*.git",
     "*.vscode",
@@ -42,6 +42,7 @@ function Get-DirectoryTreeString {
     "*.md",
     "*.ico",
     "*LICENSE",
+    "*pnpm-lock.yaml",
     "*package-lock.json",
     "*.DS_Store", # macOS folder metadata file
     "*Thumbs.db"   # Windows thumbnail cache file

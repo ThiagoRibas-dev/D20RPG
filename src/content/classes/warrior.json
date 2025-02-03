@@ -1,0 +1,42 @@
+{
+  "name": "Warrior",
+  "description": "A basic warrior class (placeholder for monster racial hit dice).",
+  "hit_die": "d8",
+  "alignment_restrictions": "any",
+  "class_skills": [
+    "Climb",
+    "Intimidate",
+    "Jump",
+    "Swim"
+  ],
+  "skill_points_per_level": {
+    "base": 2,
+    "int_mod": false
+  },
+  "level_progression": [
+    {
+      "level": 1,
+      "base_attack_bonus": 1,
+      "fortitude_save": 2,
+      "reflex_save": 0,
+      "will_save": 0,
+      "special": []
+    }
+  ],
+  "spell_progression": {
+    "spell_list": null,
+    "casting_type": null,
+    "spells_per_day": {}
+  },
+  "bonus_languages": [],
+  "armor_proficiencies": [
+    "light",
+    "medium",
+    "heavy",
+    "shield"
+  ],
+  "weapon_proficiencies": [
+    "simple",
+    "martial"
+  ]
+}

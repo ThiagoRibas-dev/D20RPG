@@ -1,0 +1,37 @@
+{
+  "name": "Goblin Warrior",
+  "description": "A standard goblin warrior.",
+  "race": "goblin",
+  "class": "warrior",
+  "stats": {
+    "str": 9,
+    "dex": 15,
+    "con": 12,
+    "int": 10,
+    "wis": 9,
+    "cha": 4
+  },
+  "level": 1,
+  "armor": "leatherarmor",
+  "shield": "lightsteelshield",
+  "weapon_melee": "morningstar",
+  "weapon_ranged": "javelin",
+  "feats": [
+    "alertness"
+  ],
+  "skills": {
+    "remaining": 0,
+    "allocations": {
+      "hide": 5,
+      "move_silently": 5,
+      "ride": 4,
+      "listen": 2,
+      "spot": 2
+    }
+  },
+  "icon": "./resources/icons/monster/goblin.png",
+  "ascii_char": "g",
+  "color": "lightgreen",
+  "alignment": "neutral evil",
+  "challenge_rating": "0.3"
+}

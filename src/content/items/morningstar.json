@@ -1,0 +1,13 @@
+{
+  "name": "Morningstar",
+  "description": "A spiked mace.",
+  "type": "weapon",
+  "base_item_type": "martial_melee",
+  "cost": 8,
+  "damage": "1d8",
+  "damage_type": "piercing and bludgeoning",
+  "critical": "x2",
+  "weight": 6,
+  "size": "medium",
+  "weapon_properties": ["one-handed"]
+}

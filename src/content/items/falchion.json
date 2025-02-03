@@ -1,0 +1,13 @@
+{
+  "name": "Falchion",
+  "description": "A heavy, two-handed curved sword.",
+  "type": "weapon",
+  "base_item_type": "martial_melee",
+  "cost": 75,
+  "damage": "2d4",
+  "damage_type": "slashing",
+  "critical": "18-20/x2",
+  "weight": 8,
+  "size": "medium",
+  "weapon_properties": ["two-handed"] 
+}

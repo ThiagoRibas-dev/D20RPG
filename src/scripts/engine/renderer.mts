@@ -4,6 +4,7 @@ import { UIHolder } from "../engine/entities/uiHolder.mjs";
 import { GAME_STATE } from "../index.mjs";
 import { setActiveScreen, showCharacterCreationStep, updateCampaignInfo, updateCampaignList } from "../ui/uiManager.mjs";
 import { ContentLoader } from "./contentLoader.mjs";
+import { Entity } from "./entities/entity.mjs";
 import { MapTile } from "./entities/mapTile.mjs";
 
 export class Renderer {
@@ -86,17 +87,9 @@ export class Renderer {
         tileSize: number,
         tileDefinitions: MapTile[]
     ) {
-        const tileDef = this.getTileDef(tileDefinitions, tileSymbol);
-
-        let tileColor = "black"; // Default color for unknown tiles
-        let tileChar = "?";     // Default char for unknown tiles
-
-        if (tileDef) { // Check if tileDef is valid (not undefined)
-            tileColor = tileDef.tileColor; // Use color from tileDef if found
-            tileChar = tileDef.tileChar;   // Use char from tileDef if found
-        } else {
-            console.warn(`Tile definition not found for symbol: ${tileSymbol}. Using default.`); // Optional: Warn in console for missing definitions
-        }
+        const tileDef = tileDefinitions.find(def => def.symbol === tileSymbol) || tileDefinitions[5] as MapTile;
+        const tileColor = tileDef.tileColor; // Use color from tileDef if found
+        const tileChar = tileDef.tileChar;   // Use char from tileDef if found
 
         context.fillStyle = tileColor;
         context.fillRect(tileX, tileY, tileSize, tileSize);
@@ -110,7 +103,7 @@ export class Renderer {
 
     private renderEntity(
         context: CanvasRenderingContext2D,
-        entity: any, // For MVP, use 'any' for entity type, refine later if needed
+        entity: Entity, // For MVP, use 'any' for entity type, refine later if needed
         char: string,
         color: string
     ) {
@@ -165,20 +158,19 @@ export class Renderer {
             });
         });
 
-        // --- Render Player Character --- (No changes needed here)
-        this.renderEntity(context, GAME_STATE.player, '@', 'yellow');
-    }
+        const player = GAME_STATE.player;
+        if (!player) {
+            console.error("Player not instantiated");
+            return;
+        }
 
-    private getTileDef(tileDefinitions: MapTile[], tileSymbol: string): MapTile { // Added type annotation for tileDefinitions and return type
+        // --- Render Player Character
+        this.renderEntity(context, player, '@', 'yellow');
 
-        return tileDefinitions.find(def => def.symbol === tileSymbol) || {
-            symbol: '?',         // Default symbol is '?' for unknown
-            name: 'Unknown',      // Added default name, isBlocking, isTrigger, tileColor too for completeness of TileDefinition
-            isBlocking: true,
-            isTrigger: false,
-            tileColor: 'black',
-            tileChar: '?'          // Default tileChar is '?' for unknown
-        } as MapTile; //Explicit cast to TileDefinition for type safety of the default return.
+        // --- Render Monsters --- <--- ADD THIS BLOCK
+        GAME_STATE.monsters.forEach(monster => { // Iterate through monsters array
+            this.renderEntity(context, monster, 'M', 'red'); // Render each monster
+        });
     }
 
     public redrawTiles(prevPosition: { x: number, y: number }, newPosition: { x: number, y: number }) { // New redrawTiles function

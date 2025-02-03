@@ -63,7 +63,7 @@ export function saveSkills(uiScreens: UIHolder) {
         newAllocations.set(skillId, value);
     });
 
-    player.skillPoints.allocations = newAllocations;
+    player.skills.allocations = newAllocations;
 }
 
 // New helper function
@@ -163,7 +163,7 @@ export function getSkillRank(skillId: string): number {
         return 0;
     }
 
-    const pointsSpent = player.skillPoints.allocations.get(skillId) || 0;
+    const pointsSpent = player.skills.allocations.get(skillId) || 0;
     const isClassSkill = player.classes.some(cls =>
         cls.classSkills.includes(skillId)
     );

@@ -1,0 +1,14 @@
+{
+  "name": "Javelin",
+  "description": "A light throwing spear.",
+  "type": "weapon",
+  "base_item_type": "simple_ranged",
+  "cost": 1,
+  "damage": "1d6",
+  "damage_type": "piercing",
+  "critical": "x2",
+  "weight": 2,
+  "range": 30, // Range increment in feet
+  "size": "medium",
+  "weapon_properties": ["thrown"]
+}

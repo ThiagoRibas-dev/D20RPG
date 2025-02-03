@@ -1,0 +1,33 @@
+{
+  "name": "Orc Warrior",
+  "description": "A typical orc warrior.",
+  "race": "orc",
+  "class": "warrior",
+  "stats": {
+    "str": 21,
+    "dex": 11,
+    "con": 12,
+    "int": 6,
+    "wis": 5,
+    "cha": 4
+  },
+  "level": 1,
+  "armor": "studdedleatherarmor",
+  "weapon_melee": "falchion",
+  "weapon_ranged": "javelin",
+  "feats": [
+    "alertness"
+  ],
+  "skills": {
+    "remaining": 0,
+    "allocations": {
+      "listen": 3,
+      "spot": 3
+    }
+  },
+  "icon": "./resources/icons/monster/orc.png",
+  "ascii_char": "o",
+  "color": "darkgreen",
+  "alignment": "chaotic evil",
+  "challenge_rating": "0.5"
+}

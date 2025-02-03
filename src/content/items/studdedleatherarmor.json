@@ -1,0 +1,14 @@
+{
+    "name": "Studded Leather Armor",
+    "description": "Studded leather armor.",
+    "type": "armor",
+    "armor_type": "light",
+    "cost": 25,
+    "armor_bonus": 3,
+    "max_dex_bonus": 6,
+    "armor_check_penalty": -1,
+    "arcane_spell_failure": 10,
+    "speed_30": 30,
+    "speed_20": 20,
+    "weight": 20
+}

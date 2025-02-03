@@ -1,7 +1,7 @@
 // src/scripts/engine/uiManager.mts
 import { calcMod, getSkillRank } from "../engine/dataManager.mjs";
 import { ContentItem } from "../engine/entities/contentItem.mjs";
-import { PlayerClass } from "../engine/entities/playerCharacter.mjs";
+import { EntityClass } from "../engine/entities/entity.mjs";
 import { UIHolder } from "../engine/entities/uiHolder.mjs";
 import { Renderer } from "../engine/renderer.mjs";
 import { getRandomInt } from "../engine/utils.mjs";
@@ -81,28 +81,33 @@ export async function displayClasses(content: ContentItem, classListContainer: H
   for (const classKey in classes) {
     if (classKey !== 'type' && classKey !== 'get') {
       const classData = await classes[classKey].get();
+      if (!classData) {
+        console.error(`Class ${classKey} is not initialized.`);
+        return;
+      }
       const classButton = uiScreens.els['classes-selector'].ownerDocument.createElement('button');
       classButton.textContent = classData.name;
 
       classButton.onclick = async () => {
         const player = GAME_STATE.player;
         if (!player) {
-          console.log("Player is not initialized");
+          console.error("Player is not initialized");
           return;
         }
+
+        const hd: number = (classData.hit_die as string).includes('d') ? (classData.hit_die as string).replace('d', '') : classData.hit_die;
         // Add class to character with initial level 1
         player.classes.push({
           class: classData,
           level: 1,
           classSkills: classData.class_skills || [],
-          hitDice: classData.hit_dice || 6 // Default to d6 if missing
+          hitDice: hd || 6 // Default to d6 if missing
         });
 
         // Update total level
-        player.totalLevel = player.classes
-          .reduce((sum, cls) => sum + cls.level, 0);
+        player.totalLevel = player.classes.reduce((sum, cls) => sum + cls.level, 0);
 
-        const lvlHp = getRandomInt(1, classData.hit_dice);
+        const lvlHp = getRandomInt(1, hd);
         player.hitPoints.current += lvlHp;
         player.hitPoints.max += lvlHp;
 
@@ -147,12 +152,12 @@ export async function displaySkills(contentData: ContentItem, skillListContainer
   }
 
   // Initialize remaining points only if not set: This was also creating a bug because if you change screen and come back the points would always default to 0.
-  if (player.skillPoints.remaining <= 0) {
-    player.skillPoints.remaining = totalSkillPoints;
+  if (player.skills.remaining <= 0) {
+    player.skills.remaining = totalSkillPoints;
   }
 
   uiScreens.els['skill-points-remaining'].innerText =
-    `Remaining skill points: ${player.skillPoints.remaining}/${totalSkillPoints}`;
+    `Remaining skill points: ${player.skills.remaining}/${totalSkillPoints}`;
 
   const skillItems: Node[] = [];
   const skillsCategory = contentData.skills;
@@ -169,7 +174,7 @@ export async function displaySkills(contentData: ContentItem, skillListContainer
     const maxRanks = player.totalLevel + 3;
     const displayMax = isClassSkill ? maxRanks : Math.floor(maxRanks / 2);
 
-    const skill: number = player.skillPoints?.allocations?.get(skillId) || 0;
+    const skill: number = player.skills?.allocations?.get(skillId) || 0;
 
     // Create input element
     const input = skillItem.ownerDocument.createElement("input");
@@ -197,14 +202,14 @@ export async function displaySkills(contentData: ContentItem, skillListContainer
     maxIndicator.style.opacity = "0.7";
 
     input.onchange = () => {
-      const previousPoints = player.skillPoints.allocations.get(skillId) || 0;
+      const previousPoints = player.skills.allocations.get(skillId) || 0;
       const rawValue = parseFloat(input.value) || 0;
       const displayedRanks = Math.min(rawValue, displayMax);
 
       // Calculate POINTS SPENT, not ranks
       const currentPoints = isClassSkill ? displayedRanks : Math.ceil(displayedRanks * 2);
       const pointsDiff = currentPoints - previousPoints
-      const newRemaining = player.skillPoints.remaining - pointsDiff
+      const newRemaining = player.skills.remaining - pointsDiff
 
       if (newRemaining < 0) {
         input.value = (previousPoints === 0) ? '0' : isClassSkill ? previousPoints.toString() : (previousPoints / 2).toString();
@@ -212,11 +217,11 @@ export async function displaySkills(contentData: ContentItem, skillListContainer
       }
 
       // Update allocations
-      player.skillPoints.allocations.set(skillId, currentPoints);
+      player.skills.allocations.set(skillId, currentPoints);
       // Display the new value
       input.value = isClassSkill ? displayedRanks.toFixed(0) : (currentPoints / 2).toFixed(1);
 
-      player.skillPoints.remaining = newRemaining;
+      player.skills.remaining = newRemaining;
 
       uiScreens.els['skill-points-remaining'].innerText =
         `Remaining skill points: ${newRemaining}/${totalSkillPoints}`;
@@ -403,7 +408,7 @@ export async function displayCharacterSummary(contentData: ContentItem, campaign
   summaryContainer.appendChild(classHeader);
 
   const classList = summaryContainer.ownerDocument.createElement('ul');
-  player.classes.forEach((classInfo: PlayerClass) => {
+  player.classes.forEach((classInfo: EntityClass) => {
     const classItem = summaryContainer.ownerDocument.createElement('li');
     classItem.textContent = `${classInfo.class.name} Level ${classInfo.level}`;
     classList.appendChild(classItem);
@@ -418,7 +423,7 @@ export async function displayCharacterSummary(contentData: ContentItem, campaign
   const abilitiesList = summaryContainer.ownerDocument.createElement('ul');
   for (const ability in player.stats) {
     const abilityItem = summaryContainer.ownerDocument.createElement('li');
-    const mod = calcMod(player.stats[ability]); // Assuming calcMod is imported or defined
+    const mod = calcMod(player.stats[ability]);
     abilityItem.textContent = `${ability.toUpperCase()}: ${player.stats[ability]} (Mod: ${mod})`;
     abilitiesList.appendChild(abilityItem);
   }
@@ -430,7 +435,7 @@ export async function displayCharacterSummary(contentData: ContentItem, campaign
   summaryContainer.appendChild(skillsHeader);
 
   const skillsList = summaryContainer.ownerDocument.createElement('ul');
-  for (const [skillId, points] of player.skillPoints.allocations.entries()) {
+  for (const [skillId, points] of player.skills.allocations.entries()) {
     const skillItem = summaryContainer.ownerDocument.createElement('li');
     const skillName = skillId; // Assuming skillId is the skill name, adjust if needed
     const skillRanks = getSkillRank(skillId);
