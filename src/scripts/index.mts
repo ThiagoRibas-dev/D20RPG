@@ -83,7 +83,7 @@ async function initializeGame(winObj: any) {
       const content = await contentLoader.getContent(); // Load content data
 
       // Load Goblin Prefab and Create Monster Instance
-      const goblinPrefab = await content.prefabs.monsters["goblin_warrior"].get() as Monster;
+      const goblinPrefab = { ... await content.prefabs.monsters["goblin_warrior"].get() } as Monster;
       if (goblinPrefab) {
         goblinPrefab.position = { x: 8, y: 3 };
         GAME_STATE.monsters.push(goblinPrefab);
@@ -92,7 +92,7 @@ async function initializeGame(winObj: any) {
       }
 
       // Load Orc Prefab and Create Monster Instance
-      const orcPrefab = await content.prefabs.monsters["orc_warrior"].get() as Monster;
+      const orcPrefab = { ...await content.prefabs.monsters["orc_warrior"].get() } as Monster;
       if (orcPrefab) {
         orcPrefab.position = { x: 12, y: 6 };
         GAME_STATE.monsters.push(orcPrefab);

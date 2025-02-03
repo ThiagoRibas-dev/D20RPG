@@ -6,6 +6,7 @@ import { setActiveScreen, showCharacterCreationStep, updateCampaignInfo, updateC
 import { ContentLoader } from "./contentLoader.mjs";
 import { Entity } from "./entities/entity.mjs";
 import { MapTile } from "./entities/mapTile.mjs";
+import { Monster } from "./entities/monster.mjs";
 
 export class Renderer {
     private uiScreens: UIHolder;
@@ -74,6 +75,7 @@ export class Renderer {
             this.draw();
             this.renderMap(mapData);
             this.renderPlayer();
+            this.renderMonsters();
         } catch (error) {
             console.error("Error in renderScreen loading map:", error);
         }
@@ -157,20 +159,6 @@ export class Renderer {
                 this.renderTile(context, tileSymbol, tileX, tileY, tileSize, tileDefinitions);
             });
         });
-
-        const player = GAME_STATE.player;
-        if (!player) {
-            console.error("Player not instantiated");
-            return;
-        }
-
-        // --- Render Player Character
-        this.renderEntity(context, player, '@', 'yellow');
-
-        // --- Render Monsters --- <--- ADD THIS BLOCK
-        GAME_STATE.monsters.forEach(monster => { // Iterate through monsters array
-            this.renderEntity(context, monster, 'M', 'red'); // Render each monster
-        });
     }
 
     public redrawTiles(prevPosition: { x: number, y: number }, newPosition: { x: number, y: number }) { // New redrawTiles function
@@ -218,21 +206,23 @@ export class Renderer {
             console.error('Canvas 2d Context is null');
             return;
         }
-        const tileSize = 32;
-        const startX = 10;
-        const startY = 50;
 
-        const playerX = player.position.x;
-        const playerY = player.position.y;
+        // --- Render Player Character
+        this.renderEntity(context, player, '@', 'yellow');;
+    }
 
-        const playerCanvasX = startX + playerX * tileSize;
-        const playerCanvasY = startY + playerY * tileSize;
+    public renderMonsters() {
+        const gameArea: HTMLElement = this.uiScreens.els['gameContainer'];
+        const canvas: HTMLCanvasElement = gameArea.firstElementChild as HTMLCanvasElement;
+        const context = canvas.getContext('2d');
+        if (!context) {
+            console.error('Canvas 2d Context is null');
+            return;
+        }
 
-        const playerChar = '@';
-        context.fillStyle = "yellow";
-        context.font = '24px monospace';
-        context.textAlign = 'center';
-        context.textBaseline = 'middle';
-        context.fillText(playerChar, playerCanvasX + tileSize / 2, playerCanvasY + tileSize / 2);
+        // --- Render Monsters ---
+        GAME_STATE.monsters.forEach((monster: Monster) => { // Iterate through monsters array
+            this.renderEntity(context, monster, monster.ascii_char, monster.color); // Render each monster
+        });
     }
 }
