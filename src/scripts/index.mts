@@ -28,6 +28,7 @@ export const GAME_STATE: GameState = {
   currentCampaignData: null,
   monsters: [],
   npcs: [],
+  currentTurn: "",
 };
 
 async function initializeGame(winObj: any) {
@@ -86,6 +87,7 @@ async function initializeGame(winObj: any) {
       const goblinPrefab = { ... await content.prefabs.monsters["goblin_warrior"].get() } as Monster;
       if (goblinPrefab) {
         goblinPrefab.position = { x: 8, y: 3 };
+        updateTileDefs(contentLoader, goblinPrefab);
         GAME_STATE.monsters.push(goblinPrefab);
       } else {
         console.error("Failed to load goblin prefab: goblin-warrior.json");
@@ -95,12 +97,46 @@ async function initializeGame(winObj: any) {
       const orcPrefab = { ...await content.prefabs.monsters["orc_warrior"].get() } as Monster;
       if (orcPrefab) {
         orcPrefab.position = { x: 12, y: 6 };
+        updateTileDefs(contentLoader, orcPrefab);
         GAME_STATE.monsters.push(orcPrefab);
       } else {
         console.error("Failed to load orc prefab: orc-warrior.json");
       }
 
       renderer.renderScreen(allCampaignData, contentData);
+    },
+    startCombat: async () => { // New startCombat function <---
+      const player = GAME_STATE.player;
+      const monsters = GAME_STATE.monsters;
+      const combatLogTextElement = uiScreens.els['combatLogText']; // Get combat log UI element
+
+      if (!player) {
+        console.error("No player character in GAME_STATE. Cannot start combat.");
+        return;
+      }
+      if (monsters.length === 0) {
+        console.warn("No monsters in GAME_STATE. Spawning test monsters for combat testing.");
+        await winObj.gameApi.spawnTestMonsters(); // Spawn test monsters if none exist
+        return; // Return after spawning monsters, call startCombat again to begin combat
+      }
+
+      combatLogTextElement.innerText = "--- Combat Starts! ---\n\n"; // Clear combat log and add header
+
+      // --- Roll Initiative ---
+      const playerInitiative = player.rollInitiative();
+      combatLogTextElement.innerText += `Player (${player.selectedRace?.name} ${player.classes[0].class.name}) Initiative: ${playerInitiative}\n`; // Log player initiative
+
+      monsters.forEach(monster => { // Iterate through monsters
+        const monsterInitiative = monster.rollInitiative();
+        combatLogTextElement.innerText += `${monster.prefabId} Initiative: ${monsterInitiative}\n`; // Log monster initiative
+        // Optionally, store initiative roll in monster object itself if needed later
+      });
+
+      // --- Determine Turn Order (Player always goes first for MVP) ---
+      GAME_STATE.currentTurn = "player"; // Player turn always first for MVP <---
+      combatLogTextElement.innerText += `\n--- Player Turn ---\n`; // Indicate player turn in combat log
+
+      renderer.renderScreen(allCampaignData, contentData); // Re-render to update UI (turn indicator, etc. - to be added later)
     },
     gameState: GAME_STATE,
   };
@@ -126,6 +162,20 @@ async function initializeGame(winObj: any) {
 
   renderer.renderScreen(allCampaignData, contentData);
   new Game().start();
+}
+
+function updateTileDefs(contentLoader: ContentLoader, monsterPrefab: Monster) {
+  const tileDefExists: boolean = !!contentLoader.tileDefinitions?.find(def => def.symbol === monsterPrefab.ascii_char);
+  if (!tileDefExists) {
+    contentLoader.tileDefinitions?.push({
+      "symbol": monsterPrefab.ascii_char,
+      "name": monsterPrefab.prefabId,
+      "isBlocking": true,
+      "isTrigger": false,
+      "tileColor": monsterPrefab.color,
+      "tileChar": monsterPrefab.ascii_char,
+    });
+  }
 }
 
 function getFnMovePlayer(contentLoader: ContentLoader, renderer: Renderer, campaignData: ContentItem, contentData: ContentItem) {
@@ -200,7 +250,7 @@ function getFnMovePlayer(contentLoader: ContentLoader, renderer: Renderer, campa
         player.position = targetLocation;
         GAME_STATE.currentMapData = newMapData;
         renderer.renderMapFull(newMapData);
-        return; // Exi1t after map transition
+        return; // Exit after map transition
       } else {
         console.error("Trigger definition not found for symbol:", triggerSymbol);
       }
@@ -253,6 +303,11 @@ function getUiScreens(winObj: any): UIHolder {
       'cha-mod': winObj.document.getElementById(`cha-mod`) as HTMLSpanElement,
       'feats-selector': winObj.document.getElementById('feats-selector') as HTMLElement,
       'character-summary': winObj.document.getElementById('character-summary') as HTMLElement,
+      'combatLogPanel': winObj.document.getElementById('combatLogPanel') as HTMLElement,
+      'characterStatusPanel': winObj.document.getElementById('characterStatusPanel') as HTMLElement,
+      'actionButtonsPanel': winObj.document.getElementById('actionButtonsPanel') as HTMLElement,
+      'combatLogText': winObj.document.getElementById('combatLogText') as HTMLElement,
+      'characterStatusDetails': winObj.document.getElementById('characterStatusDetails') as HTMLElement,
     },
     inputs: {
       "str": winObj.document.getElementById("str") as HTMLInputElement,
@@ -266,8 +321,11 @@ function getUiScreens(winObj: any): UIHolder {
       'back-btn': winObj.document.getElementById('back-btn') as HTMLButtonElement,
       'next-btn': winObj.document.getElementById('next-btn') as HTMLButtonElement,
       'campaignSelectBtn': winObj.document.getElementById('campaignSelectBtn') as HTMLButtonElement,
+      'spawnTestMonsters': winObj.document.getElementById('actionButtonsPanel').querySelector('button:nth-child(1)') as HTMLButtonElement,
+      'attackButton': winObj.document.getElementById('actionButtonsPanel').querySelector('button:nth-child(2)') as HTMLButtonElement,
+      'endTurnButton': winObj.document.getElementById('actionButtonsPanel').querySelector('button:nth-child(3)') as HTMLButtonElement,
     }
-  };
+  } as UIHolder;
 };
 
 initializeGame(window);

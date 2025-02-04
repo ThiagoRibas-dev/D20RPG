@@ -5,173 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My RPG Project</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      background-color: #222;
-      color: white;
-      text-align: center;
-    }
-
-    h1 {
-      margin-bottom: 20px;
-    }
-
-    button {
-      background-color: #555;
-      color: white;
-      padding: 10px 20px;
-      margin: 10px;
-      border: none;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #777;
-    }
-
-    #gameContainer {
-      width: 800px;
-      height: 600px;
-      border: 2px solid white;
-      display: block;
-    }
-
-    #campaigns-container {
-      margin-top: 20px;
-      max-width: 400px;
-      text-align: left;
-      display: flex;
-    }
-
-    #campaign-list-ul {
-      flex: 1;
-    }
-
-    #campaign-info {
-      margin-left: 20px;
-      flex: 1;
-    }
-
-    .campaign-item {
-      padding: 5px;
-      border-bottom: 1px solid #444;
-      cursor: pointer;
-    }
-
-    .campaign-item:hover {
-      background-color: #333;
-    }
-
-    /* CHARACTER CREATION */
-    #characterCreation h2 {
-      margin-top: 20px;
-    }
-
-    #characterCreation #character-selector {
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      width: 800px;
-    }
-
-    .selector {
-      max-height: 80vh;
-      overflow-y: scroll;
-      padding: 50px;
-      display: flex;
-      align-items: flex-start;
-      flex-direction: column;
-      justify-content: center;
-      flex: 1;
-    }
-
-    .selector>* {
-      padding: 10px;
-      width: fit-content;
-      margin: 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .selector li {
-      flex-direction: row;
-      padding: 0px;
-      margin: 0px;
-    }
-
-    .selector img {
-      height: 100px;
-      width: 100px;
-    }
-
-    #characterCreation button {
-      display: inline-block;
-    }
-
-    #characterCreation #selector-info {
-      flex: 1;
-      margin-left: 10px;
-      max-width: 300px;
-      text-align: left;
-    }
-
-    #characterCreation #selector-info p {
-      margin-top: 10px;
-      text-align: justify;
-    }
-
-    #ability-score-selection {
-      margin-top: 20px;
-    }
-
-    #ability-score-selection #ability-scores-container {
-      display: flex;
-      flex-direction: column;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    #ability-score-selection .ability-score-container {
-      width: fit-content;
-      flex-direction: column;
-      margin: 10px;
-    }
-
-    #ability-score-selection .ability-score-row {
-      width: fit-content;
-      display: flex;
-      align-items: center;
-      margin: 10px;
-    }
-
-
-    #ability-score-selection .ability-score-row>label {
-      margin-right: 5px;
-      width: 70px;
-      text-align: center;
-    }
-
-    #ability-score-selection .ability-score-row>span {
-      margin-left: 10px;
-      margin-right: 10px;
-      width: 70px;
-      text-align: center;
-    }
-
-    .btnContainer {
-      flex-direction: row;
-    }
-
-    /* END OF CHARACTER CREATION */
-  </style>
+  <link rel="stylesheet" href="./styles/index.css">
   <script type="module" defer src="./scripts/index.mjs"></script>
   <script>
     function doInit() {
@@ -295,7 +129,30 @@
     </div>
   </div>
   <div id="gameContainer" style="display:none;">
-    <canvas id="gameCanvas"></canvas>
+    <!-- GAME UI CONTAINER -->
+    <div id="gameArea">
+      <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+      </div>
+      <div id="uiPanels">
+        <div id="combatLogPanel" class="uiPanel">
+          <h3>Combat Log</h3>
+          <div id="combatLogText">Combat events will appear here.</div>
+        </div>
+        <div id="characterStatusPanel" class="uiPanel">
+          <h3>Character Status</h3>
+          <div id="characterStatusDetails">Character info will appear here.</div>
+        </div>
+        <div id="actionButtonsPanel" class="uiPanel">
+          <h3>Actions</h3>
+          <!-- Buttons for combat actions will go here -->
+          <button onclick="gameApi.spawnTestMonsters()">Spawn Test Monsters</button>
+          <button onclick="gameApi.attackClick()">Attack</button>
+          <button onclick="gameApi.endTurnClick()">End Turn</button>
+          <button onclick="gameApi.startCombat()">Start Combat</button>
+        </div>
+      </div>
+    </div>
   </div>
 </body>
 

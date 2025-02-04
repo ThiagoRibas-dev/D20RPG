@@ -36,6 +36,7 @@
 |   |   |   |-- entities
 |   |   |-- ui
 |   |-- server
+|   |-- styles
 |   |-- test
 
 ```
@@ -3248,7 +3249,7 @@ export class ContentItem {
 File: D:\Projects\Game Dev\my-rpg-project\src\scripts\engine\entities\entity.mts
 // src/scripts/engine/entities/entity.mts
 import { calcMod } from "../dataManager.mjs";
-import { EntityPosition } from "../utils.mjs";
+import { EntityPosition, rollD20 } from "../utils.mjs";
 import { ContentItem } from "./contentItem.mjs";
 
 export type EntityClass = {
@@ -3340,7 +3341,15 @@ export class Entity {
     }
 
     rollInitiative(): number {
-        return calcMod(this.stats.dex);
+        const d20Roll = rollD20(); // Roll d20 using utility function
+        const dexMod = calcMod(this.stats.dex); // Get DEX modifier
+
+        let initiativeRoll = d20Roll + dexMod; // Calculate total initiative
+        // Add other initiative bonuses here later (feats, items, etc.)
+
+        console.log(`${this.constructor.name} rolling initiative: d20 roll = ${d20Roll}, DEX mod = ${dexMod}, Total = ${initiativeRoll}`); // Optional log
+
+        return initiativeRoll;
     }
 }
 ```
@@ -3362,6 +3371,7 @@ export type GameState = {
     monsters: Monster[];
     npcs: Entity[];
     currentCampaignData: ContentItem | null;
+    currentTurn: string;
 };
 ```
 
@@ -3419,15 +3429,63 @@ export class PlayerCharacter extends Entity {
 
 ```
 File: D:\Projects\Game Dev\my-rpg-project\src\scripts\engine\entities\uiHolder.mts
+// src/scripts/engine/entities/uiHolder.mts
 export type UIHolder = {
     els: {
         [key: string]: HTMLElement;
+        'startMenu': HTMLElement;
+        'characterCreation': HTMLElement;
+        'campaignSelection': HTMLElement;
+        'gameContainer': HTMLElement;
+        'races-selector': HTMLElement;
+        'classes-selector': HTMLElement;
+        'skills-selector': HTMLElement;
+        'feats-selector': HTMLElement;
+        'character-summary': HTMLElement;
+        'ability-score-selection': HTMLElement;
+        'step-description': HTMLElement;
+        'selector-info': HTMLElement;
+        'remainingPointsDisplay': HTMLElement;
+        'campaign-list-ul': HTMLUListElement;
+        'campaign-info': HTMLElement;
+        'campaign-name': HTMLParagraphElement;
+        'campaign-desc': HTMLParagraphElement;
+        'selected-name': HTMLElement;
+        'selected-desc': HTMLElement;
+        'skill-container': HTMLUListElement;
+        'skill-points-remaining': HTMLLabelElement;
+        'str-cost': HTMLSpanElement;
+        'dex-cost': HTMLSpanElement;
+        'con-cost': HTMLSpanElement;
+        'int-cost': HTMLSpanElement;
+        'wis-cost': HTMLSpanElement;
+        'cha-cost': HTMLSpanElement;
+        'str-total': HTMLSpanElement;
+        'dex-total': HTMLSpanElement;
+        'con-total': HTMLSpanElement;
+        'int-total': HTMLSpanElement;
+        'wis-total': HTMLSpanElement;
+        'cha-total': HTMLSpanElement;
+        'str-mod': HTMLSpanElement;
+        'dex-mod': HTMLSpanElement;
+        'con-mod': HTMLSpanElement;
+        'int-mod': HTMLSpanElement;
+        'wis-mod': HTMLSpanElement;
+        'cha-mod': HTMLSpanElement;
+        'combatLogPanel': HTMLElement;
+        'characterStatusPanel': HTMLElement;
+        'actionButtonsPanel': HTMLElement;
+        'combatLogText': HTMLElement;
+        'characterStatusDetails': HTMLElement;
     };
     inputs: {
         [key: string]: HTMLInputElement;
     };
     btns: {
         [key: string]: HTMLButtonElement;
+        'back-btn': HTMLButtonElement;
+        'next-btn': HTMLButtonElement;
+        'campaignSelectBtn': HTMLButtonElement;
     };
 }
 ```
@@ -3777,7 +3835,7 @@ export class Renderer {
             return;
         }
 
-        const canvas: HTMLCanvasElement = gameArea.firstElementChild as HTMLCanvasElement;
+        const canvas: HTMLCanvasElement = getCanvas(gameArea);
         canvas.setAttribute("width", gameArea.clientWidth.toString());
         canvas.setAttribute("height", gameArea.clientHeight.toString());
 
@@ -3852,7 +3910,7 @@ export class Renderer {
 
     private renderEntity(
         context: CanvasRenderingContext2D,
-        entity: Entity, // For MVP, use 'any' for entity type, refine later if needed
+        entity: Entity,
         char: string,
         color: string
     ) {
@@ -3881,7 +3939,7 @@ export class Renderer {
         }
 
         const gameArea: HTMLElement = this.uiScreens.els['gameContainer'];
-        const canvas: HTMLCanvasElement = gameArea.firstElementChild as HTMLCanvasElement;
+        const canvas: HTMLCanvasElement = getCanvas(gameArea);
         const context = canvas.getContext('2d');
         if (!context) {
             console.error('Canvas 2d Context is null');
@@ -3908,7 +3966,7 @@ export class Renderer {
         });
     }
 
-    public redrawTiles(prevPosition: { x: number, y: number }, newPosition: { x: number, y: number }) { // New redrawTiles function
+    public redrawTiles(prevPosition: { x: number, y: number }, newPosition: { x: number, y: number }) {
         const mapData = GAME_STATE.currentMapData; // Get map data from GAME_STATE
         const tileDefinitions = this.contentLoader.tileDefinitions; // Get tile definitions
         if (!mapData || !mapData.tiles || !tileDefinitions) {
@@ -3917,7 +3975,7 @@ export class Renderer {
         }
 
         const gameArea: HTMLElement = this.uiScreens.els['gameContainer'];
-        const canvas: HTMLCanvasElement = gameArea.firstElementChild as HTMLCanvasElement;
+        const canvas: HTMLCanvasElement = getCanvas(gameArea);
         const context = canvas.getContext('2d');
         if (!context) {
             console.error('Canvas 2d Context is null');
@@ -3947,7 +4005,7 @@ export class Renderer {
         }
 
         const gameArea: HTMLElement = this.uiScreens.els['gameContainer'];
-        const canvas: HTMLCanvasElement = gameArea.firstElementChild as HTMLCanvasElement;
+        const canvas: HTMLCanvasElement = getCanvas(gameArea);
         const context = canvas.getContext('2d');
         if (!context) {
             console.error('Canvas 2d Context is null');
@@ -3960,7 +4018,7 @@ export class Renderer {
 
     public renderMonsters() {
         const gameArea: HTMLElement = this.uiScreens.els['gameContainer'];
-        const canvas: HTMLCanvasElement = gameArea.firstElementChild as HTMLCanvasElement;
+        const canvas: HTMLCanvasElement = getCanvas(gameArea);
         const context = canvas.getContext('2d');
         if (!context) {
             console.error('Canvas 2d Context is null');
@@ -3972,6 +4030,10 @@ export class Renderer {
             this.renderEntity(context, monster, monster.ascii_char, monster.color); // Render each monster
         });
     }
+}
+
+function getCanvas(gameArea: HTMLElement): HTMLCanvasElement {
+    return gameArea.getElementsByTagName('canvas')[0] as HTMLCanvasElement;
 }
 ```
 
@@ -4531,6 +4593,7 @@ export const GAME_STATE: GameState = {
   currentCampaignData: null,
   monsters: [],
   npcs: [],
+  currentTurn: "",
 };
 
 async function initializeGame(winObj: any) {
@@ -4589,6 +4652,7 @@ async function initializeGame(winObj: any) {
       const goblinPrefab = { ... await content.prefabs.monsters["goblin_warrior"].get() } as Monster;
       if (goblinPrefab) {
         goblinPrefab.position = { x: 8, y: 3 };
+        updateTileDefs(contentLoader, goblinPrefab);
         GAME_STATE.monsters.push(goblinPrefab);
       } else {
         console.error("Failed to load goblin prefab: goblin-warrior.json");
@@ -4598,12 +4662,46 @@ async function initializeGame(winObj: any) {
       const orcPrefab = { ...await content.prefabs.monsters["orc_warrior"].get() } as Monster;
       if (orcPrefab) {
         orcPrefab.position = { x: 12, y: 6 };
+        updateTileDefs(contentLoader, orcPrefab);
         GAME_STATE.monsters.push(orcPrefab);
       } else {
         console.error("Failed to load orc prefab: orc-warrior.json");
       }
 
       renderer.renderScreen(allCampaignData, contentData);
+    },
+    startCombat: async () => { // New startCombat function <---
+      const player = GAME_STATE.player;
+      const monsters = GAME_STATE.monsters;
+      const combatLogTextElement = uiScreens.els['combatLogText']; // Get combat log UI element
+
+      if (!player) {
+        console.error("No player character in GAME_STATE. Cannot start combat.");
+        return;
+      }
+      if (monsters.length === 0) {
+        console.warn("No monsters in GAME_STATE. Spawning test monsters for combat testing.");
+        await winObj.gameApi.spawnTestMonsters(); // Spawn test monsters if none exist
+        return; // Return after spawning monsters, call startCombat again to begin combat
+      }
+
+      combatLogTextElement.innerText = "--- Combat Starts! ---\n\n"; // Clear combat log and add header
+
+      // --- Roll Initiative ---
+      const playerInitiative = player.rollInitiative();
+      combatLogTextElement.innerText += `Player (${player.selectedRace?.name} ${player.classes[0].class.name}) Initiative: ${playerInitiative}\n`; // Log player initiative
+
+      monsters.forEach(monster => { // Iterate through monsters
+        const monsterInitiative = monster.rollInitiative();
+        combatLogTextElement.innerText += `${monster.prefabId} Initiative: ${monsterInitiative}\n`; // Log monster initiative
+        // Optionally, store initiative roll in monster object itself if needed later
+      });
+
+      // --- Determine Turn Order (Player always goes first for MVP) ---
+      GAME_STATE.currentTurn = "player"; // Player turn always first for MVP <---
+      combatLogTextElement.innerText += `\n--- Player Turn ---\n`; // Indicate player turn in combat log
+
+      renderer.renderScreen(allCampaignData, contentData); // Re-render to update UI (turn indicator, etc. - to be added later)
     },
     gameState: GAME_STATE,
   };
@@ -4629,6 +4727,20 @@ async function initializeGame(winObj: any) {
 
   renderer.renderScreen(allCampaignData, contentData);
   new Game().start();
+}
+
+function updateTileDefs(contentLoader: ContentLoader, monsterPrefab: Monster) {
+  const tileDefExists: boolean = !!contentLoader.tileDefinitions?.find(def => def.symbol === monsterPrefab.ascii_char);
+  if (tileDefExists) {
+    contentLoader.tileDefinitions?.push({
+      "symbol": monsterPrefab.ascii_char,
+      "name": monsterPrefab.prefabId,
+      "isBlocking": true,
+      "isTrigger": false,
+      "tileColor": monsterPrefab.color,
+      "tileChar": monsterPrefab.ascii_char,
+    });
+  }
 }
 
 function getFnMovePlayer(contentLoader: ContentLoader, renderer: Renderer, campaignData: ContentItem, contentData: ContentItem) {
@@ -4703,7 +4815,7 @@ function getFnMovePlayer(contentLoader: ContentLoader, renderer: Renderer, campa
         player.position = targetLocation;
         GAME_STATE.currentMapData = newMapData;
         renderer.renderMapFull(newMapData);
-        return; // Exi1t after map transition
+        return; // Exit after map transition
       } else {
         console.error("Trigger definition not found for symbol:", triggerSymbol);
       }
@@ -4756,6 +4868,11 @@ function getUiScreens(winObj: any): UIHolder {
       'cha-mod': winObj.document.getElementById(`cha-mod`) as HTMLSpanElement,
       'feats-selector': winObj.document.getElementById('feats-selector') as HTMLElement,
       'character-summary': winObj.document.getElementById('character-summary') as HTMLElement,
+      'combatLogPanel': winObj.document.getElementById('combatLogPanel') as HTMLElement,
+      'characterStatusPanel': winObj.document.getElementById('characterStatusPanel') as HTMLElement,
+      'actionButtonsPanel': winObj.document.getElementById('actionButtonsPanel') as HTMLElement,
+      'combatLogText': winObj.document.getElementById('combatLogText') as HTMLElement,
+      'characterStatusDetails': winObj.document.getElementById('characterStatusDetails') as HTMLElement,
     },
     inputs: {
       "str": winObj.document.getElementById("str") as HTMLInputElement,
@@ -4769,8 +4886,11 @@ function getUiScreens(winObj: any): UIHolder {
       'back-btn': winObj.document.getElementById('back-btn') as HTMLButtonElement,
       'next-btn': winObj.document.getElementById('next-btn') as HTMLButtonElement,
       'campaignSelectBtn': winObj.document.getElementById('campaignSelectBtn') as HTMLButtonElement,
+      'spawnTestMonsters': winObj.document.getElementById('actionButtonsPanel').querySelector('button:nth-child(1)') as HTMLButtonElement,
+      'attackButton': winObj.document.getElementById('actionButtonsPanel').querySelector('button:nth-child(2)') as HTMLButtonElement,
+      'endTurnButton': winObj.document.getElementById('actionButtonsPanel').querySelector('button:nth-child(3)') as HTMLButtonElement,
     }
-  };
+  } as UIHolder;
 };
 
 initializeGame(window);
@@ -4860,6 +4980,273 @@ getServer().listen(PORT, () => {
 ```
 
 ```
+File: D:\Projects\Game Dev\my-rpg-project\src\styles\index.css
+body {
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    /* Changed to column for overall layout */
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #222;
+    color: white;
+    text-align: center;
+  }
+
+  h1 {
+    margin-bottom: 20px;
+  }
+
+  button {
+    background-color: #555;
+    color: white;
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #777;
+  }
+
+  /* Game Container and UI Panels Layout */
+  #gameArea {
+    display: flex;
+    /* Use flexbox for horizontal layout */
+    flex-direction: row;
+    /* Arrange canvas and panels horizontally */
+    width: 1200px;
+    /* Adjust as needed for your desired overall game area width */
+    max-width: 95vw;
+  }
+
+  #gameContainer {
+    width: 800px;
+    /* Reduced canvas width */
+    height: 600px;
+    /* Reduced canvas height */
+    border: 2px solid white;
+    display: block;
+    margin-right: 10px;
+    /* Add right margin to separate canvas from UI panels */
+  }
+
+  #gameCanvas {
+    width: 100%;
+    /* Canvas takes full width of gameContainer */
+    height: 100%;
+    /* Canvas takes full height of gameContainer */
+    display: block;
+    /* Ensure canvas is a block element */
+  }
+
+
+  /* UI Panels (Example Styling - Customize as desired) */
+  #uiPanels {
+    display: flex;
+    flex-direction: column;
+    /* Arrange UI panels vertically to the right of canvas */
+    width: 400px;
+    /* Example width for UI panels */
+    padding: 15px;
+    /* Increased padding */
+    box-sizing: border-box;
+  }
+
+  .uiPanel {
+    background-color: #333;
+    border: 1px solid #555;
+    padding: 15px;
+    /* Increased padding */
+    margin-bottom: 15px;
+    /* Increased margin-bottom */
+    text-align: left;
+    flex: 1;
+    /* Distribute space evenly among panels */
+    overflow-y: auto;
+    /* Add scroll if content overflows */
+    border-radius: 5px;
+    /* Rounded corners for panels */
+  }
+
+  .uiPanel h3 {
+    margin-top: 0;
+  }
+
+
+  /* Existing Styles (Start Menu, Character Creation, Campaign Selection) - No changes needed */
+
+  /* Campaign Selection Screen Styles */
+  #campaigns-container {
+    margin-top: 20px;
+    max-width: 400px;
+    text-align: left;
+    display: flex;
+  }
+
+  #campaign-list-ul {
+    flex: 1;
+  }
+
+  #campaign-info {
+    margin-left: 20px;
+    flex: 1;
+  }
+
+  .campaign-item {
+    padding: 10px 20px;
+    border: 1px solid #666;
+    border-radius: 5px;
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+    text-align: center;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  .campaign-item:hover {
+    background-color: #555;
+  }
+
+  /* CHARACTER CREATION Styles */
+  #characterCreation h2 {
+    margin-top: 20px;
+  }
+
+  #characterCreation #character-selector {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    width: 800px;
+  }
+
+  .selector {
+    max-height: 80vh;
+    overflow-y: scroll;
+    padding: 20px;
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: flex-start;
+    flex: 1;
+    border: 1px solid #444;
+    margin-right: 10px;
+  }
+
+  .selector button {
+    width: 100%;
+    text-align: left;
+    padding: 10px;
+    margin-bottom: 5px;
+    display: block;
+  }
+
+  .selector>* {
+    padding: 10px;
+    width: fit-content;
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .selector li {
+    flex-direction: row;
+    padding: 0px;
+    margin: 0px;
+  }
+
+  .selector img {
+    height: 100px;
+    width: 100px;
+  }
+
+  #characterCreation button {
+    display: inline-block;
+  }
+
+  #characterCreation #selector-info {
+    flex: 1;
+    margin-left: 10px;
+    max-width: 300px;
+    text-align: left;
+  }
+
+  #characterCreation #selector-info p {
+    margin-top: 10px;
+    text-align: justify;
+  }
+
+  #ability-score-selection {
+    margin-top: 20px;
+    width: 600px;
+    max-width: 80vw;
+    text-align: left;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #ability-score-selection #ability-scores-container {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+  }
+
+  #ability-score-selection .ability-score-container {
+    width: fit-content;
+    flex-direction: column;
+    margin: 10px;
+  }
+
+  #ability-score-selection .ability-score-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+
+
+  #ability-score-selection .ability-score-row>label {
+    margin-right: 5px;
+    width: 70px;
+    text-align: center;
+  }
+
+  #ability-score-selection .ability-score-row>span {
+    margin-left: 10px;
+    margin-right: 10px;
+    width: 70px;
+    text-align: center;
+  }
+
+  .btnContainer {
+    flex-direction: row;
+  }
+
+  #skills-selector {
+    margin-top: 20px;
+    width: 600px;
+    max-width: 80vw;
+    text-align: left;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 20px;
+    box-sizing: border-box;
+    border: 1px solid #444;
+    max-height: 80vh;
+    overflow-y: scroll;
+  }
+
+  /* END OF CHARACTER CREATION */
+```
+
+```
 File: D:\Projects\Game Dev\my-rpg-project\src\index.html
 <!DOCTYPE html>
 <html lang="en">
@@ -4868,173 +5255,7 @@ File: D:\Projects\Game Dev\my-rpg-project\src\index.html
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My RPG Project</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      background-color: #222;
-      color: white;
-      text-align: center;
-    }
-
-    h1 {
-      margin-bottom: 20px;
-    }
-
-    button {
-      background-color: #555;
-      color: white;
-      padding: 10px 20px;
-      margin: 10px;
-      border: none;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #777;
-    }
-
-    #gameContainer {
-      width: 800px;
-      height: 600px;
-      border: 2px solid white;
-      display: block;
-    }
-
-    #campaigns-container {
-      margin-top: 20px;
-      max-width: 400px;
-      text-align: left;
-      display: flex;
-    }
-
-    #campaign-list-ul {
-      flex: 1;
-    }
-
-    #campaign-info {
-      margin-left: 20px;
-      flex: 1;
-    }
-
-    .campaign-item {
-      padding: 5px;
-      border-bottom: 1px solid #444;
-      cursor: pointer;
-    }
-
-    .campaign-item:hover {
-      background-color: #333;
-    }
-
-    /* CHARACTER CREATION */
-    #characterCreation h2 {
-      margin-top: 20px;
-    }
-
-    #characterCreation #character-selector {
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      width: 800px;
-    }
-
-    .selector {
-      max-height: 80vh;
-      overflow-y: scroll;
-      padding: 50px;
-      display: flex;
-      align-items: flex-start;
-      flex-direction: column;
-      justify-content: center;
-      flex: 1;
-    }
-
-    .selector>* {
-      padding: 10px;
-      width: fit-content;
-      margin: 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .selector li {
-      flex-direction: row;
-      padding: 0px;
-      margin: 0px;
-    }
-
-    .selector img {
-      height: 100px;
-      width: 100px;
-    }
-
-    #characterCreation button {
-      display: inline-block;
-    }
-
-    #characterCreation #selector-info {
-      flex: 1;
-      margin-left: 10px;
-      max-width: 300px;
-      text-align: left;
-    }
-
-    #characterCreation #selector-info p {
-      margin-top: 10px;
-      text-align: justify;
-    }
-
-    #ability-score-selection {
-      margin-top: 20px;
-    }
-
-    #ability-score-selection #ability-scores-container {
-      display: flex;
-      flex-direction: column;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    #ability-score-selection .ability-score-container {
-      width: fit-content;
-      flex-direction: column;
-      margin: 10px;
-    }
-
-    #ability-score-selection .ability-score-row {
-      width: fit-content;
-      display: flex;
-      align-items: center;
-      margin: 10px;
-    }
-
-
-    #ability-score-selection .ability-score-row>label {
-      margin-right: 5px;
-      width: 70px;
-      text-align: center;
-    }
-
-    #ability-score-selection .ability-score-row>span {
-      margin-left: 10px;
-      margin-right: 10px;
-      width: 70px;
-      text-align: center;
-    }
-
-    .btnContainer {
-      flex-direction: row;
-    }
-
-    /* END OF CHARACTER CREATION */
-  </style>
+  <link rel="stylesheet" href="./styles/index.css">
   <script type="module" defer src="./scripts/index.mjs"></script>
   <script>
     function doInit() {
@@ -5158,7 +5379,30 @@ File: D:\Projects\Game Dev\my-rpg-project\src\index.html
     </div>
   </div>
   <div id="gameContainer" style="display:none;">
-    <canvas id="gameCanvas"></canvas>
+    <!-- GAME UI CONTAINER -->
+    <div id="gameArea">
+      <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+      </div>
+      <div id="uiPanels">
+        <div id="combatLogPanel" class="uiPanel">
+          <h3>Combat Log</h3>
+          <div id="combatLogText">Combat events will appear here.</div>
+        </div>
+        <div id="characterStatusPanel" class="uiPanel">
+          <h3>Character Status</h3>
+          <div id="characterStatusDetails">Character info will appear here.</div>
+        </div>
+        <div id="actionButtonsPanel" class="uiPanel">
+          <h3>Actions</h3>
+          <!-- Buttons for combat actions will go here -->
+          <button onclick="gameApi.spawnTestMonsters()">Spawn Test Monsters</button>
+          <button onclick="gameApi.attackClick()">Attack</button>
+          <button onclick="gameApi.endTurnClick()">End Turn</button>
+          <button onclick="gameApi.startCombat()">Start Combat</button>
+        </div>
+      </div>
+    </div>
   </div>
 </body>
 
@@ -5236,7 +5480,7 @@ File: D:\Projects\Game Dev\my-rpg-project\package.json
   "scripts": {
     "build": "pnpm run clean && npx tsc -outDir output && npx pkg . --out-path output && pnpm run copy-content",
     "clean": "node -e \"require('fs').rmSync('./output/', {recursive: true, force: true});\"",
-    "copy-content": "node -e \"require('fs').cpSync('./src/resources', './output/resources', {recursive: true});require('fs').cpSync('./src/content', './output/content', {recursive: true});require('fs').cpSync('./src/campaigns', './output/campaigns', {recursive: true});require('fs').cpSync('./src/index.html', './output/index.html');;require('fs').cpSync('./favicon.ico', './output/favicon.ico');\"",
+    "copy-content": "node -e \"require('fs').cpSync('./src/styles', './output/styles', {recursive: true});require('fs').cpSync('./src/resources', './output/resources', {recursive: true});require('fs').cpSync('./src/content', './output/content', {recursive: true});require('fs').cpSync('./src/campaigns', './output/campaigns', {recursive: true});require('fs').cpSync('./src/index.html', './output/index.html');;require('fs').cpSync('./favicon.ico', './output/favicon.ico');\"",
     "dev": "pnpm run clean && pnpm run tsc-and-copy && concurrently \"npm run nodaemon-watch\" \"npm run dev-runserver\"",
     "nodaemon-watch": "cross-env PATH=$PATH nodemon --verbose --watch src --ext js,mjs,mts,ts,html --exec 'pnpm run tsc-and-copy'",
     "tsc-and-copy": "npx tsc -outDir output && pnpm run copy-content",

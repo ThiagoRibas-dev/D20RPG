@@ -30,7 +30,7 @@ export class Renderer {
             return;
         }
 
-        const canvas: HTMLCanvasElement = gameArea.firstElementChild as HTMLCanvasElement;
+        const canvas: HTMLCanvasElement = getCanvas(gameArea);
         canvas.setAttribute("width", gameArea.clientWidth.toString());
         canvas.setAttribute("height", gameArea.clientHeight.toString());
 
@@ -105,7 +105,7 @@ export class Renderer {
 
     private renderEntity(
         context: CanvasRenderingContext2D,
-        entity: Entity, // For MVP, use 'any' for entity type, refine later if needed
+        entity: Entity,
         char: string,
         color: string
     ) {
@@ -134,7 +134,7 @@ export class Renderer {
         }
 
         const gameArea: HTMLElement = this.uiScreens.els['gameContainer'];
-        const canvas: HTMLCanvasElement = gameArea.firstElementChild as HTMLCanvasElement;
+        const canvas: HTMLCanvasElement = getCanvas(gameArea);
         const context = canvas.getContext('2d');
         if (!context) {
             console.error('Canvas 2d Context is null');
@@ -161,7 +161,7 @@ export class Renderer {
         });
     }
 
-    public redrawTiles(prevPosition: { x: number, y: number }, newPosition: { x: number, y: number }) { // New redrawTiles function
+    public redrawTiles(prevPosition: { x: number, y: number }, newPosition: { x: number, y: number }) {
         const mapData = GAME_STATE.currentMapData; // Get map data from GAME_STATE
         const tileDefinitions = this.contentLoader.tileDefinitions; // Get tile definitions
         if (!mapData || !mapData.tiles || !tileDefinitions) {
@@ -170,7 +170,7 @@ export class Renderer {
         }
 
         const gameArea: HTMLElement = this.uiScreens.els['gameContainer'];
-        const canvas: HTMLCanvasElement = gameArea.firstElementChild as HTMLCanvasElement;
+        const canvas: HTMLCanvasElement = getCanvas(gameArea);
         const context = canvas.getContext('2d');
         if (!context) {
             console.error('Canvas 2d Context is null');
@@ -200,7 +200,7 @@ export class Renderer {
         }
 
         const gameArea: HTMLElement = this.uiScreens.els['gameContainer'];
-        const canvas: HTMLCanvasElement = gameArea.firstElementChild as HTMLCanvasElement;
+        const canvas: HTMLCanvasElement = getCanvas(gameArea);
         const context = canvas.getContext('2d');
         if (!context) {
             console.error('Canvas 2d Context is null');
@@ -213,7 +213,7 @@ export class Renderer {
 
     public renderMonsters() {
         const gameArea: HTMLElement = this.uiScreens.els['gameContainer'];
-        const canvas: HTMLCanvasElement = gameArea.firstElementChild as HTMLCanvasElement;
+        const canvas: HTMLCanvasElement = getCanvas(gameArea);
         const context = canvas.getContext('2d');
         if (!context) {
             console.error('Canvas 2d Context is null');
@@ -225,4 +225,8 @@ export class Renderer {
             this.renderEntity(context, monster, monster.ascii_char, monster.color); // Render each monster
         });
     }
+}
+
+function getCanvas(gameArea: HTMLElement): HTMLCanvasElement {
+    return gameArea.getElementsByTagName('canvas')[0] as HTMLCanvasElement;
 }

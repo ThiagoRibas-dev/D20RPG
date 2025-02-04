@@ -9,7 +9,7 @@
   "scripts": {
     "build": "pnpm run clean && npx tsc -outDir output && npx pkg . --out-path output && pnpm run copy-content",
     "clean": "node -e \"require('fs').rmSync('./output/', {recursive: true, force: true});\"",
-    "copy-content": "node -e \"require('fs').cpSync('./src/resources', './output/resources', {recursive: true});require('fs').cpSync('./src/content', './output/content', {recursive: true});require('fs').cpSync('./src/campaigns', './output/campaigns', {recursive: true});require('fs').cpSync('./src/index.html', './output/index.html');;require('fs').cpSync('./favicon.ico', './output/favicon.ico');\"",
+    "copy-content": "node -e \"require('fs').cpSync('./src/styles', './output/styles', {recursive: true});require('fs').cpSync('./src/resources', './output/resources', {recursive: true});require('fs').cpSync('./src/content', './output/content', {recursive: true});require('fs').cpSync('./src/campaigns', './output/campaigns', {recursive: true});require('fs').cpSync('./src/index.html', './output/index.html');;require('fs').cpSync('./favicon.ico', './output/favicon.ico');\"",
     "dev": "pnpm run clean && pnpm run tsc-and-copy && concurrently \"npm run nodaemon-watch\" \"npm run dev-runserver\"",
     "nodaemon-watch": "cross-env PATH=$PATH nodemon --verbose --watch src --ext js,mjs,mts,ts,html --exec 'pnpm run tsc-and-copy'",
     "tsc-and-copy": "npx tsc -outDir output && pnpm run copy-content",

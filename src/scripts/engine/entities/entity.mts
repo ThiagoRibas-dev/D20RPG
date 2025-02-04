@@ -1,6 +1,6 @@
 // src/scripts/engine/entities/entity.mts
 import { calcMod } from "../dataManager.mjs";
-import { EntityPosition } from "../utils.mjs";
+import { EntityPosition, rollD20 } from "../utils.mjs";
 import { ContentItem } from "./contentItem.mjs";
 
 export type EntityClass = {
@@ -92,6 +92,14 @@ export class Entity {
     }
 
     rollInitiative(): number {
-        return calcMod(this.stats.dex);
+        const d20Roll = rollD20(); // Roll d20 using utility function
+        const dexMod = calcMod(this.stats.dex); // Get DEX modifier
+
+        let initiativeRoll = d20Roll + dexMod; // Calculate total initiative
+        // Add other initiative bonuses here later (feats, items, etc.)
+
+        console.log(`${this.constructor.name} rolling initiative: d20 roll = ${d20Roll}, DEX mod = ${dexMod}, Total = ${initiativeRoll}`); // Optional log
+
+        return initiativeRoll;
     }
 }

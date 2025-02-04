@@ -1,0 +1,263 @@
+body {
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    /* Changed to column for overall layout */
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #222;
+    color: white;
+    text-align: center;
+  }
+
+  h1 {
+    margin-bottom: 20px;
+  }
+
+  button {
+    background-color: #555;
+    color: white;
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #777;
+  }
+
+  /* Game Container and UI Panels Layout */
+  #gameArea {
+    display: flex;
+    /* Use flexbox for horizontal layout */
+    flex-direction: row;
+    /* Arrange canvas and panels horizontally */
+    width: 1200px;
+    /* Adjust as needed for your desired overall game area width */
+    max-width: 95vw;
+  }
+
+  #gameContainer {
+    width: 800px;
+    /* Reduced canvas width */
+    height: 600px;
+    /* Reduced canvas height */
+    border: 2px solid white;
+    display: block;
+    margin-right: 10px;
+    /* Add right margin to separate canvas from UI panels */
+  }
+
+  #gameCanvas {
+    width: 100%;
+    /* Canvas takes full width of gameContainer */
+    height: 100%;
+    /* Canvas takes full height of gameContainer */
+    display: block;
+    /* Ensure canvas is a block element */
+  }
+
+
+  /* UI Panels (Example Styling - Customize as desired) */
+  #uiPanels {
+    display: flex;
+    flex-direction: column;
+    /* Arrange UI panels vertically to the right of canvas */
+    width: 400px;
+    /* Example width for UI panels */
+    padding: 15px;
+    /* Increased padding */
+    box-sizing: border-box;
+  }
+
+  .uiPanel {
+    background-color: #333;
+    border: 1px solid #555;
+    padding: 15px;
+    /* Increased padding */
+    margin-bottom: 15px;
+    /* Increased margin-bottom */
+    text-align: left;
+    flex: 1;
+    /* Distribute space evenly among panels */
+    overflow-y: auto;
+    /* Add scroll if content overflows */
+    border-radius: 5px;
+    /* Rounded corners for panels */
+  }
+
+  .uiPanel h3 {
+    margin-top: 0;
+  }
+
+
+  /* Existing Styles (Start Menu, Character Creation, Campaign Selection) - No changes needed */
+
+  /* Campaign Selection Screen Styles */
+  #campaigns-container {
+    margin-top: 20px;
+    max-width: 400px;
+    text-align: left;
+    display: flex;
+  }
+
+  #campaign-list-ul {
+    flex: 1;
+  }
+
+  #campaign-info {
+    margin-left: 20px;
+    flex: 1;
+  }
+
+  .campaign-item {
+    padding: 10px 20px;
+    border: 1px solid #666;
+    border-radius: 5px;
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+    text-align: center;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  .campaign-item:hover {
+    background-color: #555;
+  }
+
+  /* CHARACTER CREATION Styles */
+  #characterCreation h2 {
+    margin-top: 20px;
+  }
+
+  #characterCreation #character-selector {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    width: 800px;
+  }
+
+  .selector {
+    max-height: 80vh;
+    overflow-y: scroll;
+    padding: 20px;
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: flex-start;
+    flex: 1;
+    border: 1px solid #444;
+    margin-right: 10px;
+  }
+
+  .selector button {
+    width: 100%;
+    text-align: left;
+    padding: 10px;
+    margin-bottom: 5px;
+    display: block;
+  }
+
+  .selector>* {
+    padding: 10px;
+    width: fit-content;
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .selector li {
+    flex-direction: row;
+    padding: 0px;
+    margin: 0px;
+  }
+
+  .selector img {
+    height: 100px;
+    width: 100px;
+  }
+
+  #characterCreation button {
+    display: inline-block;
+  }
+
+  #characterCreation #selector-info {
+    flex: 1;
+    margin-left: 10px;
+    max-width: 300px;
+    text-align: left;
+  }
+
+  #characterCreation #selector-info p {
+    margin-top: 10px;
+    text-align: justify;
+  }
+
+  #ability-score-selection {
+    margin-top: 20px;
+    width: 600px;
+    max-width: 80vw;
+    text-align: left;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #ability-score-selection #ability-scores-container {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+  }
+
+  #ability-score-selection .ability-score-container {
+    width: fit-content;
+    flex-direction: column;
+    margin: 10px;
+  }
+
+  #ability-score-selection .ability-score-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+
+
+  #ability-score-selection .ability-score-row>label {
+    margin-right: 5px;
+    width: 70px;
+    text-align: center;
+  }
+
+  #ability-score-selection .ability-score-row>span {
+    margin-left: 10px;
+    margin-right: 10px;
+    width: 70px;
+    text-align: center;
+  }
+
+  .btnContainer {
+    flex-direction: row;
+  }
+
+  #skills-selector {
+    margin-top: 20px;
+    width: 600px;
+    max-width: 80vw;
+    text-align: left;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 20px;
+    box-sizing: border-box;
+    border: 1px solid #444;
+    max-height: 80vh;
+    overflow-y: scroll;
+  }
+
+  /* END OF CHARACTER CREATION */

@@ -13,4 +13,5 @@ export type GameState = {
     monsters: Monster[];
     npcs: Entity[];
     currentCampaignData: ContentItem | null;
+    currentTurn: string;
 };
