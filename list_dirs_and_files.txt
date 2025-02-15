@@ -4731,7 +4731,7 @@ async function initializeGame(winObj: any) {
 
 function updateTileDefs(contentLoader: ContentLoader, monsterPrefab: Monster) {
   const tileDefExists: boolean = !!contentLoader.tileDefinitions?.find(def => def.symbol === monsterPrefab.ascii_char);
-  if (tileDefExists) {
+  if (!tileDefExists) {
     contentLoader.tileDefinitions?.push({
       "symbol": monsterPrefab.ascii_char,
       "name": monsterPrefab.prefabId,
