@@ -1,5 +1,6 @@
 # Utils bat file
 run-codium.bat
+list_dirs_and_files.txt
 
 # Node modules
 node_modules/

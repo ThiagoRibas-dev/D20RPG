@@ -1620,7 +1620,7 @@ File: D:\Projects\Game Dev\my-rpg-project\src\content\skills\escapeartist.json
     "key_ability": "Dex",
     "trained_only": true,
     "armor_check_penalty": true,
-    "check": "You can use this skill to try to escape from rope bindings, manacles, or tight spaces. Each action takes several turns, and its effects are decided based on opposed skill checks or the object窶冱 DC to resist those.",
+    "check": "You can use this skill to try to escape from rope bindings, manacles, or tight spaces. Each action takes several turns, and its effects are decided based on opposed skill checks or the objectâ€™s DC to resist those.",
     "action": "Making an Escape Artist check to escape from rope bindings, manacles, or other restraints requires 1 minute of work. Escaping from a net or an animate rope, command plants, control plants, or entangle spell is a full-round action.",
     "try_again": "Yes for squeezing your way through tight spaces or trying again when opposed.",
     "special": [
