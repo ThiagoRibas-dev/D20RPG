@@ -1,6 +1,6 @@
-// src/scripts/index.mts
 import { ContentLoader } from './engine/contentLoader.mjs';
 import { rollAbilities, saveAbilities, updateAbilityScoreDisplay } from './engine/dataManager.mjs';
+import { EffectManager } from './engine/effectManager.mjs';
 import { ContentItem } from './engine/entities/contentItem.mjs';
 import { GameState } from './engine/entities/gameState.mjs';
 import { MapTile } from './engine/entities/mapTile.mjs';
@@ -14,7 +14,7 @@ import { EntityPosition, MOVE_DIRECTIONS } from './engine/utils.mjs';
 export let GAME_API: any = { init: false };
 export const GAME_STATE: GameState = {
   currentScreen: "startMenu",
-  player: null, // Modified: Initialize player to null <---
+  player: null,
   creationStep: 0,
   creationSteps: [
     "raceSelection",
@@ -36,6 +36,7 @@ async function initializeGame(winObj: any) {
   const winDoc = winObj.document;
   const uiScreens: UIHolder = getUiScreens(winObj);
   const contentLoader = new ContentLoader();
+  const effectManager = new EffectManager();
   const renderer = new Renderer(uiScreens, winDoc, contentLoader);
 
   const contentData = await contentLoader.getContent();

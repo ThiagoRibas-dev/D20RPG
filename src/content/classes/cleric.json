@@ -142,7 +142,7 @@
     },
     {
       "level": 15,
-      "base_attack_bonus": 0,
+      "base_attack_bonus": 1,
       "fortitude_save": 0,
       "reflex_save": 0,
       "will_save": 0,
@@ -174,7 +174,7 @@
     },
     {
       "level": 19,
-      "base_attack_bonus": 0,
+      "base_attack_bonus": 1,
       "fortitude_save": 0,
       "reflex_save": 0,
       "will_save": 0,

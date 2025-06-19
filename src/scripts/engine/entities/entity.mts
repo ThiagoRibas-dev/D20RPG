@@ -31,6 +31,7 @@ export type EntityHitPoints = {
 }
 
 export class Entity {
+    id: string;
     name: string;
     selectedRace: ContentItem | null;
     classes: EntityClass[];
@@ -61,6 +62,7 @@ export class Entity {
         hitPoints: EntityHitPoints = { current: 0, max: 0 },
         baseAttackBonus: number = 0
     ) {
+        this.id = `entity-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
         this.name = name;
         this.selectedRace = selectedRace;
         this.classes = classes;
