@@ -1,8 +1,3 @@
-// src/scripts/engine/utils.mts
-
-import { calcMod } from "./dataManager.mjs";
-import { Entity } from "./entities/entity.mjs";
-
 export type EntityPosition = {
     x: number,
     y: number
@@ -24,4 +19,15 @@ export function getRandomInt(min: number, max: number) {
 
 export function rollD20(): number {
     return getRandomInt(1, 20);
+}
+
+
+
+/**
+ * Calculates the ability score modifier for a given score.
+ * @param score The ability score (e.g., 14).
+ * @returns The modifier (e.g., +2).
+ */
+export function calculateModifier(score: number): number {
+    return Math.floor((score - 10) / 2);
 }

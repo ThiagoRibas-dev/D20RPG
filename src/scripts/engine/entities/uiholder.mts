@@ -1,5 +1,5 @@
-// src/scripts/engine/entities/uiHolder.mts
 export type UIHolder = {
+    winDoc: Document,
     els: {
         [key: string]: HTMLElement;
         'startMenu': HTMLElement;

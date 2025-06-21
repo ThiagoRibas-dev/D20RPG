@@ -1,6 +1,7 @@
-// src/scripts/engine/entities/entity.mts
-import { calcMod } from "../dataManager.mjs";
-import { EntityPosition, rollD20 } from "../utils.mjs";
+import { ActiveEffect } from "../activeEffect.mjs";
+import { Renderable } from "../components/renderable.mjs";
+import { globalServiceLocator } from "../serviceLocator.mjs";
+import { calculateModifier, EntityPosition, rollD20 } from "../utils.mjs";
 import { ContentItem } from "./contentItem.mjs";
 
 export type EntityClass = {
@@ -8,7 +9,7 @@ export type EntityClass = {
     level: number;
     classSkills: string[];
     hitDice: number;
-};
+}
 
 export type EntitySkills = {
     remaining: number;
@@ -30,6 +31,20 @@ export type EntityHitPoints = {
     max: number;
 }
 
+export type SavingThrow = {
+    base: number;
+    racial_bonus: number;
+    feat_bonus: number;
+    misc_bonus: number;
+}
+
+export type SavingThrows = {
+    [key: string]: SavingThrow;
+    fortitude: SavingThrow,
+    reflex: SavingThrow,
+    will: SavingThrow
+}
+
 export class Entity {
     id: string;
     name: string;
@@ -42,6 +57,10 @@ export class Entity {
     stats: EntityAbilityScores;
     hitPoints: EntityHitPoints;
     baseAttackBonus: number;
+    savingThrows: SavingThrows;
+    activeEffects: ActiveEffect[];
+    renderable: Renderable | null;
+
 
     constructor(
         name: string = "",
@@ -73,6 +92,48 @@ export class Entity {
         this.stats = stats;
         this.hitPoints = hitPoints;
         this.baseAttackBonus = baseAttackBonus;
+        this.activeEffects = []; this.savingThrows = {
+            fortitude: { base: 0, racial_bonus: 0, feat_bonus: 0, misc_bonus: 0 },
+            reflex: { base: 0, racial_bonus: 0, feat_bonus: 0, misc_bonus: 0 },
+            will: { base: 0, racial_bonus: 0, feat_bonus: 0, misc_bonus: 0 }
+        };
+        this.renderable = null;
+    }
+
+    /**
+    * Gathers all tags from the entity's race, classes, and active effects.
+    * Uses a Set to automatically handle duplicates.
+    * @returns {Set<string>} A set of all unique tags for this entity.
+    */
+    public getTags(): Set<string> {
+        const allTags = new Set<string>();
+
+        // 1. Get tags from the race
+        this.selectedRace?.tags?.forEach((tag: string) => allTags.add(tag));
+
+        // 2. Get tags from all classes
+        this.classes.forEach(cls => {
+            cls.class.tags?.forEach((tag: string) => allTags.add(tag));
+        });
+
+        // 3. Get tags from all active effects (feats, spells, etc.)
+        this.activeEffects.forEach(effect => {
+            effect.sourceEffect.tags?.forEach((tag: string) => allTags.add(tag));
+        });
+
+        return allTags;
+    }
+
+    /**
+     * Checks if the entity possesses a specific tag from any source.
+     * This is the primary interface for the rest of the engine.
+     * @param {string} tag - The tag to check for.
+     * @returns {boolean} True if the entity has the tag, false otherwise.
+     */
+    public hasTag(tag: string): boolean {
+        // For performance, we could cache the result of getTags() if it becomes a bottleneck,
+        // but for now, direct computation is cleaner.
+        return this.getTags().has(tag);
     }
 
     takeDamage(amount: number) {
@@ -88,14 +149,14 @@ export class Entity {
 
     calculateAttackBonus(): number {
         const bab = this.baseAttackBonus;
-        const strMod = calcMod(this.stats.str);
+        const strMod = calculateModifier(this.stats.str);
 
         return bab + strMod;
     }
 
     rollInitiative(): number {
         const d20Roll = rollD20(); // Roll d20 using utility function
-        const dexMod = calcMod(this.stats.dex); // Get DEX modifier
+        const dexMod = calculateModifier(this.stats.dex); // Get DEX modifier
 
         let initiativeRoll = d20Roll + dexMod; // Calculate total initiative
         // Add other initiative bonuses here later (feats, items, etc.)

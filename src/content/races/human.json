@@ -1,6 +1,10 @@
 {
   "name": "Human",
   "description": "Humans are the most common race in the world, known for their adaptability and ambition.",
+  "tags": [
+    "humanoid",
+    "human"
+  ],
   "ability_score_adjustments": {
     "str": 0,
     "dex": 0,

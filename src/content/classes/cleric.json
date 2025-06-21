@@ -1,6 +1,12 @@
 {
   "name": "Cleric",
   "description": "A divine spellcaster, devoted to a deity and capable of channeling divine power for healing, protection, and combat.",
+  "tags": [
+    "caster",
+    "divine_caster",
+    "prepared_caster",
+    "turn_undead"
+  ],
   "alignment_restrictions": "within one step of deity",
   "hit_die": "d8",
   "class_skills": [

@@ -1,30 +1,23 @@
-// src/scripts/engine/renderer.mts
 import { ContentItem } from "../engine/entities/contentItem.mjs";
-import { UIHolder } from "../engine/entities/uiHolder.mjs";
-import { GAME_STATE } from "../index.mjs";
-import { setActiveScreen, showCharacterCreationStep, updateCampaignInfo, updateCampaignList } from "../ui/uiManager.mjs";
-import { ContentLoader } from "./contentLoader.mjs";
 import { Entity } from "./entities/entity.mjs";
 import { MapTile } from "./entities/mapTile.mjs";
-import { Monster } from "./entities/monster.mjs";
+import { Npc } from "./entities/npc.mjs";
+import { globalServiceLocator } from "./serviceLocator.mjs";
 
 export class Renderer {
-    private uiScreens: UIHolder;
     private winDoc: any;
-    private contentLoader: ContentLoader;
 
-    constructor(uiScreens: UIHolder, winDoc: any, contentLoader: ContentLoader) {
-        this.uiScreens = uiScreens;
+    constructor(winDoc: any) {
         this.winDoc = winDoc;
-        this.contentLoader = contentLoader;
     }
 
-    public draw() { // this may be expanded to receive the content of json and its associated hardcoded code for handling these files
-        if (!this.uiScreens) {
+    public draw() {
+        const uiScreens = globalServiceLocator.ui;
+        if (!uiScreens) {
             console.error("Game Elements not defined on render function, stopping");
             return;
         }
-        const gameArea: HTMLElement = this.uiScreens.els['gameContainer']
+        const gameArea: HTMLElement = uiScreens.els['gameContainer']
         if (!gameArea) {
             console.error("Game area element not defined");
             return;
@@ -37,47 +30,20 @@ export class Renderer {
         console.log("Game area is rendered:", gameArea);
     }
 
-    public async renderScreen(allCampaignData: ContentItem, contentData: ContentItem) {
-        if (!this.winDoc) {
-            console.error('this.winDoc not initialized');
-            return false;
-        }
-        setActiveScreen(GAME_STATE.currentScreen, this.uiScreens);
-        console.log("Current Game State:", GAME_STATE.currentScreen);
-        if (GAME_STATE.currentScreen === 'campaignSelection') {
-            const fnUpdateCampaign = (campaignName: string) => {
-                GAME_STATE.currentCampaignData = allCampaignData[campaignName];
-                this.uiScreens.btns['campaignSelectBtn'].removeAttribute('style');
-                console.log('Campaign selected', campaignName, GAME_STATE.currentCampaignData);
-            }
-
-            updateCampaignInfo(null, allCampaignData, this.uiScreens)
-            updateCampaignList(allCampaignData, this.uiScreens.els['campaign-list-ul'], this.winDoc, this.uiScreens, fnUpdateCampaign);
-        }
-        if (GAME_STATE.currentScreen === 'characterCreation') {
-            showCharacterCreationStep(GAME_STATE.creationStep, contentData, allCampaignData, this.uiScreens, this)
-        }
-        if (GAME_STATE.currentScreen === 'gameContainer') {
-            const mapData: ContentItem = await GAME_STATE.currentCampaignData?.maps["starting_area"].get();
-            if (!mapData) {
-                console.error("Map not loaded.");
-            }
-            console.log("Loaded Map Data:", mapData);
-            GAME_STATE.currentMapData = mapData; // Store map data in GAME_STATE
-            this.renderMapFull(mapData);
-        }
-        return true;
-    }
-
+    /**
+      * Replaces renderScreen. This is a high-level function that renders the
+      * entire visible game world on the canvas. It is called by an external
+      * controller (like the uiManager) when the game screen is active.
+      */
     public renderMapFull(mapData: ContentItem) {
         try {
-            console.log('Rendering', mapData);
+            console.log('Renderer: Drawing full map and entities.');
             this.draw();
             this.renderMap(mapData);
             this.renderPlayer();
-            this.renderMonsters();
+            this.renderNpcs();
         } catch (error) {
-            console.error("Error in renderScreen loading map:", error);
+            console.error("Error in renderMapFull:", error);
         }
     }
 
@@ -103,12 +69,14 @@ export class Renderer {
         context.fillText(tileChar, tileX + tileSize / 2, tileY + tileSize / 2);
     }
 
-    private renderEntity(
-        context: CanvasRenderingContext2D,
-        entity: Entity,
-        char: string,
-        color: string
-    ) {
+    private renderEntity(context: CanvasRenderingContext2D, entity: Entity) {
+        if (!entity.renderable) {
+            return;
+        }
+
+        // Get data from the component
+        const { char, color } = entity.renderable;
+
         const tileSize = 32;
         const startX = 10;
         const startY = 50;
@@ -118,7 +86,6 @@ export class Renderer {
 
         const entityCanvasX = startX + entityX * tileSize;
         const entityCanvasY = startY + entityY * tileSize;
-
 
         context.fillStyle = color; // Use color parameter
         context.font = '24px monospace';
@@ -133,7 +100,9 @@ export class Renderer {
             return;
         }
 
-        const gameArea: HTMLElement = this.uiScreens.els['gameContainer'];
+        const uiScreens = globalServiceLocator.ui;
+        const contentLoader = globalServiceLocator.contentLoader;
+        const gameArea: HTMLElement = uiScreens.els['gameContainer'];
         const canvas: HTMLCanvasElement = getCanvas(gameArea);
         const context = canvas.getContext('2d');
         if (!context) {
@@ -145,7 +114,7 @@ export class Renderer {
         const tileSize = 32;
         const startX = 10;
         const startY = 50;
-        const tileDefinitions = this.contentLoader.tileDefinitions;
+        const tileDefinitions = contentLoader.tileDefinitions;
 
         if (!tileDefinitions) {
             console.error("Tile definitions not loaded!");
@@ -162,14 +131,19 @@ export class Renderer {
     }
 
     public redrawTiles(prevPosition: { x: number, y: number }, newPosition: { x: number, y: number }) {
-        const mapData = GAME_STATE.currentMapData; // Get map data from GAME_STATE
-        const tileDefinitions = this.contentLoader.tileDefinitions; // Get tile definitions
+        const uiScreens = globalServiceLocator.ui;
+        const contentLoader = globalServiceLocator.contentLoader;
+        const gameState = globalServiceLocator.state;
+
+
+        const mapData = gameState.currentMapData; // Get map data from gameState
+        const tileDefinitions = contentLoader.tileDefinitions; // Get tile definitions
         if (!mapData || !mapData.tiles || !tileDefinitions) {
             console.error("Cannot redraw tiles: mapData or tileDefinitions missing.");
             return;
         }
 
-        const gameArea: HTMLElement = this.uiScreens.els['gameContainer'];
+        const gameArea: HTMLElement = uiScreens.els['gameContainer'];
         const canvas: HTMLCanvasElement = getCanvas(gameArea);
         const context = canvas.getContext('2d');
         if (!context) {
@@ -192,37 +166,40 @@ export class Renderer {
         redrawTileAtPosition(newPosition);
     }
 
+    /**
+      * Renders the player character by calling the generic renderEntity method.
+      */
     public renderPlayer() {
-        const player = GAME_STATE.player;
+        const gameState = globalServiceLocator.state;
+        const player = gameState.player;
         if (!player) {
             console.log("Player is not initialized");
             return;
         }
 
-        const gameArea: HTMLElement = this.uiScreens.els['gameContainer'];
+        const uiScreens = globalServiceLocator.ui;
+        const gameArea: HTMLElement = uiScreens.els['gameContainer'];
         const canvas: HTMLCanvasElement = getCanvas(gameArea);
         const context = canvas.getContext('2d');
-        if (!context) {
-            console.error('Canvas 2d Context is null');
-            return;
-        }
+        if (!context) return;
 
-        // --- Render Player Character
-        this.renderEntity(context, player, '@', 'yellow');;
+        // The new, simplified call. No more hardcoded '@' or 'yellow'.
+        this.renderEntity(context, player);
     }
 
-    public renderMonsters() {
-        const gameArea: HTMLElement = this.uiScreens.els['gameContainer'];
+    /**
+     * Renders all monsters by looping and calling the generic renderEntity method.
+     */
+    public renderNpcs() {
+        const gameState = globalServiceLocator.state;
+        const uiScreens = globalServiceLocator.ui;
+        const gameArea: HTMLElement = uiScreens.els['gameContainer'];
         const canvas: HTMLCanvasElement = getCanvas(gameArea);
         const context = canvas.getContext('2d');
-        if (!context) {
-            console.error('Canvas 2d Context is null');
-            return;
-        }
+        if (!context) return;
 
-        // --- Render Monsters ---
-        GAME_STATE.monsters.forEach((monster: Monster) => { // Iterate through monsters array
-            this.renderEntity(context, monster, monster.ascii_char, monster.color); // Render each monster
+        gameState.npcs.forEach((monster: Npc) => {
+            this.renderEntity(context, monster);
         });
     }
 }

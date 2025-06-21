@@ -1,124 +1,168 @@
 import { ContentLoader } from './engine/contentLoader.mjs';
-import { rollAbilities, saveAbilities, updateAbilityScoreDisplay } from './engine/dataManager.mjs';
 import { EffectManager } from './engine/effectManager.mjs';
 import { ContentItem } from './engine/entities/contentItem.mjs';
 import { GameState } from './engine/entities/gameState.mjs';
 import { MapTile } from './engine/entities/mapTile.mjs';
-import { Monster } from './engine/entities/monster.mjs';
+import { Npc } from './engine/entities/npc.mjs';
 import { PlayerCharacter } from './engine/entities/playerCharacter.mjs';
 import { UIHolder } from './engine/entities/uiHolder.mjs';
+import { EventBus } from './engine/eventBus.mjs';
+import { NpcFactory } from './engine/factories/npcFactory.mjs';
 import { Game } from './engine/game.mjs';
 import { Renderer } from './engine/renderer.mjs';
+import { RulesEngine } from './engine/rulesEngine.mjs';
+import { globalServiceLocator, ServiceLocator } from './engine/serviceLocator.mjs';
+import { TurnManager } from './engine/turnManager.mjs';
 import { EntityPosition, MOVE_DIRECTIONS } from './engine/utils.mjs';
-
-export let GAME_API: any = { init: false };
-export const GAME_STATE: GameState = {
-  currentScreen: "startMenu",
-  player: null,
-  creationStep: 0,
-  creationSteps: [
-    "raceSelection",
-    "abilityScoreSelection",
-    "classSelection",
-    "skillSelection",
-    "featSelection",
-    "characterSummary"
-  ],
-  currentMapData: null,
-  currentCampaignData: null,
-  monsters: [],
-  npcs: [],
-  currentTurn: "",
-};
+import { initUIManager, updateUI } from './ui/uiManager.mjs';
 
 async function initializeGame(winObj: any) {
   console.log('INITIALIZING', winObj);
-  const winDoc = winObj.document;
-  const uiScreens: UIHolder = getUiScreens(winObj);
-  const contentLoader = new ContentLoader();
-  const effectManager = new EffectManager();
-  const renderer = new Renderer(uiScreens, winDoc, contentLoader);
 
-  const contentData = await contentLoader.getContent();
-  const allCampaignData = await contentLoader.getCampaigns();
+  const winDoc: Document = winObj.document;
+
+  // --- STATE INITIALIZATION ---
+  // The gameState object is now created here, locally.
+  const gameState: GameState = {
+    currentScreen: "startMenu",
+    player: null,
+    creationStep: 0,
+    creationSteps: [
+      "raceSelection",
+      "abilityScoreSelection",
+      "classSelection",
+      "skillSelection",
+      "featSelection",
+      "characterSummary"
+    ],
+    currentMapData: null,
+    currentCampaignData: null,
+    npcs: [],
+    currentTurn: "",
+  };
+
+  // --- SERVICE REGISTRATION ---
+  // 1. Initialize all core services.
+  globalServiceLocator.eventBus = new EventBus();
+  globalServiceLocator.state = gameState;
+  globalServiceLocator.ui = getUiScreens(winDoc);
+  globalServiceLocator.contentLoader = new ContentLoader();
+  globalServiceLocator.rulesEngine = new RulesEngine();
+  globalServiceLocator.effectManager = new EffectManager();
+  globalServiceLocator.turnManager = new TurnManager();
+  globalServiceLocator.npcFactory = new NpcFactory();
+  globalServiceLocator.renderer = new Renderer(winDoc);
+
+  // --- INITIALIZE UI MANAGER ---
+  // Now that all services are ready, we can safely initialize the UI views.
+  initUIManager(); // <-- CALL THE NEW INITIALIZER
+
+  // --- Load Initial Data ---
+  const contentData = await ServiceLocator.ContentLoader.getContent();
+  const allCampaignData = await ServiceLocator.ContentLoader.getCampaigns();
+
+  const renderer = globalServiceLocator.renderer;
+  const uiScreens = globalServiceLocator.ui;
+  const contentLoader = globalServiceLocator.contentLoader;
+
+  // --- SETUP THE CONTROLLER LOGIC (EVENT SUBSCRIPTIONS) ---
+  ServiceLocator.EventBus.subscribe('ui:creation:next_step', () => {
+    const state = ServiceLocator.State;
+    state.creationStep++;
+    if (state.creationStep >= state.creationSteps.length) {
+      state.creationStep = state.creationSteps.length - 1;
+    }
+    // Re-render the screen to show the new step.
+    // We need access to allCampaignData and contentData here.
+    updateUI(allCampaignData, contentData);
+  });
+
+  ServiceLocator.EventBus.subscribe('ui:creation:prev_step', () => {
+    const state = ServiceLocator.State;
+    state.creationStep--;
+    if (state.creationStep < 0) {
+      state.creationStep = 0;
+    }
+
+    updateUI(allCampaignData, contentData);
+  });
+
+  ServiceLocator.EventBus.subscribe('ui:creation:confirmed', async () => {
+    const state = ServiceLocator.State;
+
+    if (!state.player || !state.currentCampaignData) {
+      console.error("Cannot start game: Player or Campaign data is missing.");
+      return;
+    }
+
+    console.log("Character creation confirmed. Starting game...");
+
+    // 1. Load the starting map data from the selected campaign.
+    // This assumes a 'starting_area' map exists in the campaign.
+    const startingMap = await state.currentCampaignData.maps["starting_area"].get();
+    if (!startingMap) {
+      console.error("Failed to load starting map.");
+      return;
+    }
+    state.currentMapData = startingMap;
+
+    // 2. TODO: Place the player at the map's starting position.
+    // You would add a "startPosition": { "x": 1, "y": 3 } to your map JSON
+    // and set player.position here.
+    // state.player.position = startingMap.startPosition;
+
+    // 3. Change the main screen to the game container.
+    state.currentScreen = "gameContainer";
+
+    // 4. Update the entire UI to reflect the new state.
+    // This will hide the character creation screen and render the game map.
+    updateUI(allCampaignData, contentData);
+  });
 
   winObj.gameApi = {
     init: true,
     newGameClick: () => {
-      GAME_STATE.currentScreen = "campaignSelection";
-      renderer.renderScreen(allCampaignData, contentData);
+      ServiceLocator.State.currentScreen = "campaignSelection";
+
+      updateUI(allCampaignData, contentData);
     },
     selectCampaign: async () => {
-      GAME_STATE.currentScreen = "characterCreation";
-      GAME_STATE.player = new PlayerCharacter(); // Reset player to NULL_PLAYER
-      GAME_STATE.creationStep = 0;
-      renderer.renderScreen(allCampaignData, contentData);
+      ServiceLocator.State.currentScreen = "characterCreation";
+      ServiceLocator.State.player = new PlayerCharacter();
+      ServiceLocator.State.creationStep = 0;
+
+      updateUI(allCampaignData, contentData);
     },
-    creationNextStep: () => {
-      console.log('Next step', GAME_STATE.creationStep);
-      GAME_STATE.creationStep = GAME_STATE.creationStep + 1;
-      if (GAME_STATE.creationStep >= GAME_STATE.creationSteps.length) GAME_STATE.creationStep = GAME_STATE.creationSteps.length - 1; // Use array length
-      renderer.renderScreen(allCampaignData, contentData);
-    },
-    creationPrevStep: () => {
-      console.log('Prev step', GAME_STATE.creationStep);
-      GAME_STATE.creationStep = GAME_STATE.creationStep - 1;
-      if (GAME_STATE.creationStep < 0) GAME_STATE.creationStep = 0;
-      renderer.renderScreen(allCampaignData, contentData);
-    },
-    saveAbilities: () => {
-      saveAbilities(uiScreens);
-      winObj.gameApi.creationNextStep();
-    },
-    rollAbilities: () => { rollAbilities(uiScreens) },
-    updateAbilityScoreDisplay: () => { updateAbilityScoreDisplay(uiScreens) },
-    continueGameClick: () => {
-      console.log("Continue clicked. Loading last save state, if present (placeholder).");
-    },
+    creationNextStep: () => ServiceLocator.EventBus.publish('ui:creation:next_step'),
+    creationPrevStep: () => ServiceLocator.EventBus.publish('ui:creation:prev_step'),
     exitGameClick: () => {
       console.log("Exiting game.");
     },
     movePlayer: getFnMovePlayer(contentLoader, renderer, allCampaignData, contentData),
-    spawnTestMonsters: async () => {
-      GAME_STATE.monsters = []; // Clear monsters array
+    spawnTestNpcs: async () => {
+      ServiceLocator.State.npcs = [];
 
-      const content = await contentLoader.getContent(); // Load content data
+      const goblin = await ServiceLocator.NpcFactory.create('goblin_warrior', 'monster', { x: 8, y: 3 });
+      if (goblin) ServiceLocator.State.npcs.push(goblin);
 
-      // Load Goblin Prefab and Create Monster Instance
-      const goblinPrefab = { ... await content.prefabs.monsters["goblin_warrior"].get() } as Monster;
-      if (goblinPrefab) {
-        goblinPrefab.position = { x: 8, y: 3 };
-        updateTileDefs(contentLoader, goblinPrefab);
-        GAME_STATE.monsters.push(goblinPrefab);
-      } else {
-        console.error("Failed to load goblin prefab: goblin-warrior.json");
-      }
+      const guard = await ServiceLocator.NpcFactory.create('town_guard', 'npc', { x: 2, y: 5 });
+      if (guard) ServiceLocator.State.npcs.push(guard);
 
-      // Load Orc Prefab and Create Monster Instance
-      const orcPrefab = { ...await content.prefabs.monsters["orc_warrior"].get() } as Monster;
-      if (orcPrefab) {
-        orcPrefab.position = { x: 12, y: 6 };
-        updateTileDefs(contentLoader, orcPrefab);
-        GAME_STATE.monsters.push(orcPrefab);
-      } else {
-        console.error("Failed to load orc prefab: orc-warrior.json");
-      }
-
-      renderer.renderScreen(allCampaignData, contentData);
+      updateUI(allCampaignData, contentData);
     },
-    startCombat: async () => { // New startCombat function <---
-      const player = GAME_STATE.player;
-      const monsters = GAME_STATE.monsters;
+    startCombat: async () => {
+      const player = gameState.player;
+      const npcs = gameState.npcs;
       const combatLogTextElement = uiScreens.els['combatLogText']; // Get combat log UI element
 
       if (!player) {
-        console.error("No player character in GAME_STATE. Cannot start combat.");
+        console.error("No player character in gameState. Cannot start combat.");
         return;
       }
-      if (monsters.length === 0) {
-        console.warn("No monsters in GAME_STATE. Spawning test monsters for combat testing.");
-        await winObj.gameApi.spawnTestMonsters(); // Spawn test monsters if none exist
-        return; // Return after spawning monsters, call startCombat again to begin combat
+      if (npcs.length === 0) {
+        console.warn("No npcs in gameState. Spawning test npcs for combat testing.");
+        await winObj.gameApi.spawnTestnpcs(); // Spawn test npcs if none exist
+        return; // Return after spawning npcs, call startCombat again to begin combat
       }
 
       combatLogTextElement.innerText = "--- Combat Starts! ---\n\n"; // Clear combat log and add header
@@ -127,21 +171,20 @@ async function initializeGame(winObj: any) {
       const playerInitiative = player.rollInitiative();
       combatLogTextElement.innerText += `Player (${player.selectedRace?.name} ${player.classes[0].class.name}) Initiative: ${playerInitiative}\n`; // Log player initiative
 
-      monsters.forEach(monster => { // Iterate through monsters
+      npcs.forEach(monster => { // Iterate through npcs
         const monsterInitiative = monster.rollInitiative();
         combatLogTextElement.innerText += `${monster.prefabId} Initiative: ${monsterInitiative}\n`; // Log monster initiative
         // Optionally, store initiative roll in monster object itself if needed later
       });
 
       // --- Determine Turn Order (Player always goes first for MVP) ---
-      GAME_STATE.currentTurn = "player"; // Player turn always first for MVP <---
+      gameState.currentTurn = "player"; // Player turn always first for MVP <---
       combatLogTextElement.innerText += `\n--- Player Turn ---\n`; // Indicate player turn in combat log
 
-      renderer.renderScreen(allCampaignData, contentData); // Re-render to update UI (turn indicator, etc. - to be added later)
+      updateUI(allCampaignData, contentData); // Re-render to update UI (turn indicator, etc. - to be added later)
     },
-    gameState: GAME_STATE,
+    gameState: gameState,
   };
-  GAME_API = winObj.gameApi
 
   window.addEventListener('keydown', (event) => {
     switch (event.key) {
@@ -157,24 +200,23 @@ async function initializeGame(winObj: any) {
       case "ArrowRight":
         winObj.gameApi.movePlayer(MOVE_DIRECTIONS.RIGHT);
         break;
-      // ... (default case - can be removed or kept for other key handling) ...
     }
   });
 
-  renderer.renderScreen(allCampaignData, contentData);
+  updateUI(allCampaignData, contentData);
   new Game().start();
 }
 
-function updateTileDefs(contentLoader: ContentLoader, monsterPrefab: Monster) {
-  const tileDefExists: boolean = !!contentLoader.tileDefinitions?.find(def => def.symbol === monsterPrefab.ascii_char);
+function updateTileDefs(contentLoader: ContentLoader, monsterPrefab: Npc) {
+  const tileDefExists: boolean = !!contentLoader.tileDefinitions?.find(def => def.symbol === monsterPrefab.renderable?.char);
   if (!tileDefExists) {
     contentLoader.tileDefinitions?.push({
-      "symbol": monsterPrefab.ascii_char,
+      "symbol": monsterPrefab?.renderable?.char!,
       "name": monsterPrefab.prefabId,
       "isBlocking": true,
       "isTrigger": false,
-      "tileColor": monsterPrefab.color,
-      "tileChar": monsterPrefab.ascii_char,
+      "tileColor": monsterPrefab?.renderable?.color!,
+      "tileChar": monsterPrefab?.renderable?.char!,
     });
   }
 }
@@ -182,7 +224,8 @@ function updateTileDefs(contentLoader: ContentLoader, monsterPrefab: Monster) {
 function getFnMovePlayer(contentLoader: ContentLoader, renderer: Renderer, campaignData: ContentItem, contentData: ContentItem) {
   return async (direction: EntityPosition) => {
     console.log("movePlayer called, direction:", direction);
-    const player = GAME_STATE.player;
+    const gameState = globalServiceLocator.state;
+    const player = gameState.player;
     if (!player) {
       console.log("Player is not initialized");
       return;
@@ -194,7 +237,7 @@ function getFnMovePlayer(contentLoader: ContentLoader, renderer: Renderer, campa
       y: currentPlayerPosition.y + direction.y,
     };
 
-    const mapTiles = GAME_STATE.currentMapData.tiles; // Get map tiles
+    const mapTiles = gameState.currentMapData.tiles; // Get map tiles
     const mapHeight = mapTiles.length;
     const mapWidth = mapTiles[0].length;
     const tileDefinitions = contentLoader.tileDefinitions; // Get tile definitions
@@ -234,7 +277,7 @@ function getFnMovePlayer(contentLoader: ContentLoader, renderer: Renderer, campa
       console.log("Stepped on a trigger tile!");
 
       const triggerSymbol = tileSymbolAtNewPosition;
-      const trigger = GAME_STATE.currentMapData.triggers.find(
+      const trigger = gameState.currentMapData.triggers.find(
         (triggerDef: MapTile) => triggerDef.symbol === triggerSymbol
       );
 
@@ -243,13 +286,13 @@ function getFnMovePlayer(contentLoader: ContentLoader, renderer: Renderer, campa
         const targetLocation = trigger.targetLocation;
         console.log('Hit trigger', targetMapName, targetLocation);
 
-        const newMapData = await GAME_STATE.currentCampaignData?.maps[targetMapName].get();
+        const newMapData = await gameState.currentCampaignData?.maps[targetMapName].get();
         if (!newMapData) {
           console.error("Failed to load target map:", targetMapName);
         }
 
         player.position = targetLocation;
-        GAME_STATE.currentMapData = newMapData;
+        gameState.currentMapData = newMapData;
         renderer.renderMapFull(newMapData);
         return; // Exit after map transition
       } else {
@@ -262,69 +305,70 @@ function getFnMovePlayer(contentLoader: ContentLoader, renderer: Renderer, campa
   };
 }
 
-function getUiScreens(winObj: any): UIHolder {
+function getUiScreens(winDoc: Document): UIHolder {
   return {
+    winDoc: winDoc,
     els: {
-      'startMenu': winObj.document.getElementById('startMenu') as HTMLElement,
-      'characterCreation': winObj.document.getElementById('characterCreation') as HTMLElement,
-      'campaignSelection': winObj.document.getElementById('campaignSelection') as HTMLElement,
-      'gameContainer': winObj.document.getElementById('gameContainer') as HTMLElement,
-      'races-selector': winObj.document.getElementById('races-selector') as HTMLElement,
-      'classes-selector': winObj.document.getElementById('classes-selector') as HTMLElement,
-      'skills-selector': winObj.document.getElementById('skills-selector') as HTMLElement,
-      'ability-score-selection': winObj.document.getElementById('ability-score-selection') as HTMLElement,
-      'step-description': winObj.document.getElementById('step-description') as HTMLElement,
-      'selector-info': winObj.document.getElementById('selector-info') as HTMLElement,
-      'remainingPointsDisplay': winObj.document.getElementById('remainingPointsDisplay') as HTMLElement,
-      'campaign-list-ul': winObj.document.getElementById('campaign-list-ul') as HTMLUListElement,
-      'campaign-info': winObj.document.getElementById('campaign-info') as HTMLElement,
-      'campaign-name': winObj.document.getElementById('campaign-name') as HTMLParagraphElement,
-      'campaign-desc': winObj.document.getElementById('campaign-desc') as HTMLParagraphElement,
-      'selected-name': winObj.document.getElementById('selected-name') as HTMLElement,
-      'selected-desc': winObj.document.getElementById('selected-desc') as HTMLElement,
-      'skill-container': winObj.document.getElementById('skill-container') as HTMLUListElement,
-      'skill-points-remaining': winObj.document.getElementById('skill-points-remaining') as HTMLLabelElement,
-      'str-cost': winObj.document.getElementById(`str-cost`) as HTMLSpanElement,
-      'dex-cost': winObj.document.getElementById(`dex-cost`) as HTMLSpanElement,
-      'con-cost': winObj.document.getElementById(`con-cost`) as HTMLSpanElement,
-      'int-cost': winObj.document.getElementById(`int-cost`) as HTMLSpanElement,
-      'wis-cost': winObj.document.getElementById(`wis-cost`) as HTMLSpanElement,
-      'cha-cost': winObj.document.getElementById(`cha-cost`) as HTMLSpanElement,
-      'str-total': winObj.document.getElementById(`str-total`) as HTMLSpanElement,
-      'dex-total': winObj.document.getElementById(`dex-total`) as HTMLSpanElement,
-      'con-total': winObj.document.getElementById(`con-total`) as HTMLSpanElement,
-      'int-total': winObj.document.getElementById(`int-total`) as HTMLSpanElement,
-      'wis-total': winObj.document.getElementById(`wis-total`) as HTMLSpanElement,
-      'cha-total': winObj.document.getElementById(`cha-total`) as HTMLSpanElement,
-      'str-mod': winObj.document.getElementById(`str-mod`) as HTMLSpanElement,
-      'dex-mod': winObj.document.getElementById(`dex-mod`) as HTMLSpanElement,
-      'con-mod': winObj.document.getElementById(`con-mod`) as HTMLSpanElement,
-      'int-mod': winObj.document.getElementById(`int-mod`) as HTMLSpanElement,
-      'wis-mod': winObj.document.getElementById(`wis-mod`) as HTMLSpanElement,
-      'cha-mod': winObj.document.getElementById(`cha-mod`) as HTMLSpanElement,
-      'feats-selector': winObj.document.getElementById('feats-selector') as HTMLElement,
-      'character-summary': winObj.document.getElementById('character-summary') as HTMLElement,
-      'combatLogPanel': winObj.document.getElementById('combatLogPanel') as HTMLElement,
-      'characterStatusPanel': winObj.document.getElementById('characterStatusPanel') as HTMLElement,
-      'actionButtonsPanel': winObj.document.getElementById('actionButtonsPanel') as HTMLElement,
-      'combatLogText': winObj.document.getElementById('combatLogText') as HTMLElement,
-      'characterStatusDetails': winObj.document.getElementById('characterStatusDetails') as HTMLElement,
+      'startMenu': winDoc.getElementById('startMenu') as HTMLElement,
+      'characterCreation': winDoc.getElementById('characterCreation') as HTMLElement,
+      'campaignSelection': winDoc.getElementById('campaignSelection') as HTMLElement,
+      'gameContainer': winDoc.getElementById('gameContainer') as HTMLElement,
+      'races-selector': winDoc.getElementById('races-selector') as HTMLElement,
+      'classes-selector': winDoc.getElementById('classes-selector') as HTMLElement,
+      'skills-selector': winDoc.getElementById('skills-selector') as HTMLElement,
+      'ability-score-selection': winDoc.getElementById('ability-score-selection') as HTMLElement,
+      'step-description': winDoc.getElementById('step-description') as HTMLElement,
+      'selector-info': winDoc.getElementById('selector-info') as HTMLElement,
+      'remainingPointsDisplay': winDoc.getElementById('remainingPointsDisplay') as HTMLElement,
+      'campaign-list-ul': winDoc.getElementById('campaign-list-ul') as HTMLUListElement,
+      'campaign-info': winDoc.getElementById('campaign-info') as HTMLElement,
+      'campaign-name': winDoc.getElementById('campaign-name') as HTMLParagraphElement,
+      'campaign-desc': winDoc.getElementById('campaign-desc') as HTMLParagraphElement,
+      'selected-name': winDoc.getElementById('selected-name') as HTMLElement,
+      'selected-desc': winDoc.getElementById('selected-desc') as HTMLElement,
+      'skill-container': winDoc.getElementById('skill-container') as HTMLUListElement,
+      'skill-points-remaining': winDoc.getElementById('skill-points-remaining') as HTMLLabelElement,
+      'str-cost': winDoc.getElementById(`str-cost`) as HTMLSpanElement,
+      'dex-cost': winDoc.getElementById(`dex-cost`) as HTMLSpanElement,
+      'con-cost': winDoc.getElementById(`con-cost`) as HTMLSpanElement,
+      'int-cost': winDoc.getElementById(`int-cost`) as HTMLSpanElement,
+      'wis-cost': winDoc.getElementById(`wis-cost`) as HTMLSpanElement,
+      'cha-cost': winDoc.getElementById(`cha-cost`) as HTMLSpanElement,
+      'str-total': winDoc.getElementById(`str-total`) as HTMLSpanElement,
+      'dex-total': winDoc.getElementById(`dex-total`) as HTMLSpanElement,
+      'con-total': winDoc.getElementById(`con-total`) as HTMLSpanElement,
+      'int-total': winDoc.getElementById(`int-total`) as HTMLSpanElement,
+      'wis-total': winDoc.getElementById(`wis-total`) as HTMLSpanElement,
+      'cha-total': winDoc.getElementById(`cha-total`) as HTMLSpanElement,
+      'str-mod': winDoc.getElementById(`str-mod`) as HTMLSpanElement,
+      'dex-mod': winDoc.getElementById(`dex-mod`) as HTMLSpanElement,
+      'con-mod': winDoc.getElementById(`con-mod`) as HTMLSpanElement,
+      'int-mod': winDoc.getElementById(`int-mod`) as HTMLSpanElement,
+      'wis-mod': winDoc.getElementById(`wis-mod`) as HTMLSpanElement,
+      'cha-mod': winDoc.getElementById(`cha-mod`) as HTMLSpanElement,
+      'feats-selector': winDoc.getElementById('feats-selector') as HTMLElement,
+      'character-summary': winDoc.getElementById('character-summary') as HTMLElement,
+      'combatLogPanel': winDoc.getElementById('combatLogPanel') as HTMLElement,
+      'characterStatusPanel': winDoc.getElementById('characterStatusPanel') as HTMLElement,
+      'actionButtonsPanel': winDoc.getElementById('actionButtonsPanel') as HTMLElement,
+      'combatLogText': winDoc.getElementById('combatLogText') as HTMLElement,
+      'characterStatusDetails': winDoc.getElementById('characterStatusDetails') as HTMLElement,
     },
     inputs: {
-      "str": winObj.document.getElementById("str") as HTMLInputElement,
-      "dex": winObj.document.getElementById("dex") as HTMLInputElement,
-      "con": winObj.document.getElementById("con") as HTMLInputElement,
-      "int": winObj.document.getElementById("int") as HTMLInputElement,
-      "wis": winObj.document.getElementById("wis") as HTMLInputElement,
-      "cha": winObj.document.getElementById("cha") as HTMLInputElement,
+      "str": winDoc.getElementById("str") as HTMLInputElement,
+      "dex": winDoc.getElementById("dex") as HTMLInputElement,
+      "con": winDoc.getElementById("con") as HTMLInputElement,
+      "int": winDoc.getElementById("int") as HTMLInputElement,
+      "wis": winDoc.getElementById("wis") as HTMLInputElement,
+      "cha": winDoc.getElementById("cha") as HTMLInputElement,
     },
     btns: {
-      'back-btn': winObj.document.getElementById('back-btn') as HTMLButtonElement,
-      'next-btn': winObj.document.getElementById('next-btn') as HTMLButtonElement,
-      'campaignSelectBtn': winObj.document.getElementById('campaignSelectBtn') as HTMLButtonElement,
-      'spawnTestMonsters': winObj.document.getElementById('actionButtonsPanel').querySelector('button:nth-child(1)') as HTMLButtonElement,
-      'attackButton': winObj.document.getElementById('actionButtonsPanel').querySelector('button:nth-child(2)') as HTMLButtonElement,
-      'endTurnButton': winObj.document.getElementById('actionButtonsPanel').querySelector('button:nth-child(3)') as HTMLButtonElement,
+      'back-btn': winDoc.getElementById('back-btn') as HTMLButtonElement,
+      'next-btn': winDoc.getElementById('next-btn') as HTMLButtonElement,
+      'campaignSelectBtn': winDoc.getElementById('campaignSelectBtn') as HTMLButtonElement,
+      'spawnTestnpcs': winDoc.getElementById('actionButtonsPanel')?.querySelector('button:nth-child(1)') as HTMLButtonElement,
+      'attackButton': winDoc.getElementById('actionButtonsPanel')?.querySelector('button:nth-child(2)') as HTMLButtonElement,
+      'endTurnButton': winDoc.getElementById('actionButtonsPanel')?.querySelector('button:nth-child(3)') as HTMLButtonElement,
     }
   } as UIHolder;
 };

@@ -1,12 +1,11 @@
-// src/scripts/engine/entities/monster.mts
 import { EntityPosition } from "../utils.mjs";
 import { ContentItem } from "./contentItem.mjs";
 import { Entity, EntityAbilityScores, EntityHitPoints } from "./entity.mjs";
 
-export class Monster extends Entity {
+export class Npc extends Entity {
     prefabId: string;
-    ascii_char: string;
-    color: string;
+    public aiPackage: any | null = null;
+    public disposition: 'friendly' | 'neutral' | 'hostile' = 'neutral';
 
     constructor(
         name: string,
@@ -20,7 +19,11 @@ export class Monster extends Entity {
     ) {
         super(name, selectedRace, [], 0, { remaining: 0, allocations: new Map() }, [], position, stats, hitPoints);
         this.prefabId = prefabId;
-        this.ascii_char = ascii_char;
-        this.color = color;
+
+        this.renderable = {
+            char: ascii_char,
+            color: color,
+            layer: 5
+        };
     }
 }

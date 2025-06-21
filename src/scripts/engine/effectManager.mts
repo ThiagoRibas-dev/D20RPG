@@ -3,7 +3,8 @@
 import { ActiveEffect } from './activeEffect.mjs';
 import { ContentItem } from './entities/contentItem.mjs';
 import { Entity } from './entities/entity.mjs';
-import { GlobalEventBus } from './eventBus.mjs';
+import { EventBus } from './eventBus.mjs';
+import { globalServiceLocator } from './serviceLocator.mjs';
 
 /**
  * Manages the lifecycle of all temporary effects in the game.
@@ -14,8 +15,9 @@ export class EffectManager {
     private activeEffects: Map<string, ActiveEffect> = new Map();
 
     constructor() {
+        const eventBus: EventBus = globalServiceLocator.eventBus;
         // Subscribe to the end of a character's turn to tick down durations.
-        GlobalEventBus.subscribe('combat:turn:end', (data: { entity: Entity }) => this.tickDownEffectsFor(data.entity));
+        eventBus.subscribe('combat:turn:end', (data: { entity: Entity }) => this.tickDownEffectsFor(data.entity));
     }
 
     /**
@@ -37,6 +39,7 @@ export class EffectManager {
             return;
         }
 
+        const eventBus: EventBus = globalServiceLocator.eventBus;
         try {
             // Dynamically import the logic script associated with the effect.
             const effectScriptModule = await import(effectData.script);
@@ -61,7 +64,7 @@ export class EffectManager {
             };
 
             // Instantiate the dynamically imported class.
-            newEffect.scriptInstance = new EffectLogicClass(newEffect, GlobalEventBus);
+            newEffect.scriptInstance = new EffectLogicClass(newEffect, eventBus);
 
             this.activeEffects.set(id, newEffect);
 
@@ -69,7 +72,7 @@ export class EffectManager {
                 newEffect.scriptInstance.onApply();
             }
 
-            GlobalEventBus.publish('character:effect:applied', { entity: target, effect: newEffect });
+            eventBus.publish('character:effect:applied', { entity: target, effect: newEffect });
             console.log(`Applied effect "${newEffect.name}" to ${target.name}.`);
 
         } catch (error) {
@@ -84,13 +87,13 @@ export class EffectManager {
         const effect = this.activeEffects.get(effectId);
         if (!effect) return;
 
-        // CRITICAL: Instruct the script to perform its own cleanup.
+        // Instruct the script to perform its own cleanup.
         if (effect.scriptInstance.onRemove) {
             effect.scriptInstance.onRemove();
         }
 
         this.activeEffects.delete(effectId);
-        GlobalEventBus.publish('character:effect:removed', { entity: effect.target, effect: effect });
+        globalServiceLocator.eventBus.publish('character:effect:removed', { entity: effect.target, effect: effect });
         console.log(`Removed effect "${effect.name}" from ${effect.target.name}.`);
     }
 

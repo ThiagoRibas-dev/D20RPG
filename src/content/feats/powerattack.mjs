@@ -37,21 +37,23 @@ export default class PowerAttackEffectLogic {
     /**
      * Listener for the 'action:attack:before_roll' event.
      * @param {object} context - The context object for the attack action.
+     *                           MUST contain 'attacker', 'target', and 'weapon'.
      */
     modifyAttack(context) {
         // Only apply to the owner of this effect.
         if (context.attacker !== this.effect.target) return;
 
+        // Use the new tagging system to validate the action.
+        if (!context.weapon || !context.weapon.hasTag('melee')) { // <-- USE THE SYSTEM
+            return; // Not a melee weapon, do nothing.
+        }
+
         // In a real game, this would come from a UI prompt.
-        // For now, we'll hardcode a value.
-        const chosenPenalty = 2; // Let's use 2 for this example.
+        const chosenPenalty = 2;
 
         if (chosenPenalty > 0) {
-            console.log(`Power Attack: Applying -${chosenPenalty} to attack roll.`);
+            console.log(`Power Attack: Applying -${chosenPenalty} to melee attack roll.`);
             context.attackRoll.modifier -= chosenPenalty;
-
-            // Store the chosen penalty in the context object so other listeners
-            // (like our modifyDamage method) can access it during the same action.
             context.powerAttackValue = chosenPenalty;
         }
     }
@@ -66,8 +68,8 @@ export default class PowerAttackEffectLogic {
 
         let damageBonus = context.powerAttackValue;
 
-        // A real weapon object would have this property.
-        if (context.weapon.isTwoHanded) {
+        // The logic for two-handed weapons is also tag-driven.
+        if (context.weapon && context.weapon.hasTag('two_handed')) { // <-- USE THE SYSTEM
             damageBonus *= 2;
         }
 

@@ -1,0 +1,29 @@
+{
+    "name": "Town Guard",
+    "race": "human",
+    "class": "warrior",
+    "level": 2,
+    "stats": {
+        "str": 14,
+        "dex": 12,
+        "con": 13,
+        "int": 10,
+        "wis": 11,
+        "cha": 10
+    },
+    "equipment": {
+        "armor": "studdedleatherarmor",
+        "weapon_melee": "longsword"
+    },
+    "feats": [
+        "powerattack",
+        "toughness"
+    ],
+    "ai_package": "/content/ai/defensivePatrol.mjs",
+    "disposition": "friendly",
+    "renderable": {
+        "char": "G",
+        "color": "cyan",
+        "layer": 5
+    }
+}

@@ -58,6 +58,3 @@ export class EventBus {
         });
     }
 }
-
-// Create a single, globally accessible instance of the EventBus.
-export const GlobalEventBus = new EventBus();
