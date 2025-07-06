@@ -3,6 +3,7 @@ import { Renderable } from "../components/renderable.mjs";
 import { globalServiceLocator } from "../serviceLocator.mjs";
 import { calculateModifier, EntityPosition, rollD20 } from "../utils.mjs";
 import { ContentItem } from "./contentItem.mjs";
+import { ModifierList } from "./modifier.mjs";
 
 export type EntityClass = {
     class: ContentItem;
@@ -45,6 +46,14 @@ export type SavingThrows = {
     will: SavingThrow
 }
 
+export type ActionBudget = {
+    standard: number;
+    move: number;
+    swift: number;
+    free: number;
+    hasTaken5FootStep: boolean;
+}
+
 export class Entity {
     id: string;
     name: string;
@@ -60,7 +69,15 @@ export class Entity {
     savingThrows: SavingThrows;
     activeEffects: ActiveEffect[];
     renderable: Renderable | null;
+    actionBudget: ActionBudget;
 
+
+    // We store the BASE stats, not the final ones.
+    public baseStats: EntityAbilityScores;
+
+    // A map for every modifiable value in the game.
+    // The key is the target (e.g., "stats.str", "saves.will", "skills.spot")
+    public modifiers: Map<string, ModifierList>;
 
     constructor(
         name: string = "",
@@ -98,6 +115,47 @@ export class Entity {
             will: { base: 0, racial_bonus: 0, feat_bonus: 0, misc_bonus: 0 }
         };
         this.renderable = null;
+
+        this.baseStats = stats;
+        this.modifiers = new Map();
+        this.actionBudget = {
+            standard: 1,
+            move: 1,
+            swift: 1,
+            free: 99,
+            hasTaken5FootStep: false
+        }
+    }
+
+    /**
+        * Calculates the total bonus for a given skill, including the
+        * relevant ability modifier.
+        * @param skillId The ID of the skill (e.g., "spot").
+        * @returns The final skill modifier.
+        */
+    public getSkillModifier(skillId: string): number {
+        // In a real implementation, you would look up the skill's key ability (e.g., WIS for Spot)
+        const keyAbilityScore = this.stats.wis; // Placeholder
+        const abilityMod = calculateModifier(keyAbilityScore);
+
+        const ranks = this.getSkillRank(skillId);
+
+        const otherBonuses = this.modifiers.get(`skills.${skillId}`)?.getTotal() || 0;
+
+        return ranks + abilityMod + otherBonuses;
+    }
+
+    /**
+     * Calculates effective skill ranks based on points spent and class skills.
+     * @param skillId ID from content/skills.
+     * @returns The number of ranks in the skill.
+     */
+    public getSkillRank(skillId: string): number {
+        const pointsSpent = this.skills.allocations.get(skillId) || 0;
+        const isClassSkill = this.classes.some(cls =>
+            cls.classSkills.includes(skillId) // This requires skill names to be consistent
+        );
+        return isClassSkill ? pointsSpent : Math.floor(pointsSpent / 2);
     }
 
     /**
@@ -164,5 +222,31 @@ export class Entity {
         console.log(`${this.constructor.name} rolling initiative: d20 roll = ${d20Roll}, DEX mod = ${dexMod}, Total = ${initiativeRoll}`); // Optional log
 
         return initiativeRoll;
+    }
+
+    /**
+        * Retrieves the weapon the entity is currently wielding.
+        * MVP: Returns a placeholder.
+        * TODO: Implement a real equipment system and have this method return the equipped item.
+        */
+    getEquippedWeapon(): ContentItem {
+        // For now, let's pretend everyone has a longsword.
+        // We need a simple object that at least has tags for our logic to work.
+        const longsword = new ContentItem("item");
+        longsword.name = "Longsword";
+        longsword.tags = ["weapon", "melee", "martial", "slashing", "one_handed"];
+        return longsword;
+    }
+
+    /**
+     * Calculates the entity's Armor Class.
+     * MVP: Returns a simple 10 + DEX modifier.
+     * TODO: This should use the ModifierList system to account for armor, shields, etc.
+     */
+    getArmorClass(): number {
+        const dexMod = calculateModifier(this.stats.dex);
+        // This is a simplified AC calculation. A full implementation would be:
+        // 10 + armor_bonus + shield_bonus + dex_mod + size_mod + ...
+        return 10 + dexMod;
     }
 }

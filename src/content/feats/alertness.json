@@ -1,8 +1,29 @@
 {
   "name": "Alertness",
   "description": "You are always on the lookout, gaining a bonus to alertness-related skills.",
-  "type": ["General"],
+  "type": [
+    "General"
+  ],
+  "tags": [
+    "bonus",
+    "skill",
+    "listen",
+    "spot"
+  ],
   "prerequisites": [],
   "benefit": "You gain a +2 bonus on Listen checks, and a +2 bonus on Spot checks.",
-  "special": "Benefit is doubled whenever you are in a familiar or otherwise comfortable location."
+  "bonuses": [
+    {
+      "type": "skill",
+      "subtype": "Listen",
+      "value": 2,
+      "description": "+2 racial bonus on Listen checks."
+    },
+    {
+      "type": "skill",
+      "subtype": "Spot",
+      "value": 2,
+      "description": "+2 racial bonus on Spot checks."
+    }
+  ]
 }

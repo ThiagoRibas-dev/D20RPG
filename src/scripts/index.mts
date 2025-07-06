@@ -9,6 +9,7 @@ import { UIHolder } from './engine/entities/uiHolder.mjs';
 import { EventBus } from './engine/eventBus.mjs';
 import { NpcFactory } from './engine/factories/npcFactory.mjs';
 import { Game } from './engine/game.mjs';
+import { PlayerTurnController } from './engine/playerTurnController.mjs';
 import { Renderer } from './engine/renderer.mjs';
 import { RulesEngine } from './engine/rulesEngine.mjs';
 import { globalServiceLocator, ServiceLocator } from './engine/serviceLocator.mjs';
@@ -51,11 +52,13 @@ async function initializeGame(winObj: any) {
   globalServiceLocator.effectManager = new EffectManager();
   globalServiceLocator.turnManager = new TurnManager();
   globalServiceLocator.npcFactory = new NpcFactory();
-  globalServiceLocator.renderer = new Renderer(winDoc);
+  globalServiceLocator.renderer = new Renderer();
+  globalServiceLocator.playerTurnController = new PlayerTurnController();
 
   // --- INITIALIZE UI MANAGER ---
   // Now that all services are ready, we can safely initialize the UI views.
-  initUIManager(); // <-- CALL THE NEW INITIALIZER
+  initUIManager();
+
 
   // --- Load Initial Data ---
   const contentData = await ServiceLocator.ContentLoader.getContent();
@@ -116,6 +119,7 @@ async function initializeGame(winObj: any) {
 
     // 4. Update the entire UI to reflect the new state.
     // This will hide the character creation screen and render the game map.
+    ServiceLocator.UI.btns['back-btn'].style.display = 'none';
     updateUI(allCampaignData, contentData);
   });
 
@@ -142,10 +146,10 @@ async function initializeGame(winObj: any) {
     spawnTestNpcs: async () => {
       ServiceLocator.State.npcs = [];
 
-      const goblin = await ServiceLocator.NpcFactory.create('goblin_warrior', 'monster', { x: 8, y: 3 });
+      const goblin = await ServiceLocator.NpcFactory.create('goblin_warrior', 'monsters', { x: 8, y: 3 });
       if (goblin) ServiceLocator.State.npcs.push(goblin);
 
-      const guard = await ServiceLocator.NpcFactory.create('town_guard', 'npc', { x: 2, y: 5 });
+      const guard = await ServiceLocator.NpcFactory.create('town_guard', 'npcs', { x: 2, y: 5 });
       if (guard) ServiceLocator.State.npcs.push(guard);
 
       updateUI(allCampaignData, contentData);
@@ -307,8 +311,8 @@ function getFnMovePlayer(contentLoader: ContentLoader, renderer: Renderer, campa
 
 function getUiScreens(winDoc: Document): UIHolder {
   return {
-    winDoc: winDoc,
     els: {
+      'body': winDoc.body as HTMLElement,
       'startMenu': winDoc.getElementById('startMenu') as HTMLElement,
       'characterCreation': winDoc.getElementById('characterCreation') as HTMLElement,
       'campaignSelection': winDoc.getElementById('campaignSelection') as HTMLElement,
@@ -366,9 +370,10 @@ function getUiScreens(winDoc: Document): UIHolder {
       'back-btn': winDoc.getElementById('back-btn') as HTMLButtonElement,
       'next-btn': winDoc.getElementById('next-btn') as HTMLButtonElement,
       'campaignSelectBtn': winDoc.getElementById('campaignSelectBtn') as HTMLButtonElement,
-      'spawnTestnpcs': winDoc.getElementById('actionButtonsPanel')?.querySelector('button:nth-child(1)') as HTMLButtonElement,
-      'attackButton': winDoc.getElementById('actionButtonsPanel')?.querySelector('button:nth-child(2)') as HTMLButtonElement,
-      'endTurnButton': winDoc.getElementById('actionButtonsPanel')?.querySelector('button:nth-child(3)') as HTMLButtonElement,
+      'spawnTestnpcs': winDoc.getElementById('spawn-npcs-btn') as HTMLButtonElement,
+      'attackButton': winDoc.getElementById('attack-btn') as HTMLButtonElement,
+      'endTurnButton': winDoc.getElementById('end-turn-btn') as HTMLButtonElement,
+      'startCombatButton': winDoc.getElementById('start-combat-btn') as HTMLButtonElement,
     }
   } as UIHolder;
 };

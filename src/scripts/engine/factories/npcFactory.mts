@@ -3,7 +3,7 @@ import { ServiceLocator } from "../serviceLocator.mjs";
 import { EntityPosition } from "../utils.mjs";
 
 export class NpcFactory {
-    public async create(prefabId: string, prefabType: 'monster' | 'npc', position: EntityPosition): Promise<Npc | null> {
+    public async create(prefabId: string, prefabType: 'monsters' | 'npcs', position: EntityPosition): Promise<Npc | null> {
         const content = await ServiceLocator.ContentLoader.getContent();
         const prefab = await content.prefabs[prefabType][prefabId].get();
 
@@ -30,6 +30,9 @@ export class NpcFactory {
 
         // 3. Set base stats
         npc.stats = prefab.stats;
+
+        console.log('NpcFactory prefab', prefab);
+        console.log('NpcFactory npc', npc);
 
         // 4. Calculate final stats using the RulesEngine
         ServiceLocator.RulesEngine.calculateStats(npc);

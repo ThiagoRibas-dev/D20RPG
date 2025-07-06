@@ -1,8 +1,8 @@
 import { ContentItem } from "./entities/contentItem.mjs";
 import { Entity, EntityClass } from "./entities/entity.mjs";
-import { UIHolder } from "./entities/uiHolder.mjs";
-import { globalServiceLocator } from "./serviceLocator.mjs";
-import { calculateModifier } from "./utils.mjs";
+import { ModifierList } from "./entities/modifier.mjs";
+import { ServiceLocator } from "./serviceLocator.mjs";
+import { calculateModifier, rollD20 } from "./utils.mjs";
 
 /**
  * The RulesEngine is the central authority for all game rule calculations.
@@ -10,167 +10,162 @@ import { calculateModifier } from "./utils.mjs";
  */
 export class RulesEngine {
     constructor() {
-        // In the future, this constructor will subscribe to game events.
+        ServiceLocator.EventBus.subscribe('action:attack:declared',
+            (data) => this.resolveAttack(data)
+        );
     }
 
-    // New helper function
-    public calculateBaseHitPoints(): { current: number; max: number } {
-        const player = globalServiceLocator.state.player;
-        if (!player) {
-            console.log("Player is not initialized");
-            return { current: 0, max: 0 };
+    /**
+    * Manages the entire resolution of a single attack, from roll to outcome.
+    * This is the heart of the combat event chain.
+    */
+    private resolveAttack(data: { attacker: Entity, target: Entity, weapon: ContentItem }): void {
+        const { attacker, target, weapon } = data;
+        console.log(`--- Resolving attack from ${attacker.name} to ${target.name} ---`);
+
+        // 1. CREATE CONTEXT
+        // This object will hold all data for this single attack.
+        const attackContext = {
+            attacker,
+            target,
+            weapon,
+            attackRoll: {
+                d20: 0,
+                base: attacker.baseAttackBonus,
+                abilityMod: calculateModifier(attacker.stats.str), // Assuming melee for now
+                misc: new ModifierList(), // For Power Attack, Bless, etc.
+                final: 0,
+            },
+            outcome: 'pending' as 'pending' | 'miss' | 'hit' | 'critical_threat',
+            // ... damage context would go here later
+        };
+
+        // 2. FIRE "BEFORE_ROLL" EVENT
+        // This gives other systems (feats, spells) a chance to modify the attack.
+        ServiceLocator.EventBus.publish('action:attack:before_roll', attackContext);
+
+        // 3. ROLL THE DIE
+        attackContext.attackRoll.d20 = rollD20(); // From utils.mts
+
+        // 4. CALCULATE FINAL ATTACK ROLL
+        attackContext.attackRoll.final =
+            attackContext.attackRoll.d20 +
+            attackContext.attackRoll.base +
+            attackContext.attackRoll.abilityMod +
+            attackContext.attackRoll.misc.getTotal(); // Get total from all stacking bonuses/penalties
+
+        // 5. COMPARE TO TARGET'S AC
+        const targetAC = target.getArmorClass();
+
+        // 6. DETERMINE OUTCOME
+        if (attackContext.attackRoll.d20 === 1) {
+            attackContext.outcome = 'miss'; // Natural 1 is always a miss
+        } else if (attackContext.attackRoll.d20 === 20) {
+            attackContext.outcome = 'critical_threat'; // Natural 20 is always a threat
+        } else if (attackContext.attackRoll.final >= targetAC) {
+            attackContext.outcome = 'hit';
+        } else {
+            attackContext.outcome = 'miss';
         }
 
-        let total = 0;
-        player.classes.forEach(cls => {
-            const conMod = calculateModifier(player.stats.con);
-            total += Math.max(1, cls.hitDice + conMod);
-        });
-        return { current: total, max: total };
+        console.log(`Attack Roll: ${attackContext.attackRoll.final} vs AC ${targetAC} -> ${attackContext.outcome.toUpperCase()}`);
+
+        // 7. FIRE "RESOLVED" EVENT
+        // Announce the final result of the attack roll.
+        ServiceLocator.EventBus.publish('action:attack:resolved', attackContext);
+
+        // 8. HANDLE DAMAGE (if it was a hit)
+        if (attackContext.outcome === 'hit' || attackContext.outcome === 'critical_threat') {
+            // TODO: Kick off the damage calculation chain here.
+            // For now, we just log it.
+            console.log("Attack hits! (Damage calculation would happen here)");
+            target.takeDamage(5); // Apply 5 placeholder damage
+            ServiceLocator.EventBus.publish('character:hp:changed', { entity: target });
+            if (!target.isAlive()) {
+                ServiceLocator.EventBus.publish('character:died', { entity: target, killer: attacker });
+            }
+        }
     }
+
     /**
-     * Calculates the final, derived stats for an entity based on the Stat Pipeline.
-     * This processes the Base and Permanent layers of calculation.
-     * @param entity The entity whose stats need to be calculated.
+     * Calculates all permanent stats and modifiers for an entity.
+     * This is the "Permanent Layer" of the pipeline. It should be called
+     * upon character finalization and level-up.
      */
     public calculateStats(entity: Entity): void {
         console.log(`Calculating stats for ${entity.name}...`);
+        entity.modifiers.clear(); // Start fresh
 
-        // --- 1. BASE LAYER ---
-        // Base stats are already on the entity from character creation.
-
-        // --- 2. PERMANENT LAYER ---
-        // Apply bonuses from race and declarative feats.
-
-        // Gather all sources of permanent, declarative bonuses.
-        const permanentBonusSources: ContentItem[] = [];
-        if (entity.selectedRace) {
-            permanentBonusSources.push(entity.selectedRace);
-        }
-        entity.feats.forEach(feat => {
-            // A feat is considered declarative if it has a 'bonuses' array and no script.
-            if (feat.bonuses && !feat.script) {
-                permanentBonusSources.push(feat);
+        // --- 1. GATHER SOURCES ---
+        const sources: ContentItem[] = [];
+        if (entity.selectedRace) sources.push(entity.selectedRace);
+        entity.feats.forEach(feat => sources.push(feat));
+        entity.classes.forEach(cls => {
+            for (let i = 0; i < cls.level; i++) {
+                const levelData = cls.class.level_progression[i];
+                levelData?.special?.forEach((ability: any) => sources.push(ability));
             }
         });
 
-        // Apply class level progression for BAB and Base Saves
-        entity.baseAttackBonus = 0;
-        entity.savingThrows.fortitude.base = 0;
-        entity.savingThrows.reflex.base = 0;
-        entity.savingThrows.will.base = 0;
-
-        entity.classes.forEach((cls: EntityClass) => {
-            const classData = cls.class;
-            const levelData = classData.level_progression[cls.level - 1];
-            if (levelData) {
-                entity.baseAttackBonus += levelData.base_attack_bonus;
-                entity.savingThrows.fortitude.base += levelData.fortitude_save;
-                entity.savingThrows.reflex.base += levelData.reflex_save;
-                entity.savingThrows.will.base += levelData.will_save;
-            }
-        });
-
-        // Apply bonuses from the sources
-        permanentBonusSources.forEach(source => {
-            if (!source.bonuses || !Array.isArray(source.bonuses)) return;
-
-            source.bonuses.forEach((bonus: any) => {
-                switch (bonus.type) {
-                    case 'hit_points':
-                        entity.hitPoints.max += bonus.value;
-                        break;
-                    case 'save':
-                        const savingThrowName: string = bonus.subtype;
-                        if (bonus.subtype && entity.savingThrows[savingThrowName]) {
-                            entity.savingThrows[savingThrowName].racial_bonus += bonus.value; // Or some other bonus type
-                        }
-                        break;
-                    case 'skill':
-                        // Skill bonuses will need a dedicated map on the entity.
-                        // For now, we log it.
-                        console.log(`Applying +${bonus.value} to ${bonus.subtype} skill.`);
-                        break;
-                    // Other bonus types (attack, AC, etc.) can be added here.
+        // --- 2. APPLY DECLARATIVE BONUSES ---
+        sources.forEach(source => {
+            source.bonuses?.forEach((bonus: any) => {
+                if (bonus.target) {
+                    this.addModifier(entity, bonus.target, bonus.value, bonus.type || 'untyped', source.name);
                 }
             });
         });
 
-        // --- Final Recalculations ---
-        // Recalculate HP based on final CON and Hit Dice
+        // --- 3. CALCULATE BASE VALUES FROM CLASS AND STATS ---
+        let baseAttackBonus = 0;
+        let baseFort = 0, baseRef = 0, baseWill = 0;
+        entity.classes.forEach((cls: EntityClass) => {
+            const classData = cls.class;
+            const levelData = classData.level_progression[cls.level - 1];
+            if (levelData) {
+                baseAttackBonus += levelData.base_attack_bonus;
+                baseFort += levelData.fortitude_save;
+                baseRef += levelData.reflex_save;
+                baseWill += levelData.will_save;
+            }
+        });
+        entity.baseAttackBonus = baseAttackBonus;
+        this.addModifier(entity, 'saves.fortitude', baseFort, 'base', 'Class Level');
+        this.addModifier(entity, 'saves.reflex', baseRef, 'base', 'Class Level');
+        this.addModifier(entity, 'saves.will', baseWill, 'base', 'Class Level');
+
+        // Add ability score modifiers to saves
+        this.addModifier(entity, 'saves.fortitude', calculateModifier(entity.stats.con), 'ability', 'Constitution');
+        this.addModifier(entity, 'saves.reflex', calculateModifier(entity.stats.dex), 'ability', 'Dexterity');
+        this.addModifier(entity, 'saves.will', calculateModifier(entity.stats.wis), 'ability', 'Wisdom');
+
+        // --- 4. CALCULATE FINAL HIT POINTS ---
         let totalHP = 0;
         const conMod = calculateModifier(entity.stats.con);
         entity.classes.forEach(cls => {
-            const hitDie = cls.class.hit_die.replace('d', '');
-            // For simplicity, we'll take average HP. A real implementation might store rolled values.
-            const avgHP = (parseInt(hitDie, 10) / 2) + 1;
+            const hitDie = parseInt(cls.class.hit_die.replace('d', ''), 10);
+            const avgHP = (hitDie / 2) + 1;
             totalHP += Math.max(1, (avgHP + conMod)) * cls.level;
         });
 
-        // Add HP from declarative feats like Toughness
-        permanentBonusSources.forEach(source => {
-            source.bonuses?.forEach((bonus: any) => {
-                if (bonus.type === 'hit_points') totalHP += bonus.value;
-            });
-        });
+        // Add HP bonuses from feats like Toughness
+        totalHP += entity.modifiers.get('hit_points')?.getTotal() || 0;
 
         entity.hitPoints.max = totalHP;
-        entity.hitPoints.current = totalHP; // Start with full health
+        entity.hitPoints.current = totalHP;
 
-        console.log(`${entity.name} stats calculated:`, entity);
+        console.log(`${entity.name} stats calculated.`, entity);
+
+        // --- THE NEW ADDITION ---
+        // Announce that the calculation for this entity is complete.
+        // Any system that needs to react to the final stats can listen for this.
+        ServiceLocator.EventBus.publish('entity:stats:calculated', { entity });
     }
 
-    /**
-     * Calculates effective skill ranks for checks/display
-     * @param skillId - ID from content/skills
-     * @returns Effective ranks (including cross-class penalties)
-     */
-    public getSkillRank(skillId: string): number {
-        const player = globalServiceLocator.state.player;
-        if (!player) {
-            console.log("Player is not initialized");
-            return 0;
+    private addModifier(entity: Entity, target: string, value: number, type: string, source: string) {
+        if (!entity.modifiers.has(target)) {
+            entity.modifiers.set(target, new ModifierList());
         }
-
-        const pointsSpent = player.skills.allocations.get(skillId) || 0;
-        const isClassSkill = player.classes.some(cls =>
-            cls.classSkills.includes(skillId)
-        );
-        return isClassSkill ? pointsSpent : pointsSpent / 2;
-    }
-
-    public getElAbilityScores(uiScreens: UIHolder): { [key: string]: HTMLInputElement } {
-        return {
-            str: uiScreens.inputs.str,
-            dex: uiScreens.inputs.dex,
-            con: uiScreens.inputs.con,
-            int: uiScreens.inputs.int,
-            wis: uiScreens.inputs.wis,
-            cha: uiScreens.inputs.cha,
-        };
-    }
-
-    public calculateCurrentAbilityPoints(el: { [key: string]: HTMLInputElement }): number {
-        let total = 0;
-        Object.values(el).forEach((value, i) => {
-            if (i < Object.values(el).length - 1) { total += this.pointBuyCost(parseInt(value.value)) };
-        })
-        return total;
-    }
-
-    public pointBuyCost(roll: number) {
-        let cost = 0;
-        if (roll > 18) {
-            cost += (roll - 18) * 3;
-            roll = 18;
-        }
-        if (roll > 13) {
-            cost += (roll - 13) * 2;
-            roll = 13;
-        }
-        if (roll > 8) {
-            cost += (roll - 8);
-        }
-        return cost;
+        entity.modifiers.get(target)!.add({ value, type, source });
     }
 }

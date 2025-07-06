@@ -1,7 +1,7 @@
 export type UIHolder = {
-    winDoc: Document,
     els: {
         [key: string]: HTMLElement;
+        'body': HTMLElement;
         'startMenu': HTMLElement;
         'characterCreation': HTMLElement;
         'campaignSelection': HTMLElement;
@@ -55,5 +55,9 @@ export type UIHolder = {
         'back-btn': HTMLButtonElement;
         'next-btn': HTMLButtonElement;
         'campaignSelectBtn': HTMLButtonElement;
+        'spawnTestnpcs': HTMLButtonElement;
+        'attackButton': HTMLButtonElement;
+        'endTurnButton': HTMLButtonElement;
+        'startCombatButton': HTMLButtonElement;
     };
 }

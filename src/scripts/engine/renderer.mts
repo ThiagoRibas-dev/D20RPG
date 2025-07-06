@@ -2,13 +2,49 @@ import { ContentItem } from "../engine/entities/contentItem.mjs";
 import { Entity } from "./entities/entity.mjs";
 import { MapTile } from "./entities/mapTile.mjs";
 import { Npc } from "./entities/npc.mjs";
-import { globalServiceLocator } from "./serviceLocator.mjs";
+import { globalServiceLocator, ServiceLocator } from "./serviceLocator.mjs";
 
 export class Renderer {
-    private winDoc: any;
+    private tileSize = 32;
+    private startX = 10;
+    private startY = 50;
 
-    constructor(winDoc: any) {
-        this.winDoc = winDoc;
+    constructor() {
+        this.initEventListeners();
+    }
+
+    /**
+         * Sets up all the necessary event listeners for the canvas.
+         */
+    private initEventListeners(): void {
+        const canvas = this.getCanvas();
+        if (!canvas) {
+            console.error("Canvas not found during Renderer initialization.");
+            return;
+        }
+
+        // --- MOUSE CLICK LISTENER ---
+        canvas.addEventListener('click', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const canvasX = event.clientX - rect.left;
+            const canvasY = event.clientY - rect.top;
+
+            // Convert the raw pixel click into a game grid coordinate.
+            const tileCoords = this.canvasToTileCoords(canvasX, canvasY);
+
+            // Find if any entity is standing on that tile.
+            const targetEntity = this.findEntityAt(tileCoords);
+
+            // Notify the PlayerTurnController of the map click.
+            // It will decide what to do based on the current interaction state.
+            ServiceLocator.PlayerTurnController.onMapClick(targetEntity);
+        });
+
+        // --- MOUSE RIGHT-CLICK LISTENER (for canceling) ---
+        canvas.addEventListener('contextmenu', (event) => {
+            event.preventDefault(); // Prevent the browser's context menu from appearing.
+            ServiceLocator.PlayerTurnController.cancelTargeting();
+        });
     }
 
     public draw() {
@@ -23,7 +59,7 @@ export class Renderer {
             return;
         }
 
-        const canvas: HTMLCanvasElement = getCanvas(gameArea);
+        const canvas: HTMLCanvasElement = this.getCanvas();
         canvas.setAttribute("width", gameArea.clientWidth.toString());
         canvas.setAttribute("height", gameArea.clientHeight.toString());
 
@@ -103,7 +139,7 @@ export class Renderer {
         const uiScreens = globalServiceLocator.ui;
         const contentLoader = globalServiceLocator.contentLoader;
         const gameArea: HTMLElement = uiScreens.els['gameContainer'];
-        const canvas: HTMLCanvasElement = getCanvas(gameArea);
+        const canvas: HTMLCanvasElement = this.getCanvas();
         const context = canvas.getContext('2d');
         if (!context) {
             console.error('Canvas 2d Context is null');
@@ -144,7 +180,7 @@ export class Renderer {
         }
 
         const gameArea: HTMLElement = uiScreens.els['gameContainer'];
-        const canvas: HTMLCanvasElement = getCanvas(gameArea);
+        const canvas: HTMLCanvasElement = this.getCanvas();
         const context = canvas.getContext('2d');
         if (!context) {
             console.error('Canvas 2d Context is null');
@@ -179,7 +215,7 @@ export class Renderer {
 
         const uiScreens = globalServiceLocator.ui;
         const gameArea: HTMLElement = uiScreens.els['gameContainer'];
-        const canvas: HTMLCanvasElement = getCanvas(gameArea);
+        const canvas: HTMLCanvasElement = this.getCanvas();
         const context = canvas.getContext('2d');
         if (!context) return;
 
@@ -192,9 +228,7 @@ export class Renderer {
      */
     public renderNpcs() {
         const gameState = globalServiceLocator.state;
-        const uiScreens = globalServiceLocator.ui;
-        const gameArea: HTMLElement = uiScreens.els['gameContainer'];
-        const canvas: HTMLCanvasElement = getCanvas(gameArea);
+        const canvas: HTMLCanvasElement = this.getCanvas();
         const context = canvas.getContext('2d');
         if (!context) return;
 
@@ -202,8 +236,47 @@ export class Renderer {
             this.renderEntity(context, monster);
         });
     }
-}
 
-function getCanvas(gameArea: HTMLElement): HTMLCanvasElement {
-    return gameArea.getElementsByTagName('canvas')[0] as HTMLCanvasElement;
+    /**
+     * Converts raw canvas pixel coordinates into game grid tile coordinates.
+     * @param canvasX The x-coordinate on the canvas.
+     * @param canvasY The y-coordinate on the canvas.
+     * @returns The corresponding tile coordinates {x, y} on the game map.
+     */
+    private canvasToTileCoords(canvasX: number, canvasY: number): { x: number, y: number } {
+        const tileX = Math.floor((canvasX - this.startX) / this.tileSize);
+        const tileY = Math.floor((canvasY - this.startY) / this.tileSize);
+        return { x: tileX, y: tileY };
+    }
+
+    /**
+     * Finds the first entity (player or NPC) located at the given tile coordinates.
+     * @param tileCoords The {x, y} coordinates of the tile to check.
+     * @returns The entity at that position, or null if the tile is empty.
+     */
+    private findEntityAt(tileCoords: { x: number, y: number }): Entity | null {
+        const state = ServiceLocator.State;
+
+        // Check if the player is at the target location.
+        if (state.player && state.player.position.x === tileCoords.x && state.player.position.y === tileCoords.y) {
+            return state.player;
+        }
+
+        // Check all NPCs.
+        for (const npc of state.npcs) {
+            if (npc.position.x === tileCoords.x && npc.position.y === tileCoords.y) {
+                return npc;
+            }
+        }
+
+        // No entity found at this position.
+        return null;
+    }
+
+    /**
+     * Helper function to get the canvas element.
+     */
+    private getCanvas(): HTMLCanvasElement {
+        return ServiceLocator.UI.els['gameContainer'].querySelector('canvas')!;
+    }
 }

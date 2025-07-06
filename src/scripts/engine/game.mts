@@ -1,4 +1,3 @@
-import { ContentItem } from "./entities/contentItem.mjs";
 
 export class Game {
   private gameLoopInterval: NodeJS.Timeout;

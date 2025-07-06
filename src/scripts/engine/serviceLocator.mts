@@ -4,6 +4,7 @@ import { GameState } from "./entities/gameState.mjs";
 import { UIHolder } from "./entities/uiHolder.mjs";
 import { EventBus } from "./eventBus.mjs";
 import { NpcFactory } from "./factories/npcFactory.mjs";
+import { PlayerTurnController } from "./playerTurnController.mjs";
 import { Renderer } from "./renderer.mjs";
 import { RulesEngine } from "./rulesEngine.mjs";
 import { TurnManager } from "./turnManager.mjs";
@@ -24,6 +25,7 @@ class ServiceLocator {
     public ui!: UIHolder;
     public eventBus!: EventBus;
     public npcFactory!: NpcFactory;
+    public playerTurnController!: PlayerTurnController;
     public state!: GameState;
 
     /**
@@ -80,6 +82,13 @@ class ServiceLocator {
      */
     public static get NpcFactory(): NpcFactory {
         return globalServiceLocator.npcFactory;
+    }
+
+    /**
+     * Provides access to the global GameState object.
+     */
+    public static get PlayerTurnController(): PlayerTurnController {
+        return globalServiceLocator.playerTurnController;
     }
 
     /**
