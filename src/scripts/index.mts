@@ -1,9 +1,6 @@
 import { ContentLoader } from './engine/contentLoader.mjs';
 import { EffectManager } from './engine/effectManager.mjs';
-import { ContentItem } from './engine/entities/contentItem.mjs';
 import { GameState } from './engine/entities/gameState.mjs';
-import { MapTile } from './engine/entities/mapTile.mjs';
-import { Npc } from './engine/entities/npc.mjs';
 import { PlayerCharacter } from './engine/entities/playerCharacter.mjs';
 import { UIHolder } from './engine/entities/uiHolder.mjs';
 import { EventBus } from './engine/eventBus.mjs';
@@ -12,9 +9,9 @@ import { Game } from './engine/game.mjs';
 import { PlayerTurnController } from './engine/playerTurnController.mjs';
 import { Renderer } from './engine/renderer.mjs';
 import { RulesEngine } from './engine/rulesEngine.mjs';
-import { globalServiceLocator, ServiceLocator } from './engine/serviceLocator.mjs';
+import { globalServiceLocator } from './engine/serviceLocator.mjs';
 import { TurnManager } from './engine/turnManager.mjs';
-import { EntityPosition, MOVE_DIRECTIONS } from './engine/utils.mjs';
+import { MOVE_DIRECTIONS } from './engine/utils.mjs';
 import { initUIManager, updateUI } from './ui/uiManager.mjs';
 
 async function initializeGame(winObj: any) {
@@ -61,16 +58,12 @@ async function initializeGame(winObj: any) {
 
 
   // --- Load Initial Data ---
-  const contentData = await ServiceLocator.ContentLoader.getContent();
-  const allCampaignData = await ServiceLocator.ContentLoader.getCampaigns();
-
-  const renderer = globalServiceLocator.renderer;
-  const uiScreens = globalServiceLocator.ui;
-  const contentLoader = globalServiceLocator.contentLoader;
+  const contentData = await globalServiceLocator.contentLoader.getContent();
+  const allCampaignData = await globalServiceLocator.contentLoader.getCampaigns();
 
   // --- SETUP THE CONTROLLER LOGIC (EVENT SUBSCRIPTIONS) ---
-  ServiceLocator.EventBus.subscribe('ui:creation:next_step', () => {
-    const state = ServiceLocator.State;
+  globalServiceLocator.eventBus.subscribe('ui:creation:next_step', () => {
+    const state = globalServiceLocator.state;
     state.creationStep++;
     if (state.creationStep >= state.creationSteps.length) {
       state.creationStep = state.creationSteps.length - 1;
@@ -80,8 +73,8 @@ async function initializeGame(winObj: any) {
     updateUI(allCampaignData, contentData);
   });
 
-  ServiceLocator.EventBus.subscribe('ui:creation:prev_step', () => {
-    const state = ServiceLocator.State;
+  globalServiceLocator.eventBus.subscribe('ui:creation:prev_step', () => {
+    const state = globalServiceLocator.state;
     state.creationStep--;
     if (state.creationStep < 0) {
       state.creationStep = 0;
@@ -90,8 +83,8 @@ async function initializeGame(winObj: any) {
     updateUI(allCampaignData, contentData);
   });
 
-  ServiceLocator.EventBus.subscribe('ui:creation:confirmed', async () => {
-    const state = ServiceLocator.State;
+  globalServiceLocator.eventBus.subscribe('ui:creation:confirmed', async () => {
+    const state = globalServiceLocator.state;
 
     if (!state.player || !state.currentCampaignData) {
       console.error("Cannot start game: Player or Campaign data is missing.");
@@ -119,194 +112,64 @@ async function initializeGame(winObj: any) {
 
     // 4. Update the entire UI to reflect the new state.
     // This will hide the character creation screen and render the game map.
-    ServiceLocator.UI.btns['back-btn'].style.display = 'none';
+    globalServiceLocator.ui.btns['back-btn'].style.display = 'none';
     updateUI(allCampaignData, contentData);
   });
 
   winObj.gameApi = {
     init: true,
     newGameClick: () => {
-      ServiceLocator.State.currentScreen = "campaignSelection";
+      globalServiceLocator.state.currentScreen = "campaignSelection";
 
       updateUI(allCampaignData, contentData);
     },
     selectCampaign: async () => {
-      ServiceLocator.State.currentScreen = "characterCreation";
-      ServiceLocator.State.player = new PlayerCharacter();
-      ServiceLocator.State.creationStep = 0;
+      globalServiceLocator.state.currentScreen = "characterCreation";
+      globalServiceLocator.state.player = new PlayerCharacter();
+      globalServiceLocator.state.creationStep = 0;
 
       updateUI(allCampaignData, contentData);
     },
-    creationNextStep: () => ServiceLocator.EventBus.publish('ui:creation:next_step'),
-    creationPrevStep: () => ServiceLocator.EventBus.publish('ui:creation:prev_step'),
+    creationNextStep: () => globalServiceLocator.eventBus.publish('ui:creation:next_step'),
+    creationPrevStep: () => globalServiceLocator.eventBus.publish('ui:creation:prev_step'),
     exitGameClick: () => {
       console.log("Exiting game.");
     },
-    movePlayer: getFnMovePlayer(contentLoader, renderer, allCampaignData, contentData),
     spawnTestNpcs: async () => {
-      ServiceLocator.State.npcs = [];
+      globalServiceLocator.state.npcs = [];
 
-      const goblin = await ServiceLocator.NpcFactory.create('goblin_warrior', 'monsters', { x: 8, y: 3 });
-      if (goblin) ServiceLocator.State.npcs.push(goblin);
+      const goblin = await globalServiceLocator.npcFactory.create('goblin_warrior', 'monsters', { x: 8, y: 3 });
+      if (goblin) globalServiceLocator.state.npcs.push(goblin);
 
-      const guard = await ServiceLocator.NpcFactory.create('town_guard', 'npcs', { x: 2, y: 5 });
-      if (guard) ServiceLocator.State.npcs.push(guard);
+      const guard = await globalServiceLocator.npcFactory.create('town_guard', 'npcs', { x: 2, y: 5 });
+      if (guard) globalServiceLocator.state.npcs.push(guard);
 
       updateUI(allCampaignData, contentData);
     },
     startCombat: async () => {
-      const player = gameState.player;
-      const npcs = gameState.npcs;
-      const combatLogTextElement = uiScreens.els['combatLogText']; // Get combat log UI element
-
-      if (!player) {
-        console.error("No player character in gameState. Cannot start combat.");
+      const state = globalServiceLocator.state;
+      if (!state.player) {
+        console.error("No player character. Cannot start combat.");
         return;
       }
-      if (npcs.length === 0) {
-        console.warn("No npcs in gameState. Spawning test npcs for combat testing.");
-        await winObj.gameApi.spawnTestnpcs(); // Spawn test npcs if none exist
-        return; // Return after spawning npcs, call startCombat again to begin combat
-      }
-
-      combatLogTextElement.innerText = "--- Combat Starts! ---\n\n"; // Clear combat log and add header
-
-      // --- Roll Initiative ---
-      const playerInitiative = player.rollInitiative();
-      combatLogTextElement.innerText += `Player (${player.selectedRace?.name} ${player.classes[0].class.name}) Initiative: ${playerInitiative}\n`; // Log player initiative
-
-      npcs.forEach(monster => { // Iterate through npcs
-        const monsterInitiative = monster.rollInitiative();
-        combatLogTextElement.innerText += `${monster.prefabId} Initiative: ${monsterInitiative}\n`; // Log monster initiative
-        // Optionally, store initiative roll in monster object itself if needed later
-      });
-
-      // --- Determine Turn Order (Player always goes first for MVP) ---
-      gameState.currentTurn = "player"; // Player turn always first for MVP <---
-      combatLogTextElement.innerText += `\n--- Player Turn ---\n`; // Indicate player turn in combat log
-
-      updateUI(allCampaignData, contentData); // Re-render to update UI (turn indicator, etc. - to be added later)
+      globalServiceLocator.turnManager.startCombat([state.player, ...state.npcs]);
     },
     gameState: gameState,
   };
 
   window.addEventListener('keydown', (event) => {
+    const controller = globalServiceLocator.playerTurnController;
+    console.log(`Movement : ${event.key}`);
     switch (event.key) {
-      case "ArrowUp":
-        winObj.gameApi.movePlayer(MOVE_DIRECTIONS.UP);
-        break;
-      case "ArrowDown":
-        winObj.gameApi.movePlayer(MOVE_DIRECTIONS.DOWN);
-        break;
-      case "ArrowLeft":
-        winObj.gameApi.movePlayer(MOVE_DIRECTIONS.LEFT);
-        break;
-      case "ArrowRight":
-        winObj.gameApi.movePlayer(MOVE_DIRECTIONS.RIGHT);
-        break;
+      case "ArrowUp": controller.onMoveInput(MOVE_DIRECTIONS.UP); break;
+      case "ArrowDown": controller.onMoveInput(MOVE_DIRECTIONS.DOWN); break;
+      case "ArrowLeft": controller.onMoveInput(MOVE_DIRECTIONS.LEFT); break;
+      case "ArrowRight": controller.onMoveInput(MOVE_DIRECTIONS.RIGHT); break;
     }
   });
 
   updateUI(allCampaignData, contentData);
   new Game().start();
-}
-
-function updateTileDefs(contentLoader: ContentLoader, monsterPrefab: Npc) {
-  const tileDefExists: boolean = !!contentLoader.tileDefinitions?.find(def => def.symbol === monsterPrefab.renderable?.char);
-  if (!tileDefExists) {
-    contentLoader.tileDefinitions?.push({
-      "symbol": monsterPrefab?.renderable?.char!,
-      "name": monsterPrefab.prefabId,
-      "isBlocking": true,
-      "isTrigger": false,
-      "tileColor": monsterPrefab?.renderable?.color!,
-      "tileChar": monsterPrefab?.renderable?.char!,
-    });
-  }
-}
-
-function getFnMovePlayer(contentLoader: ContentLoader, renderer: Renderer, campaignData: ContentItem, contentData: ContentItem) {
-  return async (direction: EntityPosition) => {
-    console.log("movePlayer called, direction:", direction);
-    const gameState = globalServiceLocator.state;
-    const player = gameState.player;
-    if (!player) {
-      console.log("Player is not initialized");
-      return;
-    }
-
-    const currentPlayerPosition = player.position;
-    const intendedNewPosition = {
-      x: currentPlayerPosition.x + direction.x,
-      y: currentPlayerPosition.y + direction.y,
-    };
-
-    const mapTiles = gameState.currentMapData.tiles; // Get map tiles
-    const mapHeight = mapTiles.length;
-    const mapWidth = mapTiles[0].length;
-    const tileDefinitions = contentLoader.tileDefinitions; // Get tile definitions
-    const isValidMovement: boolean = intendedNewPosition.x >= 0
-      && intendedNewPosition.x < mapWidth
-      && intendedNewPosition.y >= 0
-      && intendedNewPosition.y < mapHeight;
-
-    if (!tileDefinitions) {
-      console.error('Tile definitions not loaded');
-      return;
-    }
-
-    if (!isValidMovement) {
-      // Do NOT update player position - boundary collision
-      console.log("Movement blocked by map boundary");
-      renderer.renderPlayer(); // Still render player even on blocked move, for animation/feedback if needed
-      return;
-    }
-
-    const tileSymbolAtNewPosition = mapTiles[intendedNewPosition.y][intendedNewPosition.x];
-    const tileDef = tileDefinitions.find(def => def.symbol === tileSymbolAtNewPosition) || tileDefinitions[5];
-    const isBlockingTile = tileDef.isBlocking;
-
-    if (isBlockingTile) {
-      // Do NOT update player position - wall collision
-      console.log("Movement blocked by wall:", tileDef?.name || "Wall");
-      renderer.renderPlayer(); // Still render player even on blocked move
-      return;
-    }
-
-    // Valid move - update player position
-    const prevPlayerPosition = { ...player.position }; // Store previous position for redraw
-    player.position = intendedNewPosition;
-
-    if (tileDef && tileDef.isTrigger) {
-      console.log("Stepped on a trigger tile!");
-
-      const triggerSymbol = tileSymbolAtNewPosition;
-      const trigger = gameState.currentMapData.triggers.find(
-        (triggerDef: MapTile) => triggerDef.symbol === triggerSymbol
-      );
-
-      if (trigger) {
-        const targetMapName = trigger.targetMap;
-        const targetLocation = trigger.targetLocation;
-        console.log('Hit trigger', targetMapName, targetLocation);
-
-        const newMapData = await gameState.currentCampaignData?.maps[targetMapName].get();
-        if (!newMapData) {
-          console.error("Failed to load target map:", targetMapName);
-        }
-
-        player.position = targetLocation;
-        gameState.currentMapData = newMapData;
-        renderer.renderMapFull(newMapData);
-        return; // Exit after map transition
-      } else {
-        console.error("Trigger definition not found for symbol:", triggerSymbol);
-      }
-    }
-
-    renderer.redrawTiles(prevPlayerPosition, intendedNewPosition); // Partial redraw for normal movement
-    renderer.renderPlayer();
-  };
 }
 
 function getUiScreens(winDoc: Document): UIHolder {

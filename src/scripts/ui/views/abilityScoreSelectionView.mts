@@ -1,5 +1,5 @@
+import { globalServiceLocator } from '../../engine/serviceLocator.mjs';
 import { EntityAbilityScores } from '../../engine/entities/entity.mjs';
-import { globalServiceLocator, ServiceLocator } from '../../engine/serviceLocator.mjs';
 import { calculateModifier, getRandomInt } from '../../engine/utils.mjs';
 
 /**
@@ -11,7 +11,7 @@ export class AbilityScoreSelectionView {
     private pointBuyTotal = 32;
 
     constructor() {
-        const ui = ServiceLocator.UI;
+        const ui = globalServiceLocator.ui;
         this.container = ui.els['ability-score-selection'];
         this.scoreInputs = {
             str: ui.inputs.str,
@@ -55,7 +55,7 @@ export class AbilityScoreSelectionView {
             // Maybe prompt the user to go back? For now, we'll proceed with 0 mods.
         }
 
-        const ui = ServiceLocator.UI;
+        const ui = globalServiceLocator.ui;
         const currentPoints = this.calculateCurrentPoints();
         ui.els["remainingPointsDisplay"].textContent = (this.pointBuyTotal - currentPoints).toString();
 
@@ -104,7 +104,7 @@ export class AbilityScoreSelectionView {
             player.stats[ability] = parseInt(this.scoreInputs[key].value, 10);
         }
 
-        ServiceLocator.EventBus.publish('ui:creation:next_step');
+        globalServiceLocator.eventBus.publish('ui:creation:next_step');
     }
 
     public show(): void { this.container.style.display = ''; }

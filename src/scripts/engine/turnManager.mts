@@ -11,7 +11,9 @@ export class TurnManager {
     private turnQueue: Entity[] = [];
     private currentTurnIndex: number = -1;
     private roundNumber: number = 0;
-    private isCombatActive: boolean = false;
+    private _isCombatActive: boolean = false;
+
+    public get isCombatActive(): boolean { return this._isCombatActive; } // Public getter
 
     constructor() {
         console.log("TurnManager initialized.");
@@ -24,12 +26,12 @@ export class TurnManager {
      * @param combatants An array of all entities participating in the combat.
      */
     public startCombat(combatants: Entity[]): void {
-        if (this.isCombatActive || combatants.length === 0) {
+        if (this._isCombatActive || combatants.length === 0) {
             console.warn("Combat is already active or no combatants provided.");
             return;
         }
 
-        this.isCombatActive = true;
+        this._isCombatActive = true;
         this.roundNumber = 1;
 
         // 1. Roll initiative for all combatants
@@ -56,43 +58,56 @@ export class TurnManager {
      * Advances the turn to the next entity in the queue.
      */
     public advanceTurn(): void {
-        if (!this.isCombatActive) return;
+        // 1. Give every NPC a turn.
+        globalServiceLocator.state.npcs.forEach(npc => {
+            npc.aiPackage?.decideAndExecuteAction();
+        });
 
-        const eventBus: EventBus = globalServiceLocator.eventBus;
-        // Publish end of the previous turn, if there was one
-        if (this.currentTurnIndex >= 0) {
-            const previousCombatant = this.turnQueue[this.currentTurnIndex];
-            eventBus.publish('combat:turn:end', { entity: previousCombatant });
+        // 2. Reset the player's action budget for their new turn.
+        const player = globalServiceLocator.state.player;
+        if (player) {
+            player.actionBudget = { standard: 1, move: 1, swift: 1, free: 5, hasTaken5FootStep: false };
         }
 
-        this.currentTurnIndex++;
+        // 3. If in combat mode, advance the initiative queue.
+        if (this._isCombatActive) {
+            // It will eventually publish 'combat:turn:start' again.
+            const eventBus: EventBus = globalServiceLocator.eventBus;
+            // Publish end of the previous turn, if there was one
+            if (this.currentTurnIndex >= 0) {
+                const previousCombatant = this.turnQueue[this.currentTurnIndex];
+                eventBus.publish('combat:turn:end', { entity: previousCombatant });
+            }
 
-        // Check for end of round
-        if (this.currentTurnIndex >= this.turnQueue.length) {
-            this.currentTurnIndex = 0;
-            this.roundNumber++;
-            console.log(`--- ROUND ${this.roundNumber} ---`);
-            eventBus.publish('combat:round:start', { roundNumber: this.roundNumber });
+            this.currentTurnIndex++;
+
+            // Check for end of round
+            if (this.currentTurnIndex >= this.turnQueue.length) {
+                this.currentTurnIndex = 0;
+                this.roundNumber++;
+                console.log(`--- ROUND ${this.roundNumber} ---`);
+                eventBus.publish('combat:round:start', { roundNumber: this.roundNumber });
+            }
+
+            // Start the new turn
+            const currentCombatant = this.turnQueue[this.currentTurnIndex];
+            console.log(`Turn starts for: ${currentCombatant.name}`);
+            eventBus.publish('combat:turn:start', { entity: currentCombatant });
         }
-
-        // Start the new turn
-        const currentCombatant = this.turnQueue[this.currentTurnIndex];
-        console.log(`Turn starts for: ${currentCombatant.name}`);
-        eventBus.publish('combat:turn:start', { entity: currentCombatant });
     }
 
     /**
      * Ends the current combat encounter.
      */
     public endCombat(): void {
-        if (!this.isCombatActive) return;
+        if (!this._isCombatActive) return;
 
         console.log("--- COMBAT ENDED ---");
         const eventBus: EventBus = globalServiceLocator.eventBus;
         eventBus.publish('combat:end', { result: 'ended' }); // Add more data later (victory/defeat)
 
         // Reset state
-        this.isCombatActive = false;
+        this._isCombatActive = false;
         this.turnQueue = [];
         this.currentTurnIndex = -1;
         this.roundNumber = 0;
@@ -103,7 +118,7 @@ export class TurnManager {
      * @param entityToRemove The entity to remove.
      */
     private removeEntityFromCombat(entityToRemove: Entity): void {
-        if (!this.isCombatActive) return;
+        if (!this._isCombatActive) return;
 
         const index = this.turnQueue.findIndex(e => e.id === entityToRemove.id);
         if (index > -1) {
@@ -117,15 +132,19 @@ export class TurnManager {
         }
     }
 
-    // File to Modify: src/scripts/engine/turnManager.mts
-    public performAction(action: Action): void {
-        if (!this.isCombatActive /* || check if it's the correct entity's turn */) {
-            return;
-        }
+    /**
+     * Entry point for an NPC to perform an action.
+     * It executes the action and then immediately advances the turn,
+     * as our current AI model is simple (one action per turn).
+     */
+    public performNpcAction(action: Action): void {
+        if (!this._isCombatActive) return;
+
+        console.log(`TurnManager processing NPC action for ${action.actor.name}`);
         action.execute();
 
-        // After the action is done, advance the turn.
-        // (A real system would manage Action Points and wait for an "End Turn" action)
+        // Since our AI is simple for now, we advance the turn right after.
+        // A more complex AI might submit multiple actions.
         this.advanceTurn();
     }
 }

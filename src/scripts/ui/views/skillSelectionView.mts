@@ -1,6 +1,6 @@
 import { calculateModifier } from '../../engine/utils.mjs';
 import { ContentItem } from '../../engine/entities/contentItem.mjs';
-import { globalServiceLocator, ServiceLocator } from '../../engine/serviceLocator.mjs';
+import { globalServiceLocator } from '../../engine/serviceLocator.mjs';
 
 /**
  * Manages the UI and logic for the skill selection step of character creation.
@@ -10,8 +10,8 @@ export class SkillSelectionView {
     private skillPointDisplay: HTMLElement;
 
     constructor() {
-        this.container = ServiceLocator.UI.els['skill-container'];
-        this.skillPointDisplay = ServiceLocator.UI.els['skill-points-remaining'];
+        this.container = globalServiceLocator.ui.els['skill-container'];
+        this.skillPointDisplay = globalServiceLocator.ui.els['skill-points-remaining'];
     }
 
     /**
@@ -126,6 +126,6 @@ export class SkillSelectionView {
         this.skillPointDisplay.innerText = `Remaining skill points: ${globalServiceLocator.state.player!.skills.remaining}/${total}`;
     }
 
-    public show(): void { ServiceLocator.UI.els['skills-selector'].style.display = ''; }
-    public hide(): void { ServiceLocator.UI.els['skills-selector'].style.display = 'none'; }
+    public show(): void { globalServiceLocator.ui.els['skills-selector'].style.display = ''; }
+    public hide(): void { globalServiceLocator.ui.els['skills-selector'].style.display = 'none'; }
 }

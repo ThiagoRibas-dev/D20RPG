@@ -1,5 +1,5 @@
 import { ContentItem } from '../../engine/entities/contentItem.mjs';
-import { ServiceLocator } from '../../engine/serviceLocator.mjs';
+import { globalServiceLocator } from '../../engine/serviceLocator.mjs';
 import { updateSelectionInfo } from '../uiHelpers.mjs';
 
 /**
@@ -9,7 +9,7 @@ export class FeatSelectionView {
     private container: HTMLElement;
 
     constructor() {
-        this.container = ServiceLocator.UI.els['feats-selector'];
+        this.container = globalServiceLocator.ui.els['feats-selector'];
     }
 
     /**
@@ -35,7 +35,7 @@ export class FeatSelectionView {
 
                 // Set the onclick handler for this feat button
                 featButton.onclick = () => {
-                    const player = ServiceLocator.State.player;
+                    const player = globalServiceLocator.state.player;
                     if (!player) {
                         console.error("Player not initialized during feat selection.");
                         return;

@@ -1,7 +1,7 @@
 import { ContentItem } from "./entities/contentItem.mjs";
 import { Entity, EntityClass } from "./entities/entity.mjs";
 import { ModifierList } from "./entities/modifier.mjs";
-import { ServiceLocator } from "./serviceLocator.mjs";
+import { globalServiceLocator } from "./serviceLocator.mjs";
 import { calculateModifier, rollD20 } from "./utils.mjs";
 
 /**
@@ -10,7 +10,7 @@ import { calculateModifier, rollD20 } from "./utils.mjs";
  */
 export class RulesEngine {
     constructor() {
-        ServiceLocator.EventBus.subscribe('action:attack:declared',
+        globalServiceLocator.eventBus.subscribe('action:attack:declared',
             (data) => this.resolveAttack(data)
         );
     }
@@ -42,7 +42,7 @@ export class RulesEngine {
 
         // 2. FIRE "BEFORE_ROLL" EVENT
         // This gives other systems (feats, spells) a chance to modify the attack.
-        ServiceLocator.EventBus.publish('action:attack:before_roll', attackContext);
+        globalServiceLocator.eventBus.publish('action:attack:before_roll', attackContext);
 
         // 3. ROLL THE DIE
         attackContext.attackRoll.d20 = rollD20(); // From utils.mts
@@ -72,7 +72,7 @@ export class RulesEngine {
 
         // 7. FIRE "RESOLVED" EVENT
         // Announce the final result of the attack roll.
-        ServiceLocator.EventBus.publish('action:attack:resolved', attackContext);
+        globalServiceLocator.eventBus.publish('action:attack:resolved', attackContext);
 
         // 8. HANDLE DAMAGE (if it was a hit)
         if (attackContext.outcome === 'hit' || attackContext.outcome === 'critical_threat') {
@@ -80,9 +80,9 @@ export class RulesEngine {
             // For now, we just log it.
             console.log("Attack hits! (Damage calculation would happen here)");
             target.takeDamage(5); // Apply 5 placeholder damage
-            ServiceLocator.EventBus.publish('character:hp:changed', { entity: target });
+            globalServiceLocator.eventBus.publish('character:hp:changed', { entity: target });
             if (!target.isAlive()) {
-                ServiceLocator.EventBus.publish('character:died', { entity: target, killer: attacker });
+                globalServiceLocator.eventBus.publish('character:died', { entity: target, killer: attacker });
             }
         }
     }
@@ -159,7 +159,7 @@ export class RulesEngine {
         // --- THE NEW ADDITION ---
         // Announce that the calculation for this entity is complete.
         // Any system that needs to react to the final stats can listen for this.
-        ServiceLocator.EventBus.publish('entity:stats:calculated', { entity });
+        globalServiceLocator.eventBus.publish('entity:stats:calculated', { entity });
     }
 
     private addModifier(entity: Entity, target: string, value: number, type: string, source: string) {

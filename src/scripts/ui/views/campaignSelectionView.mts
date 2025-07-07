@@ -1,5 +1,5 @@
 import { ContentItem } from '../../engine/entities/contentItem.mjs';
-import { ServiceLocator } from '../../engine/serviceLocator.mjs';
+import { globalServiceLocator } from '../../engine/serviceLocator.mjs';
 
 export class CampaignSelectionView {
     private container: HTMLElement;
@@ -10,12 +10,12 @@ export class CampaignSelectionView {
     private selectButton: HTMLButtonElement;
 
     constructor() {
-        const ui = ServiceLocator.UI;
+        const ui = globalServiceLocator.ui;
         this.container = ui.els['campaignSelection'];
-        this.listContainer = ui.els['campaign-list-ul'];
+        this.listContainer = ui.els['campaign-list-ul'] as HTMLUListElement;
         this.infoContainer = ui.els['campaign-info'];
-        this.nameText = ui.els['campaign-name'];
-        this.descText = ui.els['campaign-desc'];
+        this.nameText = ui.els['campaign-name'] as HTMLParagraphElement;
+        this.descText = ui.els['campaign-desc'] as HTMLParagraphElement;
         this.selectButton = ui.btns['campaignSelectBtn'];
     }
 
@@ -44,7 +44,7 @@ export class CampaignSelectionView {
     }
 
     private selectCampaign(campaignId: string, campaignInfo: any, allCampaignData: ContentItem): void {
-        ServiceLocator.State.currentCampaignData = allCampaignData[campaignId];
+        globalServiceLocator.state.currentCampaignData = allCampaignData[campaignId];
 
         this.nameText.innerText = campaignInfo?.name || "";
         this.descText.innerText = campaignInfo?.description || "";
@@ -54,7 +54,7 @@ export class CampaignSelectionView {
         this.descText.style.display = "";
         this.selectButton.removeAttribute('style');
 
-        console.log('Campaign selected:', campaignId, ServiceLocator.State.currentCampaignData);
+        console.log('Campaign selected:', campaignId, globalServiceLocator.state.currentCampaignData);
     }
 
     public show(): void { this.container.style.display = ''; }

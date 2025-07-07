@@ -1,5 +1,5 @@
 import { ContentItem } from "../engine/entities/contentItem.mjs";
-import { globalServiceLocator, ServiceLocator } from "../engine/serviceLocator.mjs";
+import { globalServiceLocator } from "../engine/serviceLocator.mjs";
 import { setActiveScreen } from "./uiHelpers.mjs";
 import { AbilityScoreSelectionView } from "./views/abilityScoreSelectionView.mjs";
 import { CampaignSelectionView } from "./views/campaignSelectionView.mjs";
@@ -40,7 +40,7 @@ export function initUIManager(): void {
  * This is the single entry point for all UI changes.
  */
 export async function updateUI(allCampaignData: ContentItem, contentData: ContentItem) {
-  const state = ServiceLocator.State;
+  const state = globalServiceLocator.state;
 
   // Set the active top-level screen container (startMenu, characterCreation, gameContainer)
   setActiveScreen(state.currentScreen);
@@ -57,7 +57,7 @@ export async function updateUI(allCampaignData: ContentItem, contentData: Conten
   }
   else if (state.currentScreen === 'gameContainer') {
     const mapData = state.currentMapData;
-    if (mapData) ServiceLocator.Renderer.renderMapFull(mapData);
+    if (mapData) globalServiceLocator.renderer.renderMapFull(mapData);
   }
 }
 
@@ -73,7 +73,7 @@ export function toggleDisplay(key: string, screenId: string) {
  * rendering logic to the appropriate View class.
  */
 export function showCharacterCreationStep(contentData: ContentItem, campaignData: ContentItem) {
-  const uiScreens = ServiceLocator.UI;
+  const uiScreens = globalServiceLocator.ui;
   const creationStep = globalServiceLocator.state.creationStep;
   const currentStepName = globalServiceLocator.state.creationSteps[creationStep];
 
@@ -84,7 +84,7 @@ export function showCharacterCreationStep(contentData: ContentItem, campaignData
   abilityScoreSelectionView.hide();
   characterSummaryView.hide();
   featSelectionView.hide();
-  ServiceLocator.UI.els['selector-info'].style.display = "none";
+  globalServiceLocator.ui.els['selector-info'].style.display = "none";
 
   switch (currentStepName) {
     case "raceSelection": raceSelectionView.show(); raceSelectionView.render(contentData); break;

@@ -205,13 +205,6 @@ export class Entity {
         return this.hitPoints.current > 0;
     }
 
-    calculateAttackBonus(): number {
-        const bab = this.baseAttackBonus;
-        const strMod = calculateModifier(this.stats.str);
-
-        return bab + strMod;
-    }
-
     rollInitiative(): number {
         const d20Roll = rollD20(); // Roll d20 using utility function
         const dexMod = calculateModifier(this.stats.dex); // Get DEX modifier

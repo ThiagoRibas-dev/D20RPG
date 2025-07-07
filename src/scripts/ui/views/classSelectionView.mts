@@ -1,6 +1,6 @@
 import { ContentItem } from '../../engine/entities/contentItem.mjs';
 import { EntityClass } from '../../engine/entities/entity.mjs';
-import { globalServiceLocator, ServiceLocator } from '../../engine/serviceLocator.mjs';
+import { globalServiceLocator } from '../../engine/serviceLocator.mjs';
 import { updateSelectionInfo } from '../uiHelpers.mjs';
 
 /**
@@ -10,7 +10,7 @@ export class ClassSelectionView {
     private container: HTMLElement;
 
     constructor() {
-        this.container = ServiceLocator.UI.els['classes-selector'];
+        this.container = globalServiceLocator.ui.els['classes-selector'];
     }
 
     /**

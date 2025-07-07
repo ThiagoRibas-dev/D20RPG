@@ -1,10 +1,10 @@
 import { Npc } from "../entities/npc.mjs";
-import { ServiceLocator } from "../serviceLocator.mjs";
+import { globalServiceLocator } from "../serviceLocator.mjs";
 import { EntityPosition } from "../utils.mjs";
 
 export class NpcFactory {
     public async create(prefabId: string, prefabType: 'monsters' | 'npcs', position: EntityPosition): Promise<Npc | null> {
-        const content = await ServiceLocator.ContentLoader.getContent();
+        const content = await globalServiceLocator.contentLoader.getContent();
         const prefab = await content.prefabs[prefabType][prefabId].get();
 
         if (!prefab) {
@@ -35,17 +35,17 @@ export class NpcFactory {
         console.log('NpcFactory npc', npc);
 
         // 4. Calculate final stats using the RulesEngine
-        ServiceLocator.RulesEngine.calculateStats(npc);
+        globalServiceLocator.rulesEngine.calculateStats(npc);
 
         // 5. Apply feats (both declarative and scripted)
         for (const featId of prefab.feats) {
             const featData = await content.feats[featId]?.get();
             if (featData.script) {
-                await ServiceLocator.EffectManager.applyEffect(content.feats[featId], npc, npc);
+                await globalServiceLocator.effectManager.applyEffect(content.feats[featId], npc, npc);
             }
         }
         // Recalculate stats AFTER applying feats to include declarative feat bonuses
-        ServiceLocator.RulesEngine.calculateStats(npc);
+        globalServiceLocator.rulesEngine.calculateStats(npc);
 
 
         // 6. Set renderable from prefab data

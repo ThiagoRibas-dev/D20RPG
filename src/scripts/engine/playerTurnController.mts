@@ -1,19 +1,10 @@
 import { Action, ActionType } from './actions/action.mjs';
 import { MeleeAttackAction } from './actions/meleeAttackAction.mjs';
+import { MoveAction } from './actions/moveAction.mjs';
 import { Entity } from './entities/entity.mjs';
-import { PlayerCharacter } from './entities/playerCharacter.mjs';
-import { ServiceLocator } from './serviceLocator.mjs';
+import { globalServiceLocator } from './serviceLocator.mjs';
+import { EntityPosition } from './utils.mjs';
 
-/**
- * Defines the budget of actions a character has on their turn.
- */
-interface ActionBudget {
-    standard: number;
-    move: number;
-    swift: number;
-    free: number;
-    hasTaken5FootStep: boolean;
-}
 
 /**
 * Defines the different states the player can be in during their turn.
@@ -25,149 +16,102 @@ type PlayerInteractionState = 'AWAITING_INPUT' | 'TARGETING';
  * It translates player input (button clicks) into formal `Action` objects.
  */
 export class PlayerTurnController {
-    private activeCharacter: PlayerCharacter | null = null;
-    private budget: ActionBudget | null = null;
     private interactionState: PlayerInteractionState = 'AWAITING_INPUT';
-
-    // The action that is pending a target selection.
     private pendingAction: ((target: Entity) => Action) | null = null;
 
     constructor() {
-        // Listen for the start of any turn.
-        ServiceLocator.EventBus.subscribe('combat:turn:start', (data: { entity: Entity }) => {
-            // Check if the turn is for the player character.
-            if (data.entity instanceof PlayerCharacter) {
-                this.beginTurn(data.entity);
-            } else {
-                this.endTurn(); // End our control if it's an NPC's turn.
-            }
-        });
+        const ui = globalServiceLocator.ui;
+        const eventBus = globalServiceLocator.eventBus;
 
-        const attackButton = ServiceLocator.UI.btns['attackButton'];
-        if (attackButton) {
-            attackButton.onclick = () => this.onAttackButtonClick();
-        } else {
-            console.error("Attack button not found in UIHolder on PlayerTurnController init.");
-        }
+        // Subscribe to the events published by the UI layer (Renderer, etc.)
+        ui.btns['attackButton'].onclick = () => eventBus.publish('ui:button:attack_clicked');
+        eventBus.subscribe('ui:button:attack_clicked', () => this.onAttackButtonClick());
+        eventBus.subscribe('ui:map:clicked', (data: { entity: Entity | null }) => this.handleMapClick(data.entity));
+        eventBus.subscribe('ui:input:canceled', () => this.cancelTargeting());
+        ui.btns['endTurnButton'].onclick = () => this.onEndTurnClick();
     }
 
     /**
-     * Called when the player's turn officially begins.
-     * @param player The player character whose turn it is.
-     */
-    private beginTurn(player: PlayerCharacter): void {
-        console.log("PlayerTurnController: Beginning player's turn.");
-        this.activeCharacter = player;
-        this.interactionState = 'AWAITING_INPUT';
-        // Grant the player their action budget for the round.
-        this.budget = { standard: 1, move: 1, swift: 1, free: 5, hasTaken5FootStep: false };
-        this.updateAvailableActionUI();
-    }
-
-    /**
-     * Called when the player's turn ends or an NPC's turn begins.
-     * Resets the controller's state.
-     */
-    private endTurn(): void {
-        this.activeCharacter = null;
-        this.budget = null;
-        this.interactionState = 'AWAITING_INPUT';
-        // Here you would disable all action buttons.
-        this.updateAvailableActionUI();
-    }
-
-    /**
-     * Initiates the attack sequence by putting the controller into a 'TARGETING' state.
-     * This is called by the "Attack" button's onclick handler.
-     */
-    public onAttackButtonClick(): void {
-        if (this.interactionState !== 'AWAITING_INPUT' || !this.canAfford(ActionType.Standard)) {
-            console.warn("Cannot initiate attack: Not awaiting input or no standard action available.", this.interactionState);
-            return;
-        }
-
-        console.log("PlayerTurnController: Entering TARGETING state for melee attack.");
-        this.interactionState = 'TARGETING';
-
-        // When a target is selected, we want to create a MeleeAttackAction.
-        this.pendingAction = (target: Entity): Action => {
-            const weapon = this.activeCharacter!.getEquippedWeapon();
-            if (!weapon) {
-                console.error("Cannot attack: No weapon equipped.");
-                // This is a bit tricky. We need to return a "null" action or handle this case.
-                // For now, we'll assume a weapon is always present.
-            }
-            return new MeleeAttackAction(this.activeCharacter!, target, weapon);
-        };
-
-        ServiceLocator.UI.els.body.style.cursor = 'crosshair';
-    }
-
-    /**
-     * Called by the Renderer when the player clicks on the map.
+     * This is the new handler that listens for the generic 'ui:map:clicked' event.
      * @param entity The entity that was clicked on, or null if empty tile.
      */
-    public onMapClick(entity: Entity | null): void {
+    private handleMapClick(entity: Entity | null): void {
         if (this.interactionState !== 'TARGETING') {
             return; // Ignore map clicks if not in targeting mode.
         }
 
         if (entity && this.pendingAction) {
-            // We have a target and a pending action. Let's create and process it.
             const actionToProcess = this.pendingAction(entity);
             this.processAction(actionToProcess);
         } else {
-            // Player clicked an empty tile or no action was pending. Cancel targeting.
             this.cancelTargeting();
         }
     }
 
-    /**
-     * Called when the player right-clicks or presses Escape to cancel targeting.
-     */
+    public onAttackButtonClick(): void {
+        const player = globalServiceLocator.state.player;
+        if (this.interactionState !== 'AWAITING_INPUT' || !this.canAfford(ActionType.Standard) || !player) return;
+
+        this.interactionState = 'TARGETING';
+        this.pendingAction = (target: Entity): Action => {
+            const weapon = player.getEquippedWeapon();
+            return new MeleeAttackAction(player, target, weapon!);
+        };
+        globalServiceLocator.ui.els.body.style.cursor = 'crosshair';
+    }
+
+    public onMoveInput(direction: EntityPosition): void {
+        const player = globalServiceLocator.state.player;
+        if (this.interactionState !== 'AWAITING_INPUT' || !this.canAfford(ActionType.Move) || !player) return;
+
+        const moveAction = new MoveAction(player, direction);
+        this.processAction(moveAction);
+    }
+
+    private onEndTurnClick(): void {
+        if (globalServiceLocator.turnManager.isCombatActive) {
+            globalServiceLocator.turnManager.advanceTurn();
+        }
+    }
+
     public cancelTargeting(): void {
-        console.log("PlayerTurnController: Cancelling targeting.");
         this.interactionState = 'AWAITING_INPUT';
         this.pendingAction = null;
-        ServiceLocator.UI.els.body.style.cursor = 'default';
+        globalServiceLocator.ui.els.body.style.cursor = 'default';
     }
 
-    // --- PRIVATE LOGIC ---
+    // --- ACTION PROCESSING ---
     private processAction(action: Action): void {
-        if (!this.canAfford(action.cost)) {
-            console.log(`Cannot afford action: ${ActionType[action.cost]}`);
-            this.cancelTargeting();
-            return;
-        }
+        if (!this.canAfford(action.cost)) return;
 
-        // 1. Spend the action points from the budget.
         this.spendCost(action.cost);
+        this.interactionState = 'AWAITING_INPUT';
+        globalServiceLocator.ui.els.body.style.cursor = 'default';
 
-        // 2. Lock the UI and execute the action.
-        this.interactionState = 'AWAITING_INPUT'; // Reset state before execution
-        ServiceLocator.UI.els.body.style.cursor = 'default';
+        action.execute(); // Trigger the event chain
 
-        action.execute(); // This will trigger the event chain.
-
-        // 3. Update the UI to reflect the new budget.
         this.updateAvailableActionUI();
 
-        // NOTE: In a full implementation, we wouldn't auto-end the turn.
-        // The player would click an "End Turn" button which calls TurnManager.advanceTurn().
+        // The "WeGo" logic
+        if (!globalServiceLocator.turnManager.isCombatActive) {
+            globalServiceLocator.turnManager.advanceTurn();
+        }
     }
 
     /**
      * Checks if the current action budget can pay for a given action cost.
      */
     private canAfford(cost: ActionType): boolean {
-        if (!this.budget) return false;
+        const budget = globalServiceLocator.state.player?.actionBudget;
+        if (!budget) return true; // Outside of combat, we can always afford it.
+        if (!globalServiceLocator.turnManager.isCombatActive) return true;
 
         switch (cost) {
-            case ActionType.Standard: return this.budget.standard > 0;
-            case ActionType.Move: return this.budget.move > 0;
-            case ActionType.FullRound: return this.budget.standard > 0 && this.budget.move > 0;
-            case ActionType.Swift: return this.budget.swift > 0;
-            case ActionType.Free: return this.budget.free > 0;
+            case ActionType.Standard: return budget.standard > 0;
+            case ActionType.Move: return budget.move > 0;
+            case ActionType.FullRound: return budget.standard > 0 && budget.move > 0;
+            case ActionType.Swift: return budget.swift > 0;
+            case ActionType.Free: return budget.free > 0;
         }
         return false;
     }
@@ -176,26 +120,25 @@ export class PlayerTurnController {
      * Deducts the cost of an action from the budget.
      */
     private spendCost(cost: ActionType): void {
-        if (!this.budget) return;
+        const budget = globalServiceLocator.state.player?.actionBudget;
+        if (!budget || !globalServiceLocator.turnManager.isCombatActive) return;
 
         switch (cost) {
-            case ActionType.Standard: this.budget.standard--; break;
-            case ActionType.Move: this.budget.move--; break;
-            case ActionType.FullRound: this.budget.standard = 0; this.budget.move = 0; break;
-            case ActionType.Swift: this.budget.swift--; break;
-            case ActionType.Free: this.budget.free--; break;
+            case ActionType.Standard: budget.standard--; break;
+            case ActionType.Move: budget.move--; break;
+            case ActionType.FullRound: budget.standard = 0; budget.move = 0; break;
+            case ActionType.Swift: budget.swift--; break;
+            case ActionType.Free: budget.free--; break;
         }
     }
 
-    /**
-     * Updates the UI buttons based on the current action budget.
-     */
+
     private updateAvailableActionUI(): void {
-        // This is where you would enable/disable the HTML buttons.
-        const attackButton = ServiceLocator.UI.btns['attackButton'];
-        if (attackButton) {
-            attackButton.disabled = !this.canAfford(ActionType.Standard);
-        }
+        const isCombat = globalServiceLocator.turnManager.isCombatActive;
+        const ui = globalServiceLocator.ui;
+
+        ui.btns['attackButton'].disabled = !this.canAfford(ActionType.Standard);
+        ui.btns['endTurnButton'].style.display = isCombat ? '' : 'none';
         // ... update other buttons for Move, Cast Spell, etc.
     }
 }

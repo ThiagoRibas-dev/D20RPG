@@ -1,5 +1,5 @@
 import { ContentItem } from '../../engine/entities/contentItem.mjs';
-import { globalServiceLocator, ServiceLocator } from '../../engine/serviceLocator.mjs';
+import { globalServiceLocator } from '../../engine/serviceLocator.mjs';
 import { updateSelectionInfo } from '../uiHelpers.mjs';
 
 /**
@@ -9,7 +9,7 @@ export class RaceSelectionView {
     private container: HTMLElement;
 
     constructor() {
-        this.container = ServiceLocator.UI.els['races-selector'];
+        this.container = globalServiceLocator.ui.els['races-selector'];
     }
 
     /**

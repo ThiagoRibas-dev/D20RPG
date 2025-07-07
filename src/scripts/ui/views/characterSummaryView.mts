@@ -1,16 +1,16 @@
-import { ServiceLocator } from '../../engine/serviceLocator.mjs';
+import { globalServiceLocator } from '../../engine/serviceLocator.mjs';
 import { calculateModifier } from '../../engine/utils.mjs';
 
 export class CharacterSummaryView {
     private container: HTMLElement;
 
     constructor() {
-        this.container = ServiceLocator.UI.els['character-summary'];
+        this.container = globalServiceLocator.ui.els['character-summary'];
     }
 
     public render(): void {
         this.container.innerHTML = ''; // Clear previous content
-        const player = ServiceLocator.State.player;
+        const player = globalServiceLocator.state.player;
 
         if (!player || !player.selectedRace || player.classes.length === 0) {
             this.container.textContent = "Character data is incomplete. Please go back and make all selections.";
@@ -29,9 +29,9 @@ export class CharacterSummaryView {
         confirmButton.textContent = "Confirm Character and Begin";
         confirmButton.onclick = () => {
             // Finalize stats one last time
-            ServiceLocator.RulesEngine.calculateStats(player);
+            globalServiceLocator.rulesEngine.calculateStats(player);
             // Announce completion
-            ServiceLocator.EventBus.publish('ui:creation:confirmed');
+            globalServiceLocator.eventBus.publish('ui:creation:confirmed');
         };
         this.container.appendChild(confirmButton);
     }

@@ -2,7 +2,7 @@ import { ContentItem } from "../engine/entities/contentItem.mjs";
 import { Entity } from "./entities/entity.mjs";
 import { MapTile } from "./entities/mapTile.mjs";
 import { Npc } from "./entities/npc.mjs";
-import { globalServiceLocator, ServiceLocator } from "./serviceLocator.mjs";
+import { globalServiceLocator } from "./serviceLocator.mjs";
 
 export class Renderer {
     private tileSize = 32;
@@ -14,14 +14,11 @@ export class Renderer {
     }
 
     /**
-         * Sets up all the necessary event listeners for the canvas.
-         */
+     * Sets up all the necessary event listeners for the canvas.
+     */
     private initEventListeners(): void {
         const canvas = this.getCanvas();
-        if (!canvas) {
-            console.error("Canvas not found during Renderer initialization.");
-            return;
-        }
+        if (!canvas) return;
 
         // --- MOUSE CLICK LISTENER ---
         canvas.addEventListener('click', (event) => {
@@ -29,21 +26,19 @@ export class Renderer {
             const canvasX = event.clientX - rect.left;
             const canvasY = event.clientY - rect.top;
 
-            // Convert the raw pixel click into a game grid coordinate.
             const tileCoords = this.canvasToTileCoords(canvasX, canvasY);
-
-            // Find if any entity is standing on that tile.
             const targetEntity = this.findEntityAt(tileCoords);
 
-            // Notify the PlayerTurnController of the map click.
-            // It will decide what to do based on the current interaction state.
-            ServiceLocator.PlayerTurnController.onMapClick(targetEntity);
+            globalServiceLocator.eventBus.publish('ui:map:clicked', {
+                entity: targetEntity,
+                tileCoords: tileCoords
+            });
         });
 
         // --- MOUSE RIGHT-CLICK LISTENER (for canceling) ---
         canvas.addEventListener('contextmenu', (event) => {
-            event.preventDefault(); // Prevent the browser's context menu from appearing.
-            ServiceLocator.PlayerTurnController.cancelTargeting();
+            event.preventDefault();
+            globalServiceLocator.eventBus.publish('ui:input:canceled');
         });
     }
 
@@ -243,7 +238,7 @@ export class Renderer {
      * @param canvasY The y-coordinate on the canvas.
      * @returns The corresponding tile coordinates {x, y} on the game map.
      */
-    private canvasToTileCoords(canvasX: number, canvasY: number): { x: number, y: number } {
+    public canvasToTileCoords(canvasX: number, canvasY: number): { x: number, y: number } {
         const tileX = Math.floor((canvasX - this.startX) / this.tileSize);
         const tileY = Math.floor((canvasY - this.startY) / this.tileSize);
         return { x: tileX, y: tileY };
@@ -254,8 +249,8 @@ export class Renderer {
      * @param tileCoords The {x, y} coordinates of the tile to check.
      * @returns The entity at that position, or null if the tile is empty.
      */
-    private findEntityAt(tileCoords: { x: number, y: number }): Entity | null {
-        const state = ServiceLocator.State;
+    public findEntityAt(tileCoords: { x: number, y: number }): Entity | null {
+        const state = globalServiceLocator.state;
 
         // Check if the player is at the target location.
         if (state.player && state.player.position.x === tileCoords.x && state.player.position.y === tileCoords.y) {
@@ -277,6 +272,6 @@ export class Renderer {
      * Helper function to get the canvas element.
      */
     private getCanvas(): HTMLCanvasElement {
-        return ServiceLocator.UI.els['gameContainer'].querySelector('canvas')!;
+        return globalServiceLocator.ui.els['gameContainer'].querySelector('canvas')!;
     }
 }
