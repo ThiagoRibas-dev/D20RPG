@@ -1,9 +1,9 @@
 import { ContentLoader } from './engine/contentLoader.mjs';
 import { EffectManager } from './engine/effectManager.mjs';
 import { GameState } from './engine/entities/gameState.mjs';
-import { PlayerCharacter } from './engine/entities/playerCharacter.mjs';
 import { UIHolder } from './engine/entities/uiHolder.mjs';
 import { EventBus } from './engine/eventBus.mjs';
+import { LootFactory } from './engine/factories/lootFactory.mjs';
 import { NpcFactory } from './engine/factories/npcFactory.mjs';
 import { Game } from './engine/game.mjs';
 import { PlayerTurnController } from './engine/playerTurnController.mjs';
@@ -12,6 +12,7 @@ import { RulesEngine } from './engine/rulesEngine.mjs';
 import { globalServiceLocator } from './engine/serviceLocator.mjs';
 import { TurnManager } from './engine/turnManager.mjs';
 import { MOVE_DIRECTIONS } from './engine/utils.mjs';
+import { FeedbackManager } from './ui/feedbackManager.mjs';
 import { initUIManager, updateUI } from './ui/uiManager.mjs';
 
 async function initializeGame(winObj: any) {
@@ -19,47 +20,21 @@ async function initializeGame(winObj: any) {
 
   const winDoc: Document = winObj.document;
 
-  // --- STATE INITIALIZATION ---
-  // The gameState object is now created here, locally.
-  const gameState: GameState = {
-    currentScreen: "startMenu",
-    player: null,
-    creationStep: 0,
-    creationSteps: [
-      "raceSelection",
-      "abilityScoreSelection",
-      "classSelection",
-      "skillSelection",
-      "featSelection",
-      "characterSummary"
-    ],
-    currentMapData: null,
-    currentCampaignData: null,
-    npcs: [],
-    currentTurn: "",
-  };
-
   // --- SERVICE REGISTRATION ---
-  // 1. Initialize all core services.
-  globalServiceLocator.eventBus = new EventBus();
-  globalServiceLocator.state = gameState;
   globalServiceLocator.ui = getUiScreens(winDoc);
+  globalServiceLocator.eventBus = new EventBus();
   globalServiceLocator.contentLoader = new ContentLoader();
+  globalServiceLocator.state = getInitialGameState();;
   globalServiceLocator.rulesEngine = new RulesEngine();
   globalServiceLocator.effectManager = new EffectManager();
   globalServiceLocator.turnManager = new TurnManager();
   globalServiceLocator.npcFactory = new NpcFactory();
   globalServiceLocator.renderer = new Renderer();
   globalServiceLocator.playerTurnController = new PlayerTurnController();
+  globalServiceLocator.lootFactory = new LootFactory();
 
-  // --- INITIALIZE UI MANAGER ---
-  // Now that all services are ready, we can safely initialize the UI views.
-  initUIManager();
-
-
-  // --- Load Initial Data ---
-  const contentData = await globalServiceLocator.contentLoader.getContent();
-  const allCampaignData = await globalServiceLocator.contentLoader.getCampaigns();
+  // --- INITIALIZE LOGGING ---
+  new FeedbackManager();
 
   // --- SETUP THE CONTROLLER LOGIC (EVENT SUBSCRIPTIONS) ---
   globalServiceLocator.eventBus.subscribe('ui:creation:next_step', () => {
@@ -70,7 +45,7 @@ async function initializeGame(winObj: any) {
     }
     // Re-render the screen to show the new step.
     // We need access to allCampaignData and contentData here.
-    updateUI(allCampaignData, contentData);
+    updateUI();
   });
 
   globalServiceLocator.eventBus.subscribe('ui:creation:prev_step', () => {
@@ -80,7 +55,7 @@ async function initializeGame(winObj: any) {
       state.creationStep = 0;
     }
 
-    updateUI(allCampaignData, contentData);
+    updateUI();
   });
 
   globalServiceLocator.eventBus.subscribe('ui:creation:confirmed', async () => {
@@ -113,49 +88,8 @@ async function initializeGame(winObj: any) {
     // 4. Update the entire UI to reflect the new state.
     // This will hide the character creation screen and render the game map.
     globalServiceLocator.ui.btns['back-btn'].style.display = 'none';
-    updateUI(allCampaignData, contentData);
+    updateUI();
   });
-
-  winObj.gameApi = {
-    init: true,
-    newGameClick: () => {
-      globalServiceLocator.state.currentScreen = "campaignSelection";
-
-      updateUI(allCampaignData, contentData);
-    },
-    selectCampaign: async () => {
-      globalServiceLocator.state.currentScreen = "characterCreation";
-      globalServiceLocator.state.player = new PlayerCharacter();
-      globalServiceLocator.state.creationStep = 0;
-
-      updateUI(allCampaignData, contentData);
-    },
-    creationNextStep: () => globalServiceLocator.eventBus.publish('ui:creation:next_step'),
-    creationPrevStep: () => globalServiceLocator.eventBus.publish('ui:creation:prev_step'),
-    exitGameClick: () => {
-      console.log("Exiting game.");
-    },
-    spawnTestNpcs: async () => {
-      globalServiceLocator.state.npcs = [];
-
-      const goblin = await globalServiceLocator.npcFactory.create('goblin_warrior', 'monsters', { x: 8, y: 3 });
-      if (goblin) globalServiceLocator.state.npcs.push(goblin);
-
-      const guard = await globalServiceLocator.npcFactory.create('town_guard', 'npcs', { x: 2, y: 5 });
-      if (guard) globalServiceLocator.state.npcs.push(guard);
-
-      updateUI(allCampaignData, contentData);
-    },
-    startCombat: async () => {
-      const state = globalServiceLocator.state;
-      if (!state.player) {
-        console.error("No player character. Cannot start combat.");
-        return;
-      }
-      globalServiceLocator.turnManager.startCombat([state.player, ...state.npcs]);
-    },
-    gameState: gameState,
-  };
 
   window.addEventListener('keydown', (event) => {
     const controller = globalServiceLocator.playerTurnController;
@@ -167,9 +101,33 @@ async function initializeGame(winObj: any) {
       case "ArrowRight": controller.onMoveInput(MOVE_DIRECTIONS.RIGHT); break;
     }
   });
+  updateUI();
 
-  updateUI(allCampaignData, contentData);
+  // --- INITIALIZE UI MANAGER ---
+  // Now that all services are ready, we can safely initialize the UI views.
+  initUIManager();
+
   new Game().start();
+}
+
+function getInitialGameState(): GameState {
+  return {
+    currentScreen: "startMenu",
+    player: null,
+    creationStep: 0,
+    creationSteps: [
+      "raceSelection",
+      "abilityScoreSelection",
+      "classSelection",
+      "skillSelection",
+      "featSelection",
+      "characterSummary"
+    ],
+    currentMapData: null,
+    currentCampaignData: null,
+    npcs: [],
+    currentTurn: "",
+  };
 }
 
 function getUiScreens(winDoc: Document): UIHolder {
@@ -220,6 +178,9 @@ function getUiScreens(winDoc: Document): UIHolder {
       'actionButtonsPanel': winDoc.getElementById('actionButtonsPanel') as HTMLElement,
       'combatLogText': winDoc.getElementById('combatLogText') as HTMLElement,
       'characterStatusDetails': winDoc.getElementById('characterStatusDetails') as HTMLElement,
+      'inventoryScreen': winDoc.getElementById('inventoryScreen') as HTMLElement,
+      'equippedItemsContainer': winDoc.getElementById('equippedItemsContainer') as HTMLElement,
+      'inventoryItemsContainer': winDoc.getElementById('inventoryItemsContainer') as HTMLElement,
     },
     inputs: {
       "str": winDoc.getElementById("str") as HTMLInputElement,
@@ -230,6 +191,9 @@ function getUiScreens(winDoc: Document): UIHolder {
       "cha": winDoc.getElementById("cha") as HTMLInputElement,
     },
     btns: {
+      'newGameButton': winDoc.getElementById('new-game-btn') as HTMLButtonElement,
+      'continueGameButton': winDoc.getElementById('continue-game-btn') as HTMLButtonElement,
+      'exitGameButton': winDoc.getElementById('exit-game-btn') as HTMLButtonElement,
       'back-btn': winDoc.getElementById('back-btn') as HTMLButtonElement,
       'next-btn': winDoc.getElementById('next-btn') as HTMLButtonElement,
       'campaignSelectBtn': winDoc.getElementById('campaignSelectBtn') as HTMLButtonElement,
@@ -237,8 +201,14 @@ function getUiScreens(winDoc: Document): UIHolder {
       'attackButton': winDoc.getElementById('attack-btn') as HTMLButtonElement,
       'endTurnButton': winDoc.getElementById('end-turn-btn') as HTMLButtonElement,
       'startCombatButton': winDoc.getElementById('start-combat-btn') as HTMLButtonElement,
+      'inventoryButton': winDoc.getElementById('inventory-btn') as HTMLButtonElement,
+      'closeInventoryButton': winDoc.getElementById('closeInventoryBtn') as HTMLButtonElement,
     }
   } as UIHolder;
 };
 
-initializeGame(window);
+try {
+  initializeGame(window);
+} catch (error) {
+  console.error("EXPLODIU", error);
+}

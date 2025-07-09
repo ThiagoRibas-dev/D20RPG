@@ -1,0 +1,17 @@
+{
+    "name": "Flaming",
+    "type": "weapon_enchantment",
+    "cost_modifier": 1,
+    "tags": [
+        "fire",
+        "magic"
+    ],
+    "bonuses": [
+        {
+            "target": "damage.bonus",
+            "value": "1d6",
+            "type": "fire",
+            "source": "Flaming Enchantment"
+        }
+    ]
+}

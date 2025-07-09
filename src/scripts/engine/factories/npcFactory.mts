@@ -1,3 +1,4 @@
+import { EquipmentSlot } from "../components/equipmentComponent.mjs";
 import { Npc } from "../entities/npc.mjs";
 import { globalServiceLocator } from "../serviceLocator.mjs";
 import { EntityPosition } from "../utils.mjs";
@@ -47,8 +48,32 @@ export class NpcFactory {
         // Recalculate stats AFTER applying feats to include declarative feat bonuses
         globalServiceLocator.rulesEngine.calculateStats(npc);
 
+        // 6. CREATE AND EQUIP ITEMS
+        const lootFactory = globalServiceLocator.lootFactory;
+        const equipmentList: { slot: EquipmentSlot, itemId: string }[] = [
+            { slot: 'armor', itemId: prefab.armor },
+            { slot: 'shield', itemId: prefab.shield },
+            { slot: 'main_hand', itemId: prefab.weapon_melee },
+            // Add other slots like 'off_hand', 'weapon_ranged' if they exist in prefabs
+        ];
 
-        // 6. Set renderable from prefab data
+        for (const eq of equipmentList) {
+            if (eq.itemId) {
+                // We pass an empty array for magic properties for now.
+                // The LootFactory can handle creating a simple, non-magical item instance.
+                const itemInstance = await lootFactory.createItem(eq.itemId, []);
+                if (itemInstance) {
+                    // Equip the newly created item instance to the correct slot.
+                    npc.equipment.equip(itemInstance, eq.slot);
+                }
+            }
+        }
+
+        // 7. RE-CALCULATE STATS *AFTER* EQUIPPING
+        // This is crucial to apply bonuses from the new gear.
+        globalServiceLocator.rulesEngine.calculateStats(npc);
+
+        // 8. Set renderable from prefab data
         if (prefab.renderable) {
             npc.renderable = prefab.renderable;
         } else { // Fallback for older monster prefabs

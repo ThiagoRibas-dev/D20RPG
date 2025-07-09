@@ -13,7 +13,10 @@
   "cost": 75,
   "damage": "2d4",
   "damage_type": "slashing",
-  "critical": "18-20/x2",
+  "critical": {
+    "threatRange": "18-20",
+    "multiplier": 2
+  },
   "weight": 8,
   "size": "medium",
   "weapon_properties": [

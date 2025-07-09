@@ -21,8 +21,6 @@ export function rollD20(): number {
     return getRandomInt(1, 20);
 }
 
-
-
 /**
  * Calculates the ability score modifier for a given score.
  * @param score The ability score (e.g., 14).

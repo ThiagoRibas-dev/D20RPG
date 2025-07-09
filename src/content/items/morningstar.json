@@ -6,7 +6,10 @@
   "cost": 8,
   "damage": "1d8",
   "damage_type": "piercing and bludgeoning",
-  "critical": "x2",
+  "critical": {
+    "threatRange": "20",
+    "multiplier": 2
+  },
   "weight": 6,
   "size": "medium",
   "weapon_properties": ["one-handed"]

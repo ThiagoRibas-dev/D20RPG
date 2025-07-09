@@ -1,8 +1,9 @@
 import { ContentItem } from "./entities/contentItem.mjs";
 import { Entity, EntityClass } from "./entities/entity.mjs";
+import { MapTile } from "./entities/mapTile.mjs";
 import { ModifierList } from "./entities/modifier.mjs";
 import { globalServiceLocator } from "./serviceLocator.mjs";
-import { calculateModifier, rollD20 } from "./utils.mjs";
+import { calculateModifier, EntityPosition, getRandomInt, rollD20 } from "./utils.mjs";
 
 /**
  * The RulesEngine is the central authority for all game rule calculations.
@@ -13,6 +14,9 @@ export class RulesEngine {
         globalServiceLocator.eventBus.subscribe('action:attack:declared',
             (data) => this.resolveAttack(data)
         );
+        globalServiceLocator.eventBus.subscribe('action:move:declared',
+            (data) => this.resolveMove(data)
+        );
     }
 
     /**
@@ -22,6 +26,14 @@ export class RulesEngine {
     private resolveAttack(data: { attacker: Entity, target: Entity, weapon: ContentItem }): void {
         const { attacker, target, weapon } = data;
         console.log(`--- Resolving attack from ${attacker.name} to ${target.name} ---`);
+
+        // If we aren't in combat and this is a hostile action, start combat.
+        if (!globalServiceLocator.turnManager.isCombatActive) {
+            // In the future check faction alignment etc. For now, any attack starts combat.
+            console.log("Hostile action taken outside of combat. Initiating combat!");
+            globalServiceLocator.turnManager.startCombat([attacker, target]);
+            // We let the attack resolve
+        }
 
         // 1. CREATE CONTEXT
         // This object will hold all data for this single attack.
@@ -36,8 +48,7 @@ export class RulesEngine {
                 misc: new ModifierList(), // For Power Attack, Bless, etc.
                 final: 0,
             },
-            outcome: 'pending' as 'pending' | 'miss' | 'hit' | 'critical_threat',
-            // ... damage context would go here later
+            outcome: 'pending' as 'pending' | 'miss' | 'hit' | 'critical_threat' | 'critical_hit',
         };
 
         // 2. FIRE "BEFORE_ROLL" EVENT
@@ -62,10 +73,47 @@ export class RulesEngine {
             attackContext.outcome = 'miss'; // Natural 1 is always a miss
         } else if (attackContext.attackRoll.d20 === 20) {
             attackContext.outcome = 'critical_threat'; // Natural 20 is always a threat
-        } else if (attackContext.attackRoll.final >= targetAC) {
+        } else if (attackContext.attackRoll.d20 >= this.parseThreatRange(weapon.critical?.threatRange || "20")) {
             attackContext.outcome = 'hit';
         } else {
             attackContext.outcome = 'miss';
+        }
+
+        if (attackContext.outcome === 'hit' || attackContext.outcome === 'critical_threat') {
+            const damageContext = {
+                attacker: attacker,
+                target: target,
+                weapon: weapon,
+                damageRoll: {
+                    dice: weapon.damage || '1d4', // e.g., "2d4" from falchion.json
+                    bonus: 0, // For STR mod, Power Attack, etc.
+                    total: 0
+                },
+                damageType: weapon.damage_type || 'bludgeoning',
+                isCritical: false
+            };
+
+            // --- HANDLE CRITICAL THREAT ---
+            if (attackContext.outcome === 'critical_threat') {
+                console.log("Critical Threat! Rolling for confirmation...");
+                // Make a second attack roll (the confirmation roll)
+                const confirmationRoll = rollD20() + attackContext.attackRoll.base + attackContext.attackRoll.abilityMod + attackContext.attackRoll.misc.getTotal();
+
+                if (confirmationRoll >= targetAC) {
+                    console.log(`Confirmation Succeeded! (Roll: ${confirmationRoll})`);
+                    attackContext.outcome = 'critical_hit'; // Officially a crit
+                    damageContext.isCritical = true;
+                } else {
+                    console.log(`Confirmation Failed. (Roll: ${confirmationRoll}) Treating as a normal hit.`);
+                    attackContext.outcome = 'hit'; // Downgrade to a normal hit
+                }
+            }
+
+            // This is the hook for PowerAttackEffectLogic.modifyDamage
+            globalServiceLocator.eventBus.publish('action:damage:before_roll', damageContext);
+
+            // Resolve the damage
+            this.resolveDamage(damageContext);
         }
 
         console.log(`Attack Roll: ${attackContext.attackRoll.final} vs AC ${targetAC} -> ${attackContext.outcome.toUpperCase()}`);
@@ -73,18 +121,6 @@ export class RulesEngine {
         // 7. FIRE "RESOLVED" EVENT
         // Announce the final result of the attack roll.
         globalServiceLocator.eventBus.publish('action:attack:resolved', attackContext);
-
-        // 8. HANDLE DAMAGE (if it was a hit)
-        if (attackContext.outcome === 'hit' || attackContext.outcome === 'critical_threat') {
-            // TODO: Kick off the damage calculation chain here.
-            // For now, we just log it.
-            console.log("Attack hits! (Damage calculation would happen here)");
-            target.takeDamage(5); // Apply 5 placeholder damage
-            globalServiceLocator.eventBus.publish('character:hp:changed', { entity: target });
-            if (!target.isAlive()) {
-                globalServiceLocator.eventBus.publish('character:died', { entity: target, killer: attacker });
-            }
-        }
     }
 
     /**
@@ -156,16 +192,163 @@ export class RulesEngine {
 
         console.log(`${entity.name} stats calculated.`, entity);
 
-        // --- THE NEW ADDITION ---
         // Announce that the calculation for this entity is complete.
         // Any system that needs to react to the final stats can listen for this.
         globalServiceLocator.eventBus.publish('entity:stats:calculated', { entity });
     }
 
     private addModifier(entity: Entity, target: string, value: number, type: string, source: string) {
-        if (!entity.modifiers.has(target)) {
-            entity.modifiers.set(target, new ModifierList());
+        // The ModifierManager handles the creation of the list if it doesn't exist.
+        // We just create the modifier object and add it.
+        entity.modifiers.add(target, { value, type, source });
+    }
+
+    private resolveDamage(context: any): void {
+        const { attacker, target, weapon, damageRoll, isCritical } = context;
+
+        // 1. Add ability modifier to bonus
+        const strMod = calculateModifier(attacker.stats.str);
+        damageRoll.bonus += strMod;
+
+        const [numDice, diceType] = damageRoll.dice.split('d').map(Number);
+        let totalDiceResult = 0;
+
+        // 2. Roll the dice (you'll need a utility to parse '2d4' etc.)
+        // Determine number of times to roll damage dice
+        const critMultiplier = isCritical ? (weapon.critical?.multiplier || 2) : 1;
+        for (let i = 0; i < critMultiplier; i++) {
+            for (let j = 0; j < numDice; j++) {
+                totalDiceResult += getRandomInt(1, diceType);
+            }
         }
-        entity.modifiers.get(target)!.add({ value, type, source });
+
+        // Flat bonuses are added AFTER dice multiplication
+        damageRoll.total = totalDiceResult + damageRoll.bonus;
+
+        // 3. Announce damage for DR effects (future)
+        globalServiceLocator.eventBus.publish('action:damage:resolved', context);
+
+        // 4. Apply damage
+        console.log(`${attacker.name} deals ${damageRoll.total} ${context.damageType} damage to ${target.name}.`);
+        target.takeDamage(damageRoll.total);
+        globalServiceLocator.eventBus.publish('character:hp:changed', { entity: target });
+
+        if (!target.isAlive()) {
+            globalServiceLocator.eventBus.publish('character:died', { entity: target, killer: attacker });
+        }
+    }
+
+    // Handle all move logic
+    public resolveMove(data: { actor: Entity, direction: EntityPosition }): void {
+        const { actor, direction } = data;
+
+        if (!actor) {
+            console.log("Actor is not initialized");
+            return;
+        }
+
+        const currentPosition = actor.position;
+        const intendedNewPosition = {
+            x: currentPosition.x + direction.x,
+            y: currentPosition.y + direction.y,
+        };
+
+        const map = globalServiceLocator.state.currentMapData;
+        if (!map) {
+            console.error('currentMapDataMap not loaded');
+            return;
+        }
+
+        const tileDefs = globalServiceLocator.contentLoader.tileDefinitions;
+        if (!tileDefs) {
+            console.error('tileDefinitions definitions not loaded');
+            return;
+        }
+
+        const mapTiles = map.tiles; // Get map tiles
+        const mapHeight = mapTiles.length;
+        const mapWidth = mapTiles[0].length;
+
+        // --- Boundary Check ---
+        const isValidMovement: boolean = intendedNewPosition.x >= 0
+            && intendedNewPosition.x < mapWidth
+            && intendedNewPosition.y >= 0
+            && intendedNewPosition.y < mapHeight;
+        if (!isValidMovement) {
+            console.log("Movement blocked by map boundary");
+            globalServiceLocator.eventBus.publish('action:move:blocked', {
+                actor: actor,
+                reason: 'boundary',
+                blocker: null // No specific object, just the edge of the world
+            });
+            return;
+        }
+
+        // --- Tile Collision Check ---
+        const tileSymbol = map.tiles[intendedNewPosition.y][intendedNewPosition.x];
+        const tileDef = tileDefs.find(def => def.symbol === tileSymbol);
+        if (tileDef?.isBlocking) {
+            console.log(`Movement for ${actor.name} blocked by ${tileDef.name}.`);
+            globalServiceLocator.eventBus.publish('action:move:blocked', {
+                actor: actor,
+                reason: 'tile',
+                blocker: tileDef // Pass the tile definition as the blocker
+            });
+            return;
+        }
+
+        // --- Entity Collision Check ---
+        const blockingEntity = globalServiceLocator.renderer.findEntityAt(intendedNewPosition);
+        if (blockingEntity) {
+            console.log(`Movement for ${actor.name} blocked by ${blockingEntity.name}.`);
+            globalServiceLocator.eventBus.publish('action:move:blocked', {
+                actor: actor,
+                reason: 'entity',
+                blocker: blockingEntity // Pass the entity as the blocker
+            });
+            return;
+        }
+
+        // Update position and redraw
+        const prevPlayerPosition = { ...actor.position };
+        actor.position = intendedNewPosition;
+
+        if (tileDef && tileDef.isTrigger) {
+            console.log("Stepped on a trigger tile!");
+
+            const triggerSymbol = tileSymbol;
+            const trigger = globalServiceLocator.state.currentMapData.triggers.find(
+                (triggerDef: MapTile) => triggerDef.symbol === triggerSymbol
+            );
+
+            if (trigger) {
+                const targetMapName = trigger.targetMap;
+                const targetLocation = trigger.targetLocation;
+                console.log('Hit trigger', targetMapName, targetLocation);
+
+                const newMapData = globalServiceLocator.state.currentCampaignData?.maps[targetMapName].get();
+                if (!newMapData) {
+                    console.error("Failed to load target map:", targetMapName);
+                }
+
+                actor.position = targetLocation;
+                globalServiceLocator.state.currentMapData = newMapData;
+                globalServiceLocator.renderer.renderMapFull(newMapData);
+                return; // Exit after map transition
+            } else {
+                console.error("Trigger definition not found for symbol:", triggerSymbol);
+            }
+        }
+
+        globalServiceLocator.renderer.redrawTiles(prevPlayerPosition, intendedNewPosition);
+        globalServiceLocator.renderer.renderSingleEntity(actor);
+    }
+
+    // Helper to parse threat range like "18-20"
+    private parseThreatRange(rangeStr: string): number {
+        if (rangeStr.includes('-')) {
+            return parseInt(rangeStr.split('-')[0], 10);
+        }
+        return parseInt(rangeStr, 10);
     }
 }

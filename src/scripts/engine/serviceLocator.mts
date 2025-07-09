@@ -3,6 +3,7 @@ import { EffectManager } from "./effectManager.mjs";
 import { GameState } from "./entities/gameState.mjs";
 import { UIHolder } from "./entities/uiHolder.mjs";
 import { EventBus } from "./eventBus.mjs";
+import { LootFactory } from "./factories/lootFactory.mjs";
 import { NpcFactory } from "./factories/npcFactory.mjs";
 import { PlayerTurnController } from "./playerTurnController.mjs";
 import { Renderer } from "./renderer.mjs";
@@ -27,6 +28,7 @@ class ServiceLocator {
     public npcFactory!: NpcFactory;
     public playerTurnController!: PlayerTurnController;
     public state!: GameState;
+    public lootFactory!: LootFactory;
 }
 
 // Create the single, global instance that will be used everywhere.

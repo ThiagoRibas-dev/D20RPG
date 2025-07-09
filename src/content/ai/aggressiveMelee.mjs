@@ -1,51 +1,52 @@
 import { MeleeAttackAction } from '../../scripts/engine/actions/meleeAttackAction.mjs';
+import { MoveAction } from '../../scripts/engine/actions/moveAction.mjs';
+import { PassTurnAction } from '../../scripts/engine/actions/passTurnAction.mjs';
 import { ServiceLocator } from '../../scripts/engine/serviceLocator.mjs';
 
 export default class AggressiveMeleeAI {
     constructor(self) {
-        this.self = self; // The NPC this AI controls
+        this.self = self;
     }
 
     /**
-     * This method is called by the TurnManager on our NPC's turn.
+     * This method is called by the TurnManager on the NPC's turn.
+     * Its ONLY job is to return the Action the NPC should perform.
+     * It does NOT execute actions or advance the turn.
      */
-    decideAndExecuteAction() {
-        console.log(`AI for ${this.self.name} is thinking...`);
+    decideAction() {
+        console.log(`AI for ${this.self.name} is deciding...`);
 
-        // 1. Find a target. (Simple logic: find the player)
         const target = ServiceLocator.State.player;
-        if (!target) {
-            console.log("AI sees no player. Ending turn.");
-            ServiceLocator.TurnManager.advanceTurn(); // End turn if no target
-            return;
+        if (!target || !target.isAlive()) {
+            return new PassTurnAction(this.self);
         }
 
-        // 2. Check if the target is in melee range.
-        // (A helper function would be great for this)
+        // If combat isn't active yet, this NPC will start it.
+        if (!ServiceLocator.TurnManager.isCombatActive) {
+            ServiceLocator.TurnManager.startCombat([this.self, target]);
+            // Even though we started combat, we still need to return an action.
+            // Let's pass the first turn to let initiative settle.
+            return new PassTurnAction(this.self);
+        }
+
         const distance = Math.abs(this.self.position.x - target.position.x) + Math.abs(this.self.position.y - target.position.y);
 
-        if (distance <= 1) { // Assuming adjacent is a distance of 1
-            // 3a. If in range, ATTACK.
-            console.log(`AI: ${this.self.name} is in range of ${target.name}. Attacking!`);
-
-            // The AI creates the same Action object as the player would.
+        if (distance <= 1) {
+            // In range: return an attack action.
             const weapon = this.self.getEquippedWeapon();
-            const attackAction = new MeleeAttackAction(this.self, target, weapon);
-
-            // The AI submits its action to the same system as the player.
-            // NOTE: We do not call processAction here, we would need a dedicated
-            // entry point in the TurnManager for NPCs.
-            ServiceLocator.TurnManager.performNpcAction(attackAction);
-
+            return new MeleeAttackAction(this.self, target, weapon);
         } else {
-            // 3b. If not in range, MOVE closer.
-            // We would create a new `MoveAction` class and execute it here.
-            console.log(`AI: ${this.self.name} is moving towards ${target.name}.`);
-            // const moveAction = new MoveAction(this.self, target.position);
-            // ServiceLocator.TurnManager.performNpcAction(moveAction);
+            // Not in range: return a move action towards the target.
+            const dx = target.position.x - this.self.position.x;
+            const dy = target.position.y - this.self.position.y;
 
-            // For now, just end the turn.
-            ServiceLocator.TurnManager.advanceTurn();
+            let moveDirection = { x: 0, y: 0 };
+            if (Math.abs(dx) > Math.abs(dy)) {
+                moveDirection.x = Math.sign(dx);
+            } else {
+                moveDirection.y = Math.sign(dy);
+            }
+            return new MoveAction(this.self, moveDirection);
         }
     }
 }

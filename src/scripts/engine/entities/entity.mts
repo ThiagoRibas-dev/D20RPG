@@ -1,9 +1,10 @@
 import { ActiveEffect } from "../activeEffect.mjs";
+import { EquipmentComponent } from "../components/equipmentComponent.mjs";
+import { InventoryComponent } from "../components/inventoryComponent.mjs";
 import { Renderable } from "../components/renderable.mjs";
-import { globalServiceLocator } from "../serviceLocator.mjs";
+import { ModifierManager } from "../modifierManager.mjs";
 import { calculateModifier, EntityPosition, rollD20 } from "../utils.mjs";
 import { ContentItem } from "./contentItem.mjs";
-import { ModifierList } from "./modifier.mjs";
 
 export type EntityClass = {
     class: ContentItem;
@@ -70,14 +71,15 @@ export class Entity {
     activeEffects: ActiveEffect[];
     renderable: Renderable | null;
     actionBudget: ActionBudget;
-
+    public inventory: InventoryComponent;
+    public equipment: EquipmentComponent;
 
     // We store the BASE stats, not the final ones.
     public baseStats: EntityAbilityScores;
 
     // A map for every modifiable value in the game.
     // The key is the target (e.g., "stats.str", "saves.will", "skills.spot")
-    public modifiers: Map<string, ModifierList>;
+    public modifiers: ModifierManager;
 
     constructor(
         name: string = "",
@@ -117,7 +119,7 @@ export class Entity {
         this.renderable = null;
 
         this.baseStats = stats;
-        this.modifiers = new Map();
+        this.modifiers = new ModifierManager();
         this.actionBudget = {
             standard: 1,
             move: 1,
@@ -125,6 +127,8 @@ export class Entity {
             free: 99,
             hasTaken5FootStep: false
         }
+        this.inventory = new InventoryComponent(this);
+        this.equipment = new EquipmentComponent(this);
     }
 
     /**
@@ -219,16 +223,12 @@ export class Entity {
 
     /**
         * Retrieves the weapon the entity is currently wielding.
-        * MVP: Returns a placeholder.
-        * TODO: Implement a real equipment system and have this method return the equipped item.
         */
-    getEquippedWeapon(): ContentItem {
-        // For now, let's pretend everyone has a longsword.
-        // We need a simple object that at least has tags for our logic to work.
-        const longsword = new ContentItem("item");
-        longsword.name = "Longsword";
-        longsword.tags = ["weapon", "melee", "martial", "slashing", "one_handed"];
-        return longsword;
+    public getEquippedWeapon(): ContentItem {
+        const unarmed = new ContentItem("item");
+        unarmed.name = "Unarmed";
+        unarmed.tags = ["weapon", "melee", "simple", "bludgeoning", "unarmer", "one_handed"];
+        return this.equipment.slots.main_hand?.itemData || unarmed;
     }
 
     /**
@@ -236,10 +236,16 @@ export class Entity {
      * MVP: Returns a simple 10 + DEX modifier.
      * TODO: This should use the ModifierList system to account for armor, shields, etc.
      */
-    getArmorClass(): number {
+    public getArmorClass(): number {
+        const baseAC = 10;
         const dexMod = calculateModifier(this.stats.dex);
-        // This is a simplified AC calculation. A full implementation would be:
-        // 10 + armor_bonus + shield_bonus + dex_mod + size_mod + ...
-        return 10 + dexMod;
+
+        // Cap DEX bonus based on equipped armor
+        const maxDex = this.modifiers.get('ac.max_dex')?.getLowest() ?? 99; // Get lowest value (most restrictive)
+        const cappedDexMod = Math.min(dexMod, maxDex);
+
+        const armorBonuses = this.modifiers.get('ac')?.getTotal() || 0;
+
+        return baseAC + cappedDexMod + armorBonuses;
     }
 }

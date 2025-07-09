@@ -1,99 +1,55 @@
-import { Action } from "./actions/action.mjs";
+import { Action, ActionType } from "./actions/action.mjs";
+import { PassTurnAction } from "./actions/passTurnAction.mjs";
 import { Entity } from "./entities/entity.mjs";
-import { EventBus } from "./eventBus.mjs";
+import { Npc } from "./entities/npc.mjs";
+import { PlayerCharacter } from "./entities/playerCharacter.mjs";
 import { globalServiceLocator } from "./serviceLocator.mjs";
 
-/**
- * Manages the flow of combat, including turn order, initiative, and round tracking.
- * It publishes events to notify other systems about the state of combat.
- */
+type TurnQueueEntry = {
+    entity: Entity;
+    initiative: number;
+}
+
 export class TurnManager {
-    private turnQueue: Entity[] = [];
+    private turnQueue: TurnQueueEntry[] = [];
     private currentTurnIndex: number = -1;
     private roundNumber: number = 0;
     private _isCombatActive: boolean = false;
+    private _pendingCombatEndCheck: boolean = false;
 
-    public get isCombatActive(): boolean { return this._isCombatActive; } // Public getter
+    public get isCombatActive(): boolean { return this._isCombatActive; }
 
     constructor() {
         console.log("TurnManager initialized.");
-        // We can add subscriptions here later if needed, e.g., to listen for character death.
-        globalServiceLocator.eventBus.subscribe('character:died', (data: { entity: Entity }) => this.removeEntityFromCombat(data.entity));
+        globalServiceLocator.eventBus.subscribe('character:died', (data: { entity: Entity }) => {
+            this.removeEntityFromCombat(data.entity);
+            this._pendingCombatEndCheck = true;
+        });
     }
 
     /**
      * Kicks off a combat encounter.
-     * @param combatants An array of all entities participating in the combat.
      */
-    public startCombat(combatants: Entity[]): void {
-        if (this._isCombatActive || combatants.length === 0) {
-            console.warn("Combat is already active or no combatants provided.");
-            return;
-        }
+    public async startCombat(combatants: Entity[]) {
+        if (this._isCombatActive) return; // Idempotent check
 
         this._isCombatActive = true;
         this.roundNumber = 1;
 
-        // 1. Roll initiative for all combatants
         const initiativeList = combatants.map(entity => ({
             entity,
             initiative: entity.rollInitiative()
         }));
 
-        // 2. Sort combatants by initiative (descending)
         initiativeList.sort((a, b) => b.initiative - a.initiative);
-        this.turnQueue = initiativeList.map(item => item.entity);
+        this.turnQueue = initiativeList;
 
-        // 3. Publish the start of combat
         console.log("--- COMBAT STARTED ---");
-        console.log("Turn Order:", this.turnQueue.map(e => e.name));
-        globalServiceLocator.eventBus.publish('combat:start', { combatants: this.turnQueue });
+        console.log("Turn Order:", this.turnQueue.map(item => `${item.entity.name} (${item.initiative})`));
+        globalServiceLocator.eventBus.publish('combat:start', { combatants: this.turnQueue.map(item => item.entity) });
 
-        // 4. Start the first turn
-        this.currentTurnIndex = -1; // Will be incremented to 0 in advanceTurn
-        this.advanceTurn();
-    }
-
-    /**
-     * Advances the turn to the next entity in the queue.
-     */
-    public advanceTurn(): void {
-        // 1. Give every NPC a turn.
-        globalServiceLocator.state.npcs.forEach(npc => {
-            npc.aiPackage?.decideAndExecuteAction();
-        });
-
-        // 2. Reset the player's action budget for their new turn.
-        const player = globalServiceLocator.state.player;
-        if (player) {
-            player.actionBudget = { standard: 1, move: 1, swift: 1, free: 5, hasTaken5FootStep: false };
-        }
-
-        // 3. If in combat mode, advance the initiative queue.
-        if (this._isCombatActive) {
-            // It will eventually publish 'combat:turn:start' again.
-            const eventBus: EventBus = globalServiceLocator.eventBus;
-            // Publish end of the previous turn, if there was one
-            if (this.currentTurnIndex >= 0) {
-                const previousCombatant = this.turnQueue[this.currentTurnIndex];
-                eventBus.publish('combat:turn:end', { entity: previousCombatant });
-            }
-
-            this.currentTurnIndex++;
-
-            // Check for end of round
-            if (this.currentTurnIndex >= this.turnQueue.length) {
-                this.currentTurnIndex = 0;
-                this.roundNumber++;
-                console.log(`--- ROUND ${this.roundNumber} ---`);
-                eventBus.publish('combat:round:start', { roundNumber: this.roundNumber });
-            }
-
-            // Start the new turn
-            const currentCombatant = this.turnQueue[this.currentTurnIndex];
-            console.log(`Turn starts for: ${currentCombatant.name}`);
-            eventBus.publish('combat:turn:start', { entity: currentCombatant });
-        }
+        this.currentTurnIndex = -1;
+        await this.advanceTurn();
     }
 
     /**
@@ -103,48 +59,217 @@ export class TurnManager {
         if (!this._isCombatActive) return;
 
         console.log("--- COMBAT ENDED ---");
-        const eventBus: EventBus = globalServiceLocator.eventBus;
-        eventBus.publish('combat:end', { result: 'ended' }); // Add more data later (victory/defeat)
+        globalServiceLocator.eventBus.publish('combat:end', { result: 'victory' });
 
-        // Reset state
         this._isCombatActive = false;
         this.turnQueue = [];
         this.currentTurnIndex = -1;
         this.roundNumber = 0;
+
+        // Ensure player is ready for exploration
+        this.runExplorationTick();
     }
 
     /**
-     * Removes a specific entity from the turn queue (e.g., on death).
-     * @param entityToRemove The entity to remove.
+     * Adds a new entity to an ongoing combat.
      */
-    private removeEntityFromCombat(entityToRemove: Entity): void {
+    public addCombatant(entity: Entity): void {
         if (!this._isCombatActive) return;
 
-        const index = this.turnQueue.findIndex(e => e.id === entityToRemove.id);
-        if (index > -1) {
-            this.turnQueue.splice(index, 1);
-            // If the removed entity was earlier in the queue than the current one,
-            // we need to decrement the index to not skip a turn.
-            if (index < this.currentTurnIndex) {
-                this.currentTurnIndex--;
+        const newEntry = {
+            entity,
+            initiative: entity.rollInitiative()
+        };
+
+        const insertionIndex = this.turnQueue.findIndex(item => item.initiative < newEntry.initiative);
+
+        if (insertionIndex === -1) {
+            this.turnQueue.push(newEntry); // Add to end
+        } else {
+            this.turnQueue.splice(insertionIndex, 0, newEntry);
+            if (insertionIndex <= this.currentTurnIndex) {
+                this.currentTurnIndex++; // Adjust index to not skip the new entity or replay a turn
             }
-            console.log(`${entityToRemove.name} removed from combat.`);
+        }
+        console.log(`${entity.name} joins the fight!`);
+    }
+
+    public async advanceTurn() {
+        if (!this._isCombatActive) {
+            this.runExplorationTick();
+        } else {
+            this.runCombatTurn();
         }
     }
 
     /**
-     * Entry point for an NPC to perform an action.
-     * It executes the action and then immediately advances the turn,
-     * as our current AI model is simple (one action per turn).
-     */
-    public performNpcAction(action: Action): void {
-        if (!this._isCombatActive) return;
+         * Executes one "tick" in Exploration Mode. The player has acted,
+         * and now the world gets to react simultaneously.
+         */
+    private runExplorationTick(): void {
+        console.log("--- Exploration Tick ---");
+        // 1. Give every NPC a turn to perform non-combat actions.
+        globalServiceLocator.state.npcs.forEach(npc => {
+            if (npc.aiPackage?.decideAction) {
+                const action = npc.aiPackage.decideAction();
+                if (action) {
+                    // Exploration actions execute immediately. They don't use the turn queue.
+                    action.execute();
+                }
+            }
+        });
 
-        console.log(`TurnManager processing NPC action for ${action.actor.name}`);
+        // 2. Reset the player's action budget to full for their next action.
+        const player = globalServiceLocator.state.player;
+        if (player) {
+            player.actionBudget = { standard: 1, move: 1, swift: 1, free: 99, hasTaken5FootStep: false };
+        }
+    }
+
+    private async runCombatTurn() {
+        // A. Check for Combat End condition at a safe point in the loop.
+        if (this._pendingCombatEndCheck) {
+            this._pendingCombatEndCheck = false; // Reset flag immediately
+            // Check if any hostile NPCs are left in the turn queue.
+            const hostilesRemain = this.turnQueue.some((item: TurnQueueEntry) =>
+                (item.entity instanceof Npc) && item.entity.disposition === 'hostile'
+            );
+            if (!hostilesRemain) {
+                this.endCombat();
+                return; // Exit combat flow entirely
+            }
+        }
+
+        // B. End the previous actor's turn, if one existed.
+        if (this.currentTurnIndex >= 0 && this.turnQueue[this.currentTurnIndex]) {
+            const previousCombatant = this.turnQueue[this.currentTurnIndex];
+            globalServiceLocator.eventBus.publish('combat:turn:end', { entity: previousCombatant });
+        }
+
+        // C. Advance the index to the next actor.
+        this.currentTurnIndex++;
+
+        // If we've completed a full round, reset the index and start a new round.
+        if (this.currentTurnIndex >= this.turnQueue.length) {
+            this.currentTurnIndex = 0;
+            this.roundNumber++;
+            console.log(`--- ROUND ${this.roundNumber} ---`);
+            globalServiceLocator.eventBus.publish('combat:round:start', { roundNumber: this.roundNumber });
+        }
+
+        // This can happen if the last entity in the queue dies.
+        if (!this.turnQueue[this.currentTurnIndex]) {
+            // The combat end check at the start of the next advanceTurn call will handle this.
+            return;
+        }
+
+        // D. Get the current actor.
+        const currentActor: Entity = this.turnQueue[this.currentTurnIndex].entity;
+
+        // E. Reset the actor's action budget for their new turn. Should be gotten from the actor prototype/template since it could have more actions of a given type
+        currentActor.actionBudget = { standard: 1, move: 1, swift: 1, free: 99, hasTaken5FootStep: false };
+
+        // F. Handle Action Denial (Stunned, Paralyzed, etc.).
+        // TODO: Replace with a real status effect check, e.g., currentActor.hasStatus('stunned')
+        const canAct = true; // Placeholder for future status effect system
+        if (!canAct) {
+            console.log(`${currentActor.name}'s turn is skipped.`);
+            globalServiceLocator.eventBus.publish('combat:turn:skipped', { entity: currentActor });
+            await this.advanceTurn(); // Immediately proceed to the next turn
+            return;
+        }
+
+        // G. Announce the start of the new turn.
+        console.log(`Turn starts for: ${currentActor.name}`);
+        globalServiceLocator.eventBus.publish('combat:turn:start', { entity: currentActor });
+
+        // H. Delegate action based on actor type.
+        if (currentActor instanceof PlayerCharacter) {
+            // Wait for player input via PlayerTurnController.
+        } else if (currentActor instanceof Npc && currentActor.aiPackage) {
+            // AI decides, TurnManager executes.
+            await this.handleNpcTurn(currentActor);
+        } else {
+            // Actor is NPC without AI or some other entity, auto-pass turn.
+            this.processNpcAction(new PassTurnAction(currentActor));
+            await this.advanceTurn(); // Auto-pass and advance for non-AI entities
+        }
+    }
+
+    private async handleNpcTurn(npc: Npc) {
+        while (npc.actionBudget.standard > 0 || npc.actionBudget.move > 0) {
+            const action = npc.aiPackage.decideAction();
+
+            if (action instanceof PassTurnAction || !this.canAfford(npc, action.cost)) {
+                break;//ends the turn
+            }
+
+            // Await the completion of the action, including its render delay
+            await this.processNpcAction(action);
+        }
+
+        // The NPC's turn is over, advance to the next combatant
+        await this.advanceTurn();
+    }
+
+    /**
+     * Executes an NPC's chosen action and immediately advances the turn.
+     * This simple model (1 action -> end turn) can be expanded later.
+     */
+    public async processNpcAction(action: Action) {
+        if (!action) return;
+
+        // Deduct cost (future-proofing for multi-action NPCs)
+        const budget = action.actor.actionBudget;
+        switch (action.cost) {
+            case ActionType.Standard: budget.standard--; break;
+            case ActionType.Move: budget.move--; break;
+            case ActionType.FullRound: budget.standard--; budget.move--; break;
+            case ActionType.Swift: budget.swift--; break;
+            case ActionType.Free: budget.free--; break;
+        }
+
+        // Execute the action's logic (which publishes events, etc.)
         action.execute();
 
-        // Since our AI is simple for now, we advance the turn right after.
-        // A more complex AI might submit multiple actions.
-        this.advanceTurn();
+        // Wait for a short duration to allow the UI to update and render the result.
+        // This makes the NPC's actions feel sequential to the player.
+        const RENDER_DELAY_MS = 150; // Tune this value for game feel
+        await new Promise(resolve => setTimeout(resolve, RENDER_DELAY_MS));
+    }
+
+    /**
+     * Checks if the current action budget can pay for a given action cost.
+     */
+    private canAfford(npc: Npc, cost: ActionType): boolean {
+        // Outside of combat, actions are always affordable.
+        if (!globalServiceLocator.turnManager.isCombatActive) return true;
+
+        const budget = npc.actionBudget;
+        if (!budget) return false;
+
+        switch (cost) {
+            case ActionType.Standard: return budget.standard > 0;
+            case ActionType.Move: return budget.move > 0;
+            case ActionType.FullRound: return budget.standard > 0 && budget.move > 0;
+            case ActionType.Swift: return budget.swift > 0;
+            case ActionType.Free: return budget.free > 0;
+        }
+    }
+
+    private async removeEntityFromCombat(entityToRemove: Entity) {
+        if (!this._isCombatActive) return;
+
+        const index = this.turnQueue.findIndex(item => item.entity.id === entityToRemove.id);
+        if (index > -1) {
+            const removed = this.turnQueue.splice(index, 1);
+            console.log(`${removed[0].entity.name} removed from combat queue.`);
+
+            // If the removed entity was earlier in the queue than the current one,
+            // we need to decrement the index to not skip a turn in this round.
+            if (index < this.currentTurnIndex) {
+                this.currentTurnIndex--;
+            }
+        }
     }
 }

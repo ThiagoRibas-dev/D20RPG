@@ -4,7 +4,8 @@
 export interface Modifier {
     value: number;
     type: string; // "racial", "competence", "untyped", etc.
-    source: string; // "Iron Will Feat", "Bless Spell", etc.
+    source: string; // "Iron Will Feat", "Bless Spell", etc. etc.
+    sourceId?: string; // The unique instance ID of the item or effect that applied this.
 }
 
 /**
@@ -17,6 +18,14 @@ export class ModifierList {
 
     public add(modifier: Modifier): void {
         this.modifiers.push(modifier);
+    }
+
+    /**
+     * Removes all modifiers that came from a specific source instance (e.g., an unequpped item).
+     * @param sourceId The unique ID of the source to remove.
+     */
+    public removeBySourceId(sourceId: string): void {
+        this.modifiers = this.modifiers.filter(mod => mod.sourceId !== sourceId);
     }
 
     /**
@@ -51,5 +60,17 @@ export class ModifierList {
         }
 
         return total;
+    }
+
+    /**
+     * Gets the most restrictive (lowest) value from all modifiers in this list.
+     * Useful for things like Max Dexterity Bonus from armor.
+     * @returns The lowest value, or a default high number if no modifiers exist.
+     */
+    public getLowest(): number {
+        if (this.modifiers.length === 0) {
+            return 99; // A high default, effectively meaning "no limit".
+        }
+        return Math.min(...this.modifiers.map(mod => mod.value));
     }
 }

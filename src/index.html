@@ -16,17 +16,42 @@
 </head>
 
 <body onload="doInit()">
+
+  <!-- ===================================================================== -->
+  <!-- START MENU -->
+  <!-- ===================================================================== -->
   <div id="startMenu">
     <h1>Eversummer Days</h1>
     <br>
-    <button aria-label="New Game" onclick="gameApi.newGameClick()">New Game</button>
+    <button id="new-game-btn" aria-label="New Game">New Game</button>
     <br>
-    <button aria-label="Continue" onclick="gameApi.continueGameClick()">Continue</button>
+    <button id="continue-game-btn" aria-label="Continue">Continue</button>
     <br>
-    <button aria-label="Exit" onclick="gameApi.exitGameClick()">Exit</button>
+    <button id="exit-game-btn" aria-label="Exit">Exit</button>
   </div>
+
+
+  <!-- ===================================================================== -->
+  <!-- CAMPAIGN SELECTION -->
+  <!-- ===================================================================== -->
+  <div id="campaignSelection" style="display:none;">
+    <h1>Campaign Selection</h1>
+    <div id="campaigns-container">
+      <ul id="campaign-list-ul"></ul>
+      <div id="campaign-info" style="display:none">
+        <div id="campaign-info-details">
+          <p id="campaign-name"></p>
+          <p id="campaign-desc"></p>
+        </div>
+        <button id="campaignSelectBtn" style="display:none;">Select</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- CHARACTER CREATION -->
+  <!-- ===================================================================== -->
   <div id="characterCreation" style="display:none;">
-    <!-- CHARACTER CREATION -->
     <h1>Character Creation</h1>
     <div id="creation-step-indicator">
       <h2 id="step-description"> Select a Race</h2>
@@ -102,36 +127,24 @@
       <button id="roll-ability-scores" onclick="gameApi.rollAbilities()"> Roll scores (3d6) </button>
       <button id="take-roll-btn" onclick="gameApi.saveAbilities()">Take Roll</button>
     </div>
-  </div>
-  <div class="selector" id="skills-selector" style="display: none;">
-    Spend your Skill Points.<br>
-    <label id="skill-points-remaining"></label><br>
-    <ul id="skill-container">
-    </ul>
-  </div>
-  <div class="btnContainer">
-    <button style="display: none" id="back-btn" onclick="gameApi.creationPrevStep()">Back</button>
-    <button style="display: none" id="next-btn" onclick="gameApi.creationNextStep()">Next</button>
-  </div>
-  <!-- END OF CHARACTER CREATION -->
-  </div>
-  <div id="campaignSelection" style="display:none;">
-    <h1>Campaign Selection</h1>
-    <div id="campaigns-container">
-      <ul id="campaign-list-ul"></ul>
-      <div id="campaign-info" style="display:none">
-        <div id="campaign-info-details">
-          <p id="campaign-name"></p>
-          <p id="campaign-desc"></p>
-        </div>
-        <button id="campaignSelectBtn" onclick="gameApi.selectCampaign()" style="display:none;">Select</button>
-      </div>
+    <div class="selector" id="skills-selector" style="display: none;">
+      Spend your Skill Points.<br>
+      <label id="skill-points-remaining"></label><br>
+      <ul id="skill-container">
+      </ul>
+    </div>
+    <div class="btnContainer">
+      <button style="display: none" id="back-btn" onclick="gameApi.creationPrevStep()">Back</button>
+      <button style="display: none" id="next-btn" onclick="gameApi.creationNextStep()">Next</button>
     </div>
   </div>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN GAME AREA -->
+  <!-- ===================================================================== -->
   <div id="gameContainer" style="display:none;">
-    <!-- GAME UI CONTAINER -->
     <div id="gameArea">
-      <div id="gameContainer">
+      <div id="gameCanvasContainer">
         <canvas id="gameCanvas"></canvas>
       </div>
       <div id="uiPanels">
@@ -145,15 +158,34 @@
         </div>
         <div id="actionButtonsPanel" class="uiPanel">
           <h3>Actions</h3>
-          <!-- Buttons for combat actions will go here -->
-          <button id="spawn-npcs-btn" onclick="gameApi.spawnTestNpcs()">Spawn Test Monsters</button>
+          <button id="inventory-btn">Inventory</button>
           <button id="attack-btn">Attack</button>
-          <button id="end-turn-btn" onclick="gameApi.endTurnClick()">End Turn</button>
-          <button id="start-combat-btn" onclick="gameApi.startCombat()">Start Combat</button>
+          <button id="end-turn-btn">End Turn</button>
+          <hr>
+          <button id="spawn-npcs-btn">Spawn Test Monsters</button>
+          <button id="start-combat-btn">Start Combat</button>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- ===================================================================== -->
+  <!-- INVENTORY SCREEN (NEW) -->
+  <!-- ===================================================================== -->
+  <div id="inventoryScreen" class="uiPanel"
+    style="display:none; position: fixed; top: 10%; left: 20%; width: 60%; height: 80%; z-index: 100;">
+    <h2>Inventory & Equipment</h2>
+    <button id="closeInventoryBtn" style="position: absolute; top: 10px; right: 10px;">X</button>
+    <div style="display: flex; height: 90%; margin-top: 10px;">
+      <div id="equippedItemsContainer" style="flex: 1; padding: 10px; border-right: 1px solid #444; overflow-y: auto;">
+        <!-- Content will be rendered by InventoryView.ts -->
+      </div>
+      <div id="inventoryItemsContainer" style="flex: 1; padding: 10px; overflow-y: auto;">
+        <!-- Content will be rendered by InventoryView.ts -->
+      </div>
+    </div>
+  </div>
+
 </body>
 
 </html>

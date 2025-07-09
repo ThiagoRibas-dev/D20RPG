@@ -6,9 +6,14 @@
   "cost": 1,
   "damage": "1d6",
   "damage_type": "piercing",
-  "critical": "x2",
+  "critical": {
+    "threatRange": "20",
+    "multiplier": 2
+  },
   "weight": 2,
-  "range": 30, // Range increment in feet
+  "range": 30,
   "size": "medium",
-  "weapon_properties": ["thrown"]
+  "weapon_properties": [
+    "thrown"
+  ]
 }

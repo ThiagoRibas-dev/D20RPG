@@ -69,9 +69,16 @@ export class Renderer {
     public renderMapFull(mapData: ContentItem) {
         try {
             console.log('Renderer: Drawing full map and entities.');
+
+            const gameState = globalServiceLocator.state;
+            const player = gameState.player;
+            if (!player) {
+                throw Error("Player is not defined");
+            }
+
             this.draw();
             this.renderMap(mapData);
-            this.renderPlayer();
+            this.renderSingleEntity(player);
             this.renderNpcs();
         } catch (error) {
             console.error("Error in renderMapFull:", error);
@@ -198,24 +205,21 @@ export class Renderer {
     }
 
     /**
-      * Renders the player character by calling the generic renderEntity method.
+      * Renders the actor by calling the generic renderEntity method.
       */
-    public renderPlayer() {
+    public renderSingleEntity(actor: Entity) {
         const gameState = globalServiceLocator.state;
-        const player = gameState.player;
-        if (!player) {
-            console.log("Player is not initialized");
+        if (!actor) {
+            console.log("Actor is not initialized");
             return;
         }
 
-        const uiScreens = globalServiceLocator.ui;
-        const gameArea: HTMLElement = uiScreens.els['gameContainer'];
         const canvas: HTMLCanvasElement = this.getCanvas();
         const context = canvas.getContext('2d');
         if (!context) return;
 
         // The new, simplified call. No more hardcoded '@' or 'yellow'.
-        this.renderEntity(context, player);
+        this.renderEntity(context, actor);
     }
 
     /**
