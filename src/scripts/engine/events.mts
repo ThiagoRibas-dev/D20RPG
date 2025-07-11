@@ -1,0 +1,33 @@
+export const GameEvents = {
+  // UI Events
+  UI_CREATION_CONFIRMED: 'ui:creation:confirmed',
+  UI_MAP_CLICKED: 'ui:map:clicked',
+  UI_INPUT_CANCELED: 'ui:input:canceled',
+  UI_BUTTON_ATTACK_CLICKED: 'ui:button:attack_clicked',
+
+  // Action Events
+  ACTION_ATTACK_DECLARED: 'action:attack:declared',
+  ACTION_ATTACK_RESOLVED: 'action:attack:resolved',
+  ACTION_MOVE_DECLARED: 'action:move:declared',
+  ACTION_MOVE_BLOCKED: 'action:move:blocked',
+  ACTION_DAMAGE_RESOLVED: 'action:damage:resolved',
+  ACTION_ATTACK_BEFORE_ROLL: 'action:attack:before_roll',
+  ACTION_DAMAGE_BEFORE_ROLL: 'action:damage:before_roll',
+  ACTION_PROVOKES_AOO: 'action:provokes_aoo',
+
+  // Combat Events
+  COMBAT_START: 'combat:start',
+  COMBAT_END: 'combat:end',
+  COMBAT_ROUND_START: 'combat:round:start',
+  COMBAT_TURN_START: 'combat:turn:start',
+  COMBAT_TURN_END: 'combat:turn:end',
+  COMBAT_TURN_SKIPPED: 'combat:turn:skipped',
+
+  // Character/Entity Events
+  CHARACTER_DIED: 'character:died',
+  CHARACTER_HP_CHANGED: 'character:hp:changed',
+  CHARACTER_EFFECT_APPLIED: 'character:effect:applied',
+  CHARACTER_EFFECT_REMOVED: 'character:effect:removed',
+  ENTITY_MOVED: 'entity:moved',
+  ENTITY_STATS_CALCULATED: 'entity:stats:calculated',
+} as const;

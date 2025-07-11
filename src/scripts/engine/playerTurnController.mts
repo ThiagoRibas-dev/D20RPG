@@ -2,6 +2,7 @@ import { Action, ActionType } from './actions/action.mjs';
 import { MeleeAttackAction } from './actions/meleeAttackAction.mjs';
 import { MoveAction } from './actions/moveAction.mjs';
 import { Entity } from './entities/entity.mjs';
+import { GameEvents } from './events.mjs';
 import { globalServiceLocator } from './serviceLocator.mjs';
 import { EntityPosition } from './utils.mjs';
 
@@ -24,16 +25,16 @@ export class PlayerTurnController {
         const eventBus = globalServiceLocator.eventBus;
 
         // Subscribe to the events published by the UI layer (Renderer, etc.)
-        ui.btns['attackButton'].onclick = () => eventBus.publish('ui:button:attack_clicked');
-        eventBus.subscribe('ui:button:attack_clicked', () => this.onAttackButtonClick());
-        eventBus.subscribe('ui:map:clicked', (data: { entity: Entity | null }) => this.handleMapClick(data.entity));
-        eventBus.subscribe('ui:input:canceled', () => this.cancelTargeting());
+        ui.btns['attackButton'].onclick = () => eventBus.publish(GameEvents.UI_BUTTON_ATTACK_CLICKED);
+        eventBus.subscribe(GameEvents.UI_BUTTON_ATTACK_CLICKED, () => this.onAttackButtonClick());
+        eventBus.subscribe(GameEvents.UI_MAP_CLICKED, (data: { entity: Entity | null }) => this.handleMapClick(data.entity));
+        eventBus.subscribe(GameEvents.UI_INPUT_CANCELED, () => this.cancelTargeting());
         ui.btns['endTurnButton'].onclick = () => this.onEndTurnClick();
 
         // React to combat state changes to update the UI
-        eventBus.subscribe('combat:start', () => this.updateAvailableActionUI());
-        eventBus.subscribe('combat:end', () => this.updateAvailableActionUI());
-        eventBus.subscribe('combat:turn:start', (data) => {
+        eventBus.subscribe(GameEvents.COMBAT_START, () => this.updateAvailableActionUI());
+        eventBus.subscribe(GameEvents.COMBAT_END, () => this.updateAvailableActionUI());
+        eventBus.subscribe(GameEvents.COMBAT_TURN_START, (data) => {
             if (data.entity === globalServiceLocator.state.player) {
                 this.updateAvailableActionUI();
             }

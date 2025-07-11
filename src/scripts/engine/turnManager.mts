@@ -3,6 +3,7 @@ import { PassTurnAction } from "./actions/passTurnAction.mjs";
 import { Entity } from "./entities/entity.mjs";
 import { Npc } from "./entities/npc.mjs";
 import { PlayerCharacter } from "./entities/playerCharacter.mjs";
+import { GameEvents } from "./events.mjs";
 import { globalServiceLocator } from "./serviceLocator.mjs";
 
 type TurnQueueEntry = {
@@ -21,7 +22,7 @@ export class TurnManager {
 
     constructor() {
         console.log("TurnManager initialized.");
-        globalServiceLocator.eventBus.subscribe('character:died', (data: { entity: Entity }) => {
+        globalServiceLocator.eventBus.subscribe(GameEvents.CHARACTER_DIED, (data: { entity: Entity }) => {
             this.removeEntityFromCombat(data.entity);
             this._pendingCombatEndCheck = true;
         });
@@ -46,7 +47,7 @@ export class TurnManager {
 
         console.log("--- COMBAT STARTED ---");
         console.log("Turn Order:", this.turnQueue.map(item => `${item.entity.name} (${item.initiative})`));
-        globalServiceLocator.eventBus.publish('combat:start', { combatants: this.turnQueue.map(item => item.entity) });
+        globalServiceLocator.eventBus.publish(GameEvents.COMBAT_START, { combatants: this.turnQueue.map(item => item.entity) });
 
         this.currentTurnIndex = -1;
         await this.advanceTurn();
@@ -59,7 +60,7 @@ export class TurnManager {
         if (!this._isCombatActive) return;
 
         console.log("--- COMBAT ENDED ---");
-        globalServiceLocator.eventBus.publish('combat:end', { result: 'victory' });
+        globalServiceLocator.eventBus.publish(GameEvents.COMBAT_END, { result: 'victory' });
 
         this._isCombatActive = false;
         this.turnQueue = [];
@@ -143,7 +144,7 @@ export class TurnManager {
         // B. End the previous actor's turn, if one existed.
         if (this.currentTurnIndex >= 0 && this.turnQueue[this.currentTurnIndex]) {
             const previousCombatant = this.turnQueue[this.currentTurnIndex];
-            globalServiceLocator.eventBus.publish('combat:turn:end', { entity: previousCombatant });
+            globalServiceLocator.eventBus.publish(GameEvents.COMBAT_TURN_END, { entity: previousCombatant });
         }
 
         // C. Advance the index to the next actor.
@@ -154,7 +155,7 @@ export class TurnManager {
             this.currentTurnIndex = 0;
             this.roundNumber++;
             console.log(`--- ROUND ${this.roundNumber} ---`);
-            globalServiceLocator.eventBus.publish('combat:round:start', { roundNumber: this.roundNumber });
+            globalServiceLocator.eventBus.publish(GameEvents.COMBAT_ROUND_START, { roundNumber: this.roundNumber });
         }
 
         // This can happen if the last entity in the queue dies.
@@ -174,14 +175,14 @@ export class TurnManager {
         const canAct = true; // Placeholder for future status effect system
         if (!canAct) {
             console.log(`${currentActor.name}'s turn is skipped.`);
-            globalServiceLocator.eventBus.publish('combat:turn:skipped', { entity: currentActor });
-            await this.advanceTurn(); // Immediately proceed to the next turn
+            globalServiceLocator.eventBus.publish(GameEvents.COMBAT_TURN_SKIPPED, { entity: currentActor });
+            await this.advanceTurn(); // Immediately proceed to a new turn
             return;
         }
 
         // G. Announce the start of the new turn.
         console.log(`Turn starts for: ${currentActor.name}`);
-        globalServiceLocator.eventBus.publish('combat:turn:start', { entity: currentActor });
+        globalServiceLocator.eventBus.publish(GameEvents.COMBAT_TURN_START, { entity: currentActor });
 
         // H. Delegate action based on actor type.
         if (currentActor instanceof PlayerCharacter) {

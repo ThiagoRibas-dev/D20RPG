@@ -27,7 +27,7 @@
 
 ---
 
-### **Implementation Checklist: The Path to MVP and Beyond (Revision 5)**
+### **Implementation Checklist: The Path to MVP and Beyond (Revision 6)**
 
 #### **Phase 0: Architecture Complete**
 *   `[x]` **Implement the Global Tagging System.**
@@ -39,6 +39,8 @@
 *   `[x]` **Build the `TurnManager`.**
 *   `[x]` **Implement Full Feat & Ability Application.**
 *   `[x]` **Formalize the Action Economy.**
+*   `[x]` **Task 0.1: Centralize Internal Engine Event Strings.**
+    *   **Status:** Done. Created `src/scripts/engine/events.mts` and refactored all engine and UI code to use the new `GameEvents` constants instead of raw strings.
 
 ---
 #### **Phase 1: Character & Action Systems Online**
@@ -52,29 +54,46 @@
     *   **Status:** Done. The `TurnManager` now grants movement points, and the `RulesEngine` deducts them based on tile cost.
 
 ---
-#### **Phase 2: Deep Equipment & Itemization**
+#### **Phase 2: Deep Equipment & Itemization (Revised)**
 *   `[x]` **Task 2.1: Implement the Full Equipment System.**
-    *   **Status:** Done. `EquipmentComponent` now handles proficiency checks and data-driven modifier application.
 *   `[x]` **Task 2.2: Implement Combinatorial Item Generation (`LootFactory`).**
-    *   **Status:** Done. `LootFactory` can combine base items, magic properties, and materials. `NpcFactory` now uses it.
 *   `[ ]` **Task 2.3: Implement the "Use Item" Action.**
+    *   `[ ]` **Sub-task 2.3.1:** Define "Use Item" as a Standard Action by default (e.g., drinking a potion, reading a scroll).
+    *   `[ ]` **Sub-task 2.3.2:** Implement logic for item uses that provoke Attacks of Opportunity (AoOs), such as drinking a potion or applying an oil.
+    *   `[ ]` **Sub-task 2.3.3:** Differentiate activation types (Spell Completion, Command Word, Use-Activated) and ensure they do not provoke AoOs unless specified.
 *   `[ ]` **Task 2.4: Implement Item Identification.**
-*   `[ ]` **Task 2.5: Implement Item States via Tags.**
+*   `[ ]` **Task 2.5: Implement Item States via Tags.** (e.g., `[state:cursed]`, `[state:identified]`, `[state:broken]`)
 
 ---
-#### **Phase 3: Advanced Combat Tactics**
-*   `[ ]` **Task 3.1: Implement Attacks of Opportunity (AoO).**
-    *   **Guidance:** Implement the `action:move:provokes_aoo` event and handler in the `RulesEngine`. An AoO is a single, free melee attack that happens immediately, interrupting the move.
+#### **Phase 3: Advanced Combat Tactics (Revised)**
+*   `[ ]` **Task 3.1: Implement Attacks of Opportunity (AoO) System.**
+    *   `[ ]` **Sub-task 3.1.1:** Implement the core AoO trigger: leaving a threatened square.
+    *   `[ ]` **Sub-task 3.1.2:** Implement AoO triggers for combat actions (e.g., making a Ranged Attack while threatened, Unarmed Strikes without the `Improved Unarmed Strike` feat).
+    *   `[ ]` **Sub-task 3.1.3:** Implement AoO triggers for general actions (e.g., Casting a Spell, Drinking a Potion, Standing Up from Prone).
+    *   `[ ]` **Sub-task 3.1.4:** Ensure AoOs are a specific type of Free Action that does not consume the attacker's normal actions but is limited to one per opportunity.
 *   `[x]` **Task 3.2: Implement Terrain Movement Costs.**
-    *   **Status:** Done. `tileDefinitions.json` now includes `moveCost`, which is used by the `RulesEngine`.
+*   `[ ]` **Task 3.3: Implement Special Combat Actions.**
+    *   `[ ]` **Sub-task 3.3.1:** Implement **Charge** (Full-Round Action).
+    *   `[ ]` **Sub-task 3.3.2:** Implement **Trip** (replaces a normal melee attack).
+    *   `[ ]` **Sub-task 3.3.3:** Implement **Disarm** (replaces a normal melee attack).
+    *   `[ ]` **Sub-task 3.3.4:** Implement **Bull Rush** (Standard Action).
+    *   `[ ]` **Sub-task 3.3.5:** Implement **Feint** (Standard Action in combat).
+    *   `[ ]` **Sub-task 3.3.6:** Implement **Grapple** (replaces an attack, with special follow-up rules).
+*   `[ ]` **Task 3.4: Implement Tactical Actions.**
+    *   `[ ]` **Sub-task 3.4.1:** Implement **Aid Another** to help allies with attacks or skills.
+    *   `[ ]` **Sub-task 3.4.2:** Implement the **Ready** action (to prepare a Standard Action).
+    *   `[ ]` **Sub-task 3.4.3:** Implement the **Total Defense** action (+4 dodge bonus to AC).
+    *   `[ ]` **Sub-task 3.4.4:** Implement the **Withdraw** action (Full-Round Action to safely move out of melee).
 
 ---
-#### **Phase 4: Advanced World Systems**
+#### **Phase 4: Advanced World Systems (Revised)**
 *   `[ ]` **Task 4.1: Implement Modular AI with Behavioral Flags.**
-    *   **Guidance:** Create a library of small AI behavior scripts (`FleeWhenWounded.mjs`, `UseRangedAttack.mjs`). Create a single `standardAI.mjs` "behavior runner" that reads an `ai_flags: ["FLEER", "ARCHER"]` array from monster prefabs and executes the corresponding behaviors in sequence.
-*   `[ ]` **Task 4.2: Implement the Unified Spellbook.**
+*   `[ ]` **Task 4.2: Implement the Unified Spellbook & Casting System.**
+    *   `[ ]` **Sub-task 4.2.1:** Implement **Concentration** checks when taking damage or being affected by distractions while casting.
+    *   `[ ]` **Sub-task 4.2.2:** Implement the **"Cast on the Defensive"** option (requires a Concentration check to avoid provoking an AoO).
+    *   `[ ]` **Sub-task 4.2.3:** Implement **Touch Spells**, including Melee/Ranged Touch Attacks and the ability to "Hold the Charge".
+    *   `[ ]` **Sub-task 4.2.4:** Differentiate spell casting times (Standard Action, Full-Round, Free Action for quickened spells) and their impact on the combat round.
 *   `[ ]` **Task 4.3: Implement Advanced Procedural Generation.**
-    *   **Guidance:** Create a `MapGenerator` service for procedural maps. It must also handle procedural placement of items (using loot tables per dungeon level) and monsters (using challenge ratings to create appropriate encounters).
 *   `[ ]` **Task 4.4: Implement Saving and Loading.**
 
 ---

@@ -2,6 +2,7 @@ import { ContentItem } from "../engine/entities/contentItem.mjs";
 import { Entity } from "./entities/entity.mjs";
 import { MapTile } from "./entities/mapTile.mjs";
 import { Npc } from "./entities/npc.mjs";
+import { GameEvents } from "./events.mjs";
 import { globalServiceLocator } from "./serviceLocator.mjs";
 
 export class Renderer {
@@ -29,7 +30,7 @@ export class Renderer {
             const tileCoords = this.canvasToTileCoords(canvasX, canvasY);
             const targetEntity = this.findEntityAt(tileCoords);
 
-            globalServiceLocator.eventBus.publish('ui:map:clicked', {
+            globalServiceLocator.eventBus.publish(GameEvents.UI_MAP_CLICKED, {
                 entity: targetEntity,
                 tileCoords: tileCoords
             });
@@ -38,7 +39,7 @@ export class Renderer {
         // --- MOUSE RIGHT-CLICK LISTENER (for canceling) ---
         canvas.addEventListener('contextmenu', (event) => {
             event.preventDefault();
-            globalServiceLocator.eventBus.publish('ui:input:canceled');
+            globalServiceLocator.eventBus.publish(GameEvents.UI_INPUT_CANCELED);
         });
     }
 

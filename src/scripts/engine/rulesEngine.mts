@@ -2,6 +2,7 @@ import { ContentItem } from "./entities/contentItem.mjs";
 import { Entity, EntityClass } from "./entities/entity.mjs";
 import { MapTile } from "./entities/mapTile.mjs";
 import { ModifierList } from "./entities/modifier.mjs";
+import { GameEvents } from "./events.mjs";
 import { globalServiceLocator } from "./serviceLocator.mjs";
 import { calculateModifier, EntityPosition, getRandomInt, rollD20 } from "./utils.mjs";
 
@@ -11,10 +12,10 @@ import { calculateModifier, EntityPosition, getRandomInt, rollD20 } from "./util
  */
 export class RulesEngine {
     constructor() {
-        globalServiceLocator.eventBus.subscribe('action:attack:declared',
+        globalServiceLocator.eventBus.subscribe(GameEvents.ACTION_ATTACK_DECLARED,
             (data) => this.resolveAttack(data)
         );
-        globalServiceLocator.eventBus.subscribe('action:move:declared',
+        globalServiceLocator.eventBus.subscribe(GameEvents.ACTION_MOVE_DECLARED,
             (data) => this.resolveMove(data)
         );
     }
@@ -53,7 +54,7 @@ export class RulesEngine {
 
         // 2. FIRE "BEFORE_ROLL" EVENT
         // This gives other systems (feats, spells) a chance to modify the attack.
-        globalServiceLocator.eventBus.publish('action:attack:before_roll', attackContext);
+        globalServiceLocator.eventBus.publish(GameEvents.ACTION_ATTACK_BEFORE_ROLL, attackContext);
 
         // 3. ROLL THE DIE
         attackContext.attackRoll.d20 = rollD20(); // From utils.mts
@@ -110,7 +111,7 @@ export class RulesEngine {
             }
 
             // This is the hook for PowerAttackEffectLogic.modifyDamage
-            globalServiceLocator.eventBus.publish('action:damage:before_roll', damageContext);
+            globalServiceLocator.eventBus.publish(GameEvents.ACTION_DAMAGE_BEFORE_ROLL, damageContext);
 
             // Resolve the damage
             this.resolveDamage(damageContext);
@@ -120,7 +121,7 @@ export class RulesEngine {
 
         // 7. FIRE "RESOLVED" EVENT
         // Announce the final result of the attack roll.
-        globalServiceLocator.eventBus.publish('action:attack:resolved', attackContext);
+        globalServiceLocator.eventBus.publish(GameEvents.ACTION_ATTACK_RESOLVED, attackContext);
     }
 
     /**
@@ -194,7 +195,7 @@ export class RulesEngine {
 
         // Announce that the calculation for this entity is complete.
         // Any system that needs to react to the final stats can listen for this.
-        globalServiceLocator.eventBus.publish('entity:stats:calculated', { entity });
+        globalServiceLocator.eventBus.publish(GameEvents.ENTITY_STATS_CALCULATED, { entity });
     }
 
     private addModifier(entity: Entity, target: string, value: number, type: string, source: string) {
@@ -226,15 +227,15 @@ export class RulesEngine {
         damageRoll.total = totalDiceResult + damageRoll.bonus;
 
         // 3. Announce damage for DR effects (future)
-        globalServiceLocator.eventBus.publish('action:damage:resolved', context);
+        globalServiceLocator.eventBus.publish(GameEvents.ACTION_DAMAGE_RESOLVED, context);
 
         // 4. Apply damage
         console.log(`${attacker.name} deals ${damageRoll.total} ${context.damageType} damage to ${target.name}.`);
         target.takeDamage(damageRoll.total);
-        globalServiceLocator.eventBus.publish('character:hp:changed', { entity: target });
+        globalServiceLocator.eventBus.publish(GameEvents.CHARACTER_HP_CHANGED, { entity: target });
 
         if (!target.isAlive()) {
-            globalServiceLocator.eventBus.publish('character:died', { entity: target, killer: attacker });
+            globalServiceLocator.eventBus.publish(GameEvents.CHARACTER_DIED, { entity: target, killer: attacker });
         }
     }
 
@@ -290,7 +291,7 @@ export class RulesEngine {
                 && intendedNewPosition.y < mapHeight;
             if (!isValidMovement) {
                 console.log("Movement blocked by map boundary");
-                globalServiceLocator.eventBus.publish('action:move:blocked', {
+                globalServiceLocator.eventBus.publish(GameEvents.ACTION_MOVE_BLOCKED, {
                     actor: actor,
                     reason: 'boundary',
                     blocker: null // No specific object, just the edge of the world
@@ -311,7 +312,7 @@ export class RulesEngine {
             // --- Tile Collision Check ---
             if (tileDef?.isBlocking) {
                 console.log(`Movement for ${actor.name} blocked by ${tileDef.name}.`);
-                globalServiceLocator.eventBus.publish('action:move:blocked', {
+                globalServiceLocator.eventBus.publish(GameEvents.ACTION_MOVE_BLOCKED, {
                     actor: actor,
                     reason: 'tile',
                     blocker: tileDef // Pass the tile definition as the blocker
@@ -323,7 +324,7 @@ export class RulesEngine {
             const blockingEntity = globalServiceLocator.renderer.findEntityAt(intendedNewPosition);
             if (blockingEntity) {
                 console.log(`Movement for ${actor.name} blocked by ${blockingEntity.name}.`);
-                globalServiceLocator.eventBus.publish('action:move:blocked', {
+                globalServiceLocator.eventBus.publish(GameEvents.ACTION_MOVE_BLOCKED, {
                     actor: actor,
                     reason: 'entity',
                     blocker: blockingEntity // Pass the entity as the blocker
@@ -335,7 +336,7 @@ export class RulesEngine {
             actor.actionBudget.movementPoints -= moveCost;
             actor.position = intendedNewPosition;
 
-            globalServiceLocator.eventBus.publish('entity:moved', {
+            globalServiceLocator.eventBus.publish(GameEvents.ENTITY_MOVED, {
                 entity: actor,
                 from: prevPlayerPosition,
                 to: intendedNewPosition,
@@ -377,7 +378,7 @@ export class RulesEngine {
         // If there are threats, we publish the interrupt event and DO NOT complete the move yet.
         if (threateningNpcs.length > 0) {
             console.log(`${actor.name}'s movement provokes an AoO from ${threateningNpcs.map(n => n.name).join(', ')}!`);
-            globalServiceLocator.eventBus.publish('action:provokes_aoo', {
+            globalServiceLocator.eventBus.publish(GameEvents.ACTION_PROVOKES_AOO, {
                 provokingActor: actor,
                 threateningActors: threateningNpcs,
                 onComplete: completeTheMove // Pass the continuation callback.

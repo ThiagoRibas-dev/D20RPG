@@ -1,5 +1,6 @@
 import { ContentItem } from '../entities/contentItem.mjs';
 import { Entity } from '../entities/entity.mjs';
+import { GameEvents } from '../events.mjs';
 import { globalServiceLocator } from '../serviceLocator.mjs';
 import { Action, ActionType } from './action.mjs';
 
@@ -17,7 +18,7 @@ export class MeleeAttackAction extends Action {
     public execute(): void {
         console.log(`${this.actor.name} executes MeleeAttackAction on ${this.target.name}`);
         // This is where the event chain begins.
-        globalServiceLocator.eventBus.publish('action:attack:declared', {
+        globalServiceLocator.eventBus.publish(GameEvents.ACTION_ATTACK_DECLARED, {
             attacker: this.actor,
             target: this.target,
             weapon: this.weapon

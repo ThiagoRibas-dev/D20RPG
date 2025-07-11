@@ -3,6 +3,7 @@ import { EffectManager } from './engine/effectManager.mjs';
 import { GameState } from './engine/entities/gameState.mjs';
 import { UIHolder } from './engine/entities/uiHolder.mjs';
 import { EventBus } from './engine/eventBus.mjs';
+import { GameEvents } from './engine/events.mjs';
 import { LootFactory } from './engine/factories/lootFactory.mjs';
 import { NpcFactory } from './engine/factories/npcFactory.mjs';
 import { Game } from './engine/game.mjs';
@@ -58,7 +59,7 @@ async function initializeGame(winObj: any) {
     updateUI();
   });
 
-  globalServiceLocator.eventBus.subscribe('ui:creation:confirmed', async () => {
+  globalServiceLocator.eventBus.subscribe(GameEvents.UI_CREATION_CONFIRMED, async () => {
     const state = globalServiceLocator.state;
 
     if (!state.player || !state.currentCampaignData) {

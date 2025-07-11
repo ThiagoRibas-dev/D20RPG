@@ -4,6 +4,7 @@ import { ActiveEffect } from './activeEffect.mjs';
 import { ContentItem } from './entities/contentItem.mjs';
 import { Entity } from './entities/entity.mjs';
 import { EventBus } from './eventBus.mjs';
+import { GameEvents } from './events.mjs';
 import { globalServiceLocator } from './serviceLocator.mjs';
 
 /**
@@ -17,7 +18,7 @@ export class EffectManager {
     constructor() {
         const eventBus: EventBus = globalServiceLocator.eventBus;
         // Subscribe to the end of a character's turn to tick down durations.
-        eventBus.subscribe('combat:turn:end', (data: { entity: Entity }) => this.tickDownEffectsFor(data.entity));
+        eventBus.subscribe(GameEvents.COMBAT_TURN_END, (data: { entity: Entity }) => this.tickDownEffectsFor(data.entity));
     }
 
     /**
@@ -72,7 +73,7 @@ export class EffectManager {
                 newEffect.scriptInstance.onApply();
             }
 
-            eventBus.publish('character:effect:applied', { entity: target, effect: newEffect });
+            eventBus.publish(GameEvents.CHARACTER_EFFECT_APPLIED, { entity: target, effect: newEffect });
             console.log(`Applied effect "${newEffect.name}" to ${target.name}.`);
 
         } catch (error) {
@@ -93,7 +94,7 @@ export class EffectManager {
         }
 
         this.activeEffects.delete(effectId);
-        globalServiceLocator.eventBus.publish('character:effect:removed', { entity: effect.target, effect: effect });
+        globalServiceLocator.eventBus.publish(GameEvents.CHARACTER_EFFECT_REMOVED, { entity: effect.target, effect: effect });
         console.log(`Removed effect "${effect.name}" from ${effect.target.name}.`);
     }
 

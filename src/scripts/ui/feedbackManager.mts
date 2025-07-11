@@ -1,4 +1,5 @@
 import { Entity } from "../engine/entities/entity.mjs";
+import { GameEvents } from "../engine/events.mjs";
 import { MapTile } from "../engine/entities/mapTile.mjs";
 import { globalServiceLocator } from "../engine/serviceLocator.mjs";
 
@@ -7,16 +8,16 @@ export class FeedbackManager {
 
     constructor() {
         this.logElement = globalServiceLocator.ui.els.combatLogText;
-        globalServiceLocator.eventBus.subscribe('action:attack:resolved',
+        globalServiceLocator.eventBus.subscribe(GameEvents.ACTION_ATTACK_RESOLVED,
             (data) => this.onAttackResolved(data)
         );
-        globalServiceLocator.eventBus.subscribe('action:damage:resolved',
+        globalServiceLocator.eventBus.subscribe(GameEvents.ACTION_DAMAGE_RESOLVED,
             (data) => this.onDamageResolved(data)
         );
-        globalServiceLocator.eventBus.subscribe('character:died',
+        globalServiceLocator.eventBus.subscribe(GameEvents.CHARACTER_DIED,
             (data) => this.onCharacterDied(data)
         );
-        globalServiceLocator.eventBus.subscribe('action:move:blocked',
+        globalServiceLocator.eventBus.subscribe(GameEvents.ACTION_MOVE_BLOCKED,
             (data) => this.onMoveBlocked(data)
         );
     }
