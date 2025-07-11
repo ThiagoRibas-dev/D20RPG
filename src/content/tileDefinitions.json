@@ -5,7 +5,8 @@
     "isBlocking": true,
     "isTrigger": false,
     "tileColor": "brown",
-    "tileChar": "#"
+    "tileChar": "#",
+    "moveCost": 10
   },
   {
     "symbol": ".",
@@ -13,7 +14,8 @@
     "isBlocking": false,
     "isTrigger": false,
     "tileColor": "lightgray",
-    "tileChar": "."
+    "tileChar": ".",
+    "moveCost": 5
   },
   {
     "symbol": ">",
@@ -21,7 +23,8 @@
     "isBlocking": false,
     "isTrigger": true,
     "tileColor": "green",
-    "tileChar": ">"
+    "tileChar": ">",
+    "moveCost": 5
   },
   {
     "symbol": "-",
@@ -29,7 +32,8 @@
     "isBlocking": false,
     "isTrigger": false,
     "tileColor": "darkgray",
-    "tileChar": "-"
+    "tileChar": "-",
+    "moveCost": 5
   },
   {
     "symbol": "@",
@@ -37,7 +41,8 @@
     "isBlocking": false,
     "isTrigger": false,
     "tileColor": "yellow",
-    "tileChar": "@"
+    "tileChar": "@",
+    "moveCost": 5
   },
   {
     "symbol": "?",
@@ -45,6 +50,7 @@
     "isBlocking": true,
     "isTrigger": false,
     "tileColor": "black",
-    "tileChar": "?"
+    "tileChar": "?",
+    "moveCost": 10
   }
 ]

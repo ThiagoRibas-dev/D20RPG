@@ -29,3 +29,28 @@ export function rollD20(): number {
 export function calculateModifier(score: number): number {
     return Math.floor((score - 10) / 2);
 }
+
+/**
+ * Deeply merges properties from a source object into a target object.
+ * Arrays are concatenated.
+ * @param target The object to merge into.
+ * @param source The object to merge from.
+ */
+export function deepMerge(target: any, source: any): any {
+    for (const key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+            if (source[key] instanceof Object && key in target) {
+                // If the key exists in target and both are objects, recurse
+                target[key] = deepMerge(target[key], source[key]);
+            } else if (Array.isArray(source[key]) && Array.isArray(target[key])) {
+                // If both are arrays, concatenate them
+                target[key] = target[key].concat(source[key]);
+            }
+            else {
+                // Otherwise, just assign the value
+                target[key] = source[key];
+            }
+        }
+    }
+    return target;
+}

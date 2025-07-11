@@ -12,10 +12,20 @@
     "cha": 4
   },
   "level": 1,
-  "armor": "leatherarmor",
-  "shield": "lightsteelshield",
-  "weapon_melee": "morningstar",
-  "weapon_ranged": "javelin",
+  "equipment": {
+    "main_hand": {
+      "base_item": "morningstar",
+      "properties": [
+        "flaming"
+      ]
+    },
+    "off_hand": {
+      "base_item": "lightsteelshield"
+    },
+    "armor": {
+      "base_item": "leatherarmor"
+    }
+  },
   "feats": [
     "alertness"
   ],

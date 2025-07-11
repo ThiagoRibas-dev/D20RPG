@@ -122,7 +122,7 @@ export class TurnManager {
         // 2. Reset the player's action budget to full for their next action.
         const player = globalServiceLocator.state.player;
         if (player) {
-            player.actionBudget = { standard: 1, move: 1, swift: 1, free: 99, hasTaken5FootStep: false };
+            player.actionBudget = { standard: 1, move: 1, swift: 1, free: 99, hasTaken5FootStep: false, movementPoints: 30 };
         }
     }
 
@@ -167,7 +167,7 @@ export class TurnManager {
         const currentActor: Entity = this.turnQueue[this.currentTurnIndex].entity;
 
         // E. Reset the actor's action budget for their new turn. Should be gotten from the actor prototype/template since it could have more actions of a given type
-        currentActor.actionBudget = { standard: 1, move: 1, swift: 1, free: 99, hasTaken5FootStep: false };
+        currentActor.actionBudget = { standard: 1, move: 1, swift: 1, free: 99, hasTaken5FootStep: false, movementPoints: 30 };
 
         // F. Handle Action Denial (Stunned, Paralyzed, etc.).
         // TODO: Replace with a real status effect check, e.g., currentActor.hasStatus('stunned')
@@ -270,6 +270,18 @@ export class TurnManager {
             if (index < this.currentTurnIndex) {
                 this.currentTurnIndex--;
             }
+        }
+    }
+
+    public checkForCombatEnd(): void {
+        if (!this._isCombatActive) return;
+
+        const hostilesRemain = this.turnQueue.some((item: TurnQueueEntry) =>
+            (item.entity instanceof Npc) && item.entity.disposition === 'hostile' && item.entity.isAlive()
+        );
+
+        if (!hostilesRemain) {
+            this.endCombat();
         }
     }
 }

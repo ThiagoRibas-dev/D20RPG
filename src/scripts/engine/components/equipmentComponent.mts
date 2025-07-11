@@ -16,26 +16,35 @@ export class EquipmentComponent {
         this.owner = owner;
     }
 
-    public equip(itemToEquip: ItemInstance, slot: EquipmentSlot): void {
-        // 1. Unequip any existing item in the slot
+    public equip(itemToEquip: ItemInstance, slot: EquipmentSlot): boolean {
+        const itemData = itemToEquip.itemData;
+
+        // 1. Check for proficiencies.
+        const requiredProficiencies = itemData.tags.filter((t: string) => t.startsWith('requires:proficient:'));
+        for (const req of requiredProficiencies) {
+            const proficiency = req.replace('requires:', '');
+            if (!this.owner.tags.has(proficiency)) {
+                globalServiceLocator.feedback.addMessageToLog(`${this.owner.name} is not proficient with ${itemData.name}.`, 'yellow');
+                return false; // Failed to equip
+            }
+        }
+
+        // 2. Unequip any existing item in the target slot.
         if (this.slots[slot]) {
             this.unequip(slot);
         }
 
-        // 2. TODO: Add proficiency checks here. If not proficient, return.
-
-        // 3. Move item to slot
+        // 3. Move item from inventory to the equipment slot.
         this.owner.inventory.remove(itemToEquip.instanceId);
         this.slots[slot] = itemToEquip;
 
-        // 4. Apply declarative bonuses from the item's JSON
-        const itemData = itemToEquip.itemData;
+        // 4. Apply all declarative bonuses from the item's data.
         if (itemData.bonuses) {
             itemData.bonuses.forEach((bonus: any) => {
-                // We tag the modifier with the item's unique ID
                 const modifier: Modifier = {
                     value: bonus.value,
                     type: bonus.type || 'untyped',
+                    target: bonus.target,
                     source: itemData.name,
                     sourceId: itemToEquip.instanceId
                 };
@@ -43,30 +52,11 @@ export class EquipmentComponent {
             });
         }
 
-        // Apply specific bonuses like AC
-        if (itemData.armor_bonus) {
-            const modifier: Modifier = {
-                value: itemData.armor_bonus,
-                type: itemData.type || 'armor',
-                source: itemData.name,
-                sourceId: itemToEquip.instanceId
-            };
-            this.owner.modifiers.add('ac', modifier);
-        }
-
-        if (itemData.max_dex_bonus !== undefined) {
-            const dexLimitModifier: Modifier = {
-                value: itemData.max_dex_bonus,
-                type: 'limit', // This is a cap, not a bonus/penalty
-                source: itemData.name,
-                sourceId: itemToEquip.instanceId
-            };
-            this.owner.modifiers.add('ac.max_dex', dexLimitModifier);
-        }
-
-        // 5. Recalculate stats and publish event
+        // 5. Recalculate stats and publish the event.
         globalServiceLocator.rulesEngine.calculateStats(this.owner);
         globalServiceLocator.eventBus.publish('entity:equipped_item', { entity: this.owner, item: itemToEquip });
+
+        return true; // Successfully equipped
     }
 
     public unequip(slot: EquipmentSlot): void {

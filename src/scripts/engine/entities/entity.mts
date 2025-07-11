@@ -53,6 +53,7 @@ export type ActionBudget = {
     swift: number;
     free: number;
     hasTaken5FootStep: boolean;
+    movementPoints: number;
 }
 
 export class Entity {
@@ -73,6 +74,7 @@ export class Entity {
     actionBudget: ActionBudget;
     public inventory: InventoryComponent;
     public equipment: EquipmentComponent;
+    public tags: Set<string>;
 
     // We store the BASE stats, not the final ones.
     public baseStats: EntityAbilityScores;
@@ -125,10 +127,13 @@ export class Entity {
             move: 1,
             swift: 1,
             free: 99,
-            hasTaken5FootStep: false
+            hasTaken5FootStep: false,
+            movementPoints: 0
         }
         this.inventory = new InventoryComponent(this);
         this.equipment = new EquipmentComponent(this);
+        this.tags = new Set<string>();
+        this.updateTags();
     }
 
     /**
@@ -163,27 +168,24 @@ export class Entity {
     }
 
     /**
-    * Gathers all tags from the entity's race, classes, and active effects.
-    * Uses a Set to automatically handle duplicates.
-    * @returns {Set<string>} A set of all unique tags for this entity.
+    * Recalculates and updates the entity's cached tag set.
+    * This should be called whenever race, classes, or effects change.
     */
-    public getTags(): Set<string> {
-        const allTags = new Set<string>();
+    public updateTags(): void {
+        this.tags.clear();
 
         // 1. Get tags from the race
-        this.selectedRace?.tags?.forEach((tag: string) => allTags.add(tag));
+        this.selectedRace?.tags?.forEach((tag: string) => this.tags.add(tag));
 
         // 2. Get tags from all classes
         this.classes.forEach(cls => {
-            cls.class.tags?.forEach((tag: string) => allTags.add(tag));
+            cls.class.tags?.forEach((tag: string) => this.tags.add(tag));
         });
 
         // 3. Get tags from all active effects (feats, spells, etc.)
         this.activeEffects.forEach(effect => {
-            effect.sourceEffect.tags?.forEach((tag: string) => allTags.add(tag));
+            effect.sourceEffect.tags?.forEach((tag: string) => this.tags.add(tag));
         });
-
-        return allTags;
     }
 
     /**
@@ -193,9 +195,7 @@ export class Entity {
      * @returns {boolean} True if the entity has the tag, false otherwise.
      */
     public hasTag(tag: string): boolean {
-        // For performance, we could cache the result of getTags() if it becomes a bottleneck,
-        // but for now, direct computation is cleaner.
-        return this.getTags().has(tag);
+        return this.tags.has(tag);
     }
 
     takeDamage(amount: number) {

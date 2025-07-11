@@ -48,23 +48,21 @@ export class NpcFactory {
         // Recalculate stats AFTER applying feats to include declarative feat bonuses
         globalServiceLocator.rulesEngine.calculateStats(npc);
 
-        // 6. CREATE AND EQUIP ITEMS
-        const lootFactory = globalServiceLocator.lootFactory;
-        const equipmentList: { slot: EquipmentSlot, itemId: string }[] = [
-            { slot: 'armor', itemId: prefab.armor },
-            { slot: 'shield', itemId: prefab.shield },
-            { slot: 'main_hand', itemId: prefab.weapon_melee },
-            // Add other slots like 'off_hand', 'weapon_ranged' if they exist in prefabs
-        ];
+        // 6. CREATE AND EQUIP ITEMS from the new `equipment` prefab format
+        if (prefab.equipment) {
+            const lootFactory = globalServiceLocator.lootFactory;
+            for (const slot in prefab.equipment) {
+                const itemDef = prefab.equipment[slot];
+                if (itemDef && itemDef.base_item) {
+                    const itemInstance = await lootFactory.createItem(
+                        itemDef.base_item,
+                        itemDef.properties || [],
+                        itemDef.material
+                    );
 
-        for (const eq of equipmentList) {
-            if (eq.itemId) {
-                // We pass an empty array for magic properties for now.
-                // The LootFactory can handle creating a simple, non-magical item instance.
-                const itemInstance = await lootFactory.createItem(eq.itemId, []);
-                if (itemInstance) {
-                    // Equip the newly created item instance to the correct slot.
-                    npc.equipment.equip(itemInstance, eq.slot);
+                    if (itemInstance) {
+                        npc.equipment.equip(itemInstance, slot as EquipmentSlot);
+                    }
                 }
             }
         }

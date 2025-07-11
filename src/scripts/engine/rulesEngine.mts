@@ -200,7 +200,7 @@ export class RulesEngine {
     private addModifier(entity: Entity, target: string, value: number, type: string, source: string) {
         // The ModifierManager handles the creation of the list if it doesn't exist.
         // We just create the modifier object and add it.
-        entity.modifiers.add(target, { value, type, source });
+        entity.modifiers.add(target, { value, type, source, target });
     }
 
     private resolveDamage(context: any): void {
@@ -298,9 +298,17 @@ export class RulesEngine {
                 return;
             }
 
-            // --- Tile Collision Check ---
+            // --- Tile Definition and Cost Check ---
             const tileSymbol = map.tiles[intendedNewPosition.y][intendedNewPosition.x];
             const tileDef = tileDefs.find(def => def.symbol === tileSymbol);
+            const moveCost = tileDef?.moveCost || 5; // Default cost is 5ft.
+
+            if (actor.actionBudget.movementPoints < moveCost) {
+                globalServiceLocator.feedback.addMessageToLog("You don't have enough movement left.", "yellow");
+                return;
+            }
+
+            // --- Tile Collision Check ---
             if (tileDef?.isBlocking) {
                 console.log(`Movement for ${actor.name} blocked by ${tileDef.name}.`);
                 globalServiceLocator.eventBus.publish('action:move:blocked', {
@@ -323,8 +331,17 @@ export class RulesEngine {
                 return;
             }
 
-            // Update position and redraw
+            // --- Success! Deduct cost and update state. ---
+            actor.actionBudget.movementPoints -= moveCost;
             actor.position = intendedNewPosition;
+
+            globalServiceLocator.eventBus.publish('entity:moved', {
+                entity: actor,
+                from: prevPlayerPosition,
+                to: intendedNewPosition,
+                cost: moveCost
+            });
+
 
             if (tileDef && tileDef.isTrigger) {
                 console.log("Stepped on a trigger tile!");

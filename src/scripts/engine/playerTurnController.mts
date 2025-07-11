@@ -80,6 +80,7 @@ export class PlayerTurnController {
     private onEndTurnClick(): void {
         // This button should only be clickable during combat.
         globalServiceLocator.turnManager.advanceTurn();
+        globalServiceLocator.turnManager.checkForCombatEnd();
     }
 
     public cancelTargeting(): void {
@@ -126,7 +127,7 @@ export class PlayerTurnController {
 
         switch (cost) {
             case ActionType.Standard: return budget.standard > 0;
-            case ActionType.Move: return budget.move > 0;
+            case ActionType.Move: return budget.movementPoints > 0;
             case ActionType.FullRound: return budget.standard > 0 && budget.move > 0;
             case ActionType.Swift: return budget.swift > 0;
             case ActionType.Free: return budget.free > 0;
@@ -144,7 +145,7 @@ export class PlayerTurnController {
 
         switch (cost) {
             case ActionType.Standard: budget.standard--; break;
-            case ActionType.Move: budget.move--; break;
+            case ActionType.Move: break; // Movement points are spent in the RulesEngine
             case ActionType.FullRound: budget.standard = 0; budget.move = 0; break;
             case ActionType.Swift: budget.swift--; break;
             case ActionType.Free: budget.free--; break;

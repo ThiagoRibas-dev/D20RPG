@@ -4,6 +4,7 @@
 export interface Modifier {
     value: number;
     type: string; // "racial", "competence", "untyped", etc.
+    target: string; // "stats.str", "ac", "saves.will", etc.
     source: string; // "Iron Will Feat", "Bless Spell", etc. etc.
     sourceId?: string; // The unique instance ID of the item or effect that applied this.
 }

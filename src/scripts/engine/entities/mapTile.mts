@@ -5,4 +5,5 @@ export type MapTile = {
     isTrigger: boolean;
     tileColor: string;
     tileChar: string;
+    moveCost?: number;
 };
