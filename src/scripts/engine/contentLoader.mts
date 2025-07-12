@@ -131,4 +131,19 @@ export class ContentLoader {
             return null;
         }
     }
+
+    public async loadModifierTypes(): Promise<any[]> {
+        const filePath = `./content/modifier_types.json`;
+        try {
+            console.log(`Fetching ${filePath}`);
+            const response = await fetch(filePath);
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error(`Error loading modifier types: ${filePath}`, error);
+            return [];
+        }
+    }
 }

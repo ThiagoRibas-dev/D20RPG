@@ -1,0 +1,3 @@
+The PROJECT_BRIEF.md file contains a Project Brief and a Checklist that serves as a roadmap that we will update as we finish each task, and a couple of online references.
+
+After every task, update the Checklist, adding the task to the Checklist if necessary, and match the existing code against the Checklist, looking for TODOs that might not already be on the Checklist, and determining if any of the tasks marked as completed in the Checklist are not currently implemented in the code.

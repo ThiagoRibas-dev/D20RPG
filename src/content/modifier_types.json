@@ -1,0 +1,82 @@
+[
+    {
+        "id": "untyped",
+        "name": "Untyped",
+        "stacking": "sum"
+    },
+    {
+        "id": "dodge",
+        "name": "Dodge",
+        "stacking": "sum"
+    },
+    {
+        "id": "circumstance",
+        "name": "Circumstance",
+        "stacking": "sum"
+    },
+    {
+        "id": "racial",
+        "name": "Racial",
+        "stacking": "highest"
+    },
+    {
+        "id": "enhancement",
+        "name": "Enhancement",
+        "stacking": "highest"
+    },
+    {
+        "id": "competence",
+        "name": "Competence",
+        "stacking": "highest"
+    },
+    {
+        "id": "armor",
+        "name": "Armor",
+        "stacking": "highest"
+    },
+    {
+        "id": "shield",
+        "name": "Shield",
+        "stacking": "highest"
+    },
+    {
+        "id": "natural_armor",
+        "name": "Natural Armor",
+        "stacking": "highest"
+    },
+    {
+        "id": "deflection",
+        "name": "Deflection",
+        "stacking": "highest"
+    },
+    {
+        "id": "insight",
+        "name": "Insight",
+        "stacking": "highest"
+    },
+    {
+        "id": "luck",
+        "name": "Luck",
+        "stacking": "highest"
+    },
+    {
+        "id": "morale",
+        "name": "Morale",
+        "stacking": "highest"
+    },
+    {
+        "id": "profane",
+        "name": "Profane",
+        "stacking": "highest"
+    },
+    {
+        "id": "sacred",
+        "name": "Sacred",
+        "stacking": "highest"
+    },
+    {
+        "id": "size",
+        "name": "Size",
+        "stacking": "highest"
+    }
+]

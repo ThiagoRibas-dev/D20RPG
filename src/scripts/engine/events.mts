@@ -32,3 +32,33 @@ export const GameEvents = {
   ENTITY_MOVED: 'entity:moved',
   ENTITY_STATS_CALCULATED: 'entity:stats:calculated',
 } as const;
+
+/**
+ * Represents a structured event within the game engine.
+ * It contains the data relevant to the event and can be cancelled
+ * by a listener to prevent further processing.
+ */
+export class GameEvent {
+    public readonly name: string;
+    public data: any;
+    private _isCancelled: boolean = false;
+
+    constructor(name: string, data: any) {
+        this.name = name;
+        this.data = data;
+    }
+
+    /**
+     * Marks the event as cancelled, preventing further listeners from executing.
+     */
+    public cancel(): void {
+        this._isCancelled = true;
+    }
+
+    /**
+     * Checks if the event has been cancelled.
+     */
+    public get isCancelled(): boolean {
+        return this._isCancelled;
+    }
+}

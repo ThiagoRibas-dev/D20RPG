@@ -19,7 +19,7 @@ export class EffectManager {
     constructor() {
         const eventBus: EventBus = globalServiceLocator.eventBus;
         // Subscribe to the end of a character's turn to tick down durations.
-        eventBus.subscribe(GameEvents.COMBAT_TURN_END, (data: { entity: Entity }) => this.tickDownEffectsFor(data.entity));
+        eventBus.subscribe(GameEvents.COMBAT_TURN_END, (event) => this.tickDownEffectsFor(event.data.entity));
     }
 
     public async triggerEffect(effectId: string, actor: Entity, item?: ItemInstance) {

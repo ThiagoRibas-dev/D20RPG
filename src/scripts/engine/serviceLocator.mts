@@ -10,6 +10,7 @@ import { Renderer } from "./renderer.mjs";
 import { RulesEngine } from "./rulesEngine.mjs";
 import { TurnManager } from "./turnManager.mjs";
 import { FeedbackManager } from "../ui/feedbackManager.mjs";
+import { ModifierManager } from "./modifierManager.mjs";
 
 /**
  * A simple Service Locator pattern implementation.
@@ -31,6 +32,7 @@ class ServiceLocator {
     public state!: GameState;
     public lootFactory!: LootFactory;
     public feedback!: FeedbackManager;
+    public modifierManager!: ModifierManager; // Add ModifierManager to ServiceLocator
 }
 
 // Create the single, global instance that will be used everywhere.

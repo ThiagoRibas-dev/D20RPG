@@ -3,7 +3,7 @@
 **Game Premise:**
 *   **Genre:** 2D, Tile-Based, Hybrid Turn-Based Tactical RPG.
 *   **Core Philosophy:** A "Fantasy World Simulator" that prioritizes deep, systemic interactivity and emergent gameplay over a linear, scripted narrative. The goal is a highly faithful digital adaptation of the D&D 3.5e OGL ruleset.
-*   **Inspiration:** The mechanical depth and rule-based world of **Dungeons & Dragons 3.5e OGL**, the strategic, systems-driven combat of **Incursion**, and the profound emergent interactions and player freedom of **NetHack**.
+*   **Inspiration:** The mechanical depth and rule-based world of **Dungeons & Dragons 3.5e OGL**, the strategic, systems-driven combat of **Incursion: Halls of the Goblin King**, and the profound emergent interactions and player freedom of **NetHack**.
 *   **Setting:** A setting-agnostic fantasy world, intentionally designed as a blank canvas for community-driven content.
 *   **Core Gameplay Loop:** Explore dangerous environments, overcome challenges using a wide array of tactical actions and items, engage in turn-based combat governed by a strict ruleset (including flanking and attacks of opportunity), and develop unique characters through a class-based system.
 
@@ -42,15 +42,23 @@
 *   `[x]` **Formalize the Action Economy.**
 *   `[x]` **Task 0.1: Centralize Internal Engine Event Strings.**
     *   **Status:** Done. Created `src/scripts/engine/events.mts` and refactored all engine and UI code to use the new `GameEvents` constants instead of raw strings.
+*   `[x]` **Task 0.2: Implement the Modifier Pipeline (`ModifierManager`).**
+    *   **Guidance:** Create a system to manage and apply `Modifiers` from all sources, correctly handling D&D 3.5e's complex stacking and layering rules.
+    *   `[x]` **Sub-task 0.2.1:** Establish a layered calculation order: apply base/inherent stats first, then persistent modifiers from equipment, and finally temporary effects from spells or conditions.
+    *   `[x]` **Sub-task 0.2.2:** Implement a data-driven system for modifier types. Instead of hardcoding behavior, define types (`enhancement`, `racial`, `dodge`, etc.) in data files. Each definition should specify its stacking behavior (e.g., `stacking: 'highest'`, `stacking: 'sum'`) and other rules.
+    *   `[x]` **Sub-task 0.2.3:** Implement duration tracking for temporary effects (rounds, minutes, hours) and ensure they are removed upon expiration.
+*   `[x]` **Task 0.3: Implement the Core Event Bus.**
+    *   **Guidance:** Build the central event dispatch system that allows for decoupled communication between game components, as described in the brief.
+*   `[x]` **Task 0.4: Refactor Content Loading for `modifier_types.json`.**
+    *   **Status:** Done. `modifier_types.json` is now loaded via `ContentLoader` and managed by `ModifierManager`, removing direct file system imports.
 
 ---
 #### **Phase 1: Character & Action Systems Online**
 *   `[x]` **Action Economy Framework Established.**
-*   `[x]` **Feat & Ability Application Implemented.**
 *   `[x]` **"Attack" Action Chain Implemented.**
 *   `[x]` **Full Damage Calculation Implemented.**
 *   `[x]` **Critical Hits Implemented.**
-*   `[x]` **Modular AI Execution Implemented (Initial Refactor).**
+*   `[x]` **Task 1.1: Initial AI System Refactor.**
 *   `[x]` **Movement Point System Implemented.**
     *   **Status:** Done. The `TurnManager` now grants movement points, and the `RulesEngine` deducts them based on tile cost.
 
@@ -109,17 +117,35 @@
 *   `[ ]` **Task 4.4: Implement Saving and Loading.**
 
 ---
-#### **Phase 5: Systemic Interactions (The NetHack Factor)**
-*   `[ ]` **Task 5.1: Implement Material Interactions.**
-    *   **Guidance:** Use the event bus and tagging system. Create a listener that checks for `action:damage:resolved`. If a weapon with the `[slashing]` tag hits a creature with the `[material:wood]` tag, the creature takes extra damage. If a monster attack with `[acid]` hits a player wearing armor with the `[material:iron]` tag, the armor's `armor_bonus` modifier should be permanently reduced.
+#### **Phase 5: Systemic Interactions (The NetHack Factor) (Revised)**
+*   `[ ]` **Task 5.1: Implement Material Interactions (D&D 3.5e Hardness & NetHack Erosion).**
+    *   `[ ]` **Sub-task 5.1.1:** Implement object hardness and hit points based on material (e.g., wood, stone, iron, mithril) as per D&D 3.5e rules.
+    *   `[ ]` **Sub-task 5.1.2:** Implement item erosion states (`[state:rusty]`, `[state:corroded]`, `[state:burnt]`, `[state:rotted]`).
+    *   `[ ]` **Sub-task 5.1.3:** Implement erosion effects: rusted/corroded items have reduced effectiveness (lower AC for armor, lower damage for weapons).
+    *   `[ ]` **Sub-task 5.1.4:** Implement erosion triggers:
+        *   Water causes `[state:rusty]` on iron items.
+        *   Acid causes `[state:corroded]` on copper and iron items.
+        *   Fire causes `[state:burnt]` on flammable items (wood, cloth, leather).
 *   `[ ]` **Task 5.2: Implement Environmental Interactions.**
-    *   **Guidance:** A `fire` spell hitting a `[flammable]` tile (e.g., "dry grass") should change the tile type to "burning grass" and apply damage to any creature standing on it at the end of their turn.
-*   `[ ]` **Task 5.3: Implement Item-on-Item Interactions.**
-    *   **Guidance:** Refactor the `UseItemAction` to optionally take a second target (`targetItem`). This would allow for actions like `Use(player, potion_of_healing, sword)`, which could apply a temporary poison to the weapon. This is the foundation for NetHack's "dipping" mechanic.
+    *   `[ ]` **Sub-task 5.2.1: Implement Flammable Terrain.**
+        *   **Guidance:** Fire-based attacks or effects on a tile with the `[flammable]` tag (e.g., "dry grass", "web") should change the tile to "burning grass" and create a damaging hazard.
+    *   `[ ]` **Sub-task 5.2.2: Implement Water/Lava Hazards.**
+        *   **Guidance:** Entering lava without fire resistance is instant death. Entering with resistance starts a countdown to drowning.
+        *   **Guidance:** Unprotected movement in water triggers drowning checks based on Constitution and encumbrance.
+    *   `[ ]` **Sub-task 5.2.3: Implement Spell/Environment Interactions.**
+        *   **Guidance:** A `cone of cold` spell should freeze a water tile into an `[ice]` tile. A `fireball` spell should melt an `[ice]` tile into a `[water]` tile or evaporate a `[water]` tile into a normal floor tile.
+*   `[ ]` **Task 5.3: Implement Item-on-Item Interactions (NetHack's "Dipping").**
+    *   `[ ]` **Sub-task 5.3.1:** Refactor `UseItemAction` to optionally accept a second item as a target (`Use(player, item_to_use, target_item)`).
+    *   `[ ]` **Sub-task 5.3.2:** Implement potion-dipping mechanics:
+        *   Dipping projectiles (arrows, bolts) in a `potion of poison` applies a `[poisoned]` tag and effect.
+        *   Dipping a non-magical weapon in a `potion of bless` grants a temporary magical bonus.
+    *   `[ ]` **Sub-task 5.3.3:** Implement reagent-like interactions:
+        *   Dipping a `unicorn horn` into a `potion of poison` neutralizes it into a `potion of water`.
+        *   Dipping an `amethyst` into a `potion of booze` transmutes it into a `potion of fruit juice`.
 
 
 ---
-### Online references for D&D 3.5e : 
+### Online references for D&D 3.5e and the d20 System : 
 *   https://www.d20srd.org/index.htm
 *   https://www.realmshelps.net
 *   https://srd.dndtools.org/
@@ -127,7 +153,7 @@
 *   https://dndtools.net
 *   https://dnd.arkalseif.info
 
-### Incursion d20 references and source code : 
+### Incursion: Halls of the Goblin King references and source code : 
 *   https://www.roguebasin.com/index.php/Incursion
 *   https://github.com/rmtew/incursion-roguelike
 

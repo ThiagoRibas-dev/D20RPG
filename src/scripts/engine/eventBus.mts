@@ -1,23 +1,33 @@
-type Listener = (data?: any) => void;
+import { GameEvent } from "./events.mjs";
+
+type Listener = (event: GameEvent) => void;
+
+interface PrioritizedListener {
+    callback: Listener;
+    priority: number;
+}
 
 /**
- * A simple, global event bus for decoupling game systems.
+ * A sophisticated, global event bus for decoupling game systems.
  * Systems can publish events and other systems can subscribe to them
  * without direct dependencies on each other.
  */
 export class EventBus {
-    private listeners: Map<string, Listener[]> = new Map();
+    private listeners: Map<string, PrioritizedListener[]> = new Map();
 
     /**
      * Subscribes a callback function to a specific event.
      * @param eventName The event to listen for (e.g., 'combat:start').
      * @param callback The function to execute when the event is published.
+     * @param priority The priority of the listener. Lower numbers execute first.
      */
-    public subscribe(eventName: string, callback: Listener) {
+    public subscribe(eventName: string, callback: Listener, priority: number = 0) {
         if (!this.listeners.has(eventName)) {
             this.listeners.set(eventName, []);
         }
-        this.listeners.get(eventName)!.push(callback);
+        const listeners = this.listeners.get(eventName)!;
+        listeners.push({ callback, priority });
+        listeners.sort((a, b) => a.priority - b.priority);
     }
 
     /**
@@ -32,7 +42,7 @@ export class EventBus {
         }
 
         const eventListeners = this.listeners.get(eventName)!;
-        const index = eventListeners.indexOf(callback);
+        const index = eventListeners.findIndex(listener => listener.callback === callback);
         if (index > -1) {
             eventListeners.splice(index, 1);
         }
@@ -48,13 +58,19 @@ export class EventBus {
             return; // No one is listening, so do nothing.
         }
 
+        const gameEvent = new GameEvent(eventName, data);
+        const eventListeners = this.listeners.get(eventName)!;
+
         // Call every listener for this event, passing the data.
-        this.listeners.get(eventName)!.forEach(callback => {
+        for (const listener of eventListeners) {
+            if (gameEvent.isCancelled) {
+                break; // Stop processing if the event was cancelled.
+            }
             try {
-                callback(data);
+                listener.callback(gameEvent);
             } catch (error) {
                 console.error(`Error in event listener for "${eventName}":`, error);
             }
-        });
+        }
     }
 }

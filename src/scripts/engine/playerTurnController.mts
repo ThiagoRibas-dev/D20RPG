@@ -27,15 +27,15 @@ export class PlayerTurnController {
         // Subscribe to the events published by the UI layer (Renderer, etc.)
         ui.btns['attackButton'].onclick = () => eventBus.publish(GameEvents.UI_BUTTON_ATTACK_CLICKED);
         eventBus.subscribe(GameEvents.UI_BUTTON_ATTACK_CLICKED, () => this.onAttackButtonClick());
-        eventBus.subscribe(GameEvents.UI_MAP_CLICKED, (data: { entity: Entity | null }) => this.handleMapClick(data.entity));
+        eventBus.subscribe(GameEvents.UI_MAP_CLICKED, (event) => this.handleMapClick(event.data.entity));
         eventBus.subscribe(GameEvents.UI_INPUT_CANCELED, () => this.cancelTargeting());
         ui.btns['endTurnButton'].onclick = () => this.onEndTurnClick();
 
         // React to combat state changes to update the UI
         eventBus.subscribe(GameEvents.COMBAT_START, () => this.updateAvailableActionUI());
         eventBus.subscribe(GameEvents.COMBAT_END, () => this.updateAvailableActionUI());
-        eventBus.subscribe(GameEvents.COMBAT_TURN_START, (data) => {
-            if (data.entity === globalServiceLocator.state.player) {
+        eventBus.subscribe(GameEvents.COMBAT_TURN_START, (event) => {
+            if (event.data.entity === globalServiceLocator.state.player) {
                 this.updateAvailableActionUI();
             }
         });

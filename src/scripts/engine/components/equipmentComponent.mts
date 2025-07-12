@@ -48,7 +48,7 @@ export class EquipmentComponent {
                     source: itemData.name,
                     sourceId: itemToEquip.instanceId
                 };
-                this.owner.modifiers.add(bonus.target, modifier);
+                this.owner.modifiers.add(modifier);
             });
         }
 

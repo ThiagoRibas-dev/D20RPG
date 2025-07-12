@@ -23,19 +23,18 @@ async function initializeGame(winObj: any) {
 
   // --- SERVICE REGISTRATION ---
   globalServiceLocator.ui = getUiScreens(winDoc);
+  globalServiceLocator.state = getInitialGameState();
   globalServiceLocator.eventBus = new EventBus();
+  globalServiceLocator.feedback = new FeedbackManager();
   globalServiceLocator.contentLoader = new ContentLoader();
-  globalServiceLocator.state = getInitialGameState();;
-  globalServiceLocator.rulesEngine = new RulesEngine();
   globalServiceLocator.effectManager = new EffectManager();
-  globalServiceLocator.turnManager = new TurnManager();
-  globalServiceLocator.npcFactory = new NpcFactory();
   globalServiceLocator.renderer = new Renderer();
   globalServiceLocator.playerTurnController = new PlayerTurnController();
   globalServiceLocator.lootFactory = new LootFactory();
+  globalServiceLocator.npcFactory = new NpcFactory();
+  globalServiceLocator.rulesEngine = new RulesEngine();
+  globalServiceLocator.turnManager = new TurnManager();
 
-  // --- INITIALIZE LOGGING ---
-  new FeedbackManager();
 
   // --- SETUP THE CONTROLLER LOGIC (EVENT SUBSCRIPTIONS) ---
   globalServiceLocator.eventBus.subscribe('ui:creation:next_step', () => {

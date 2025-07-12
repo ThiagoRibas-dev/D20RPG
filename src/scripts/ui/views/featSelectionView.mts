@@ -43,7 +43,7 @@ export class FeatSelectionView {
 
                     // Determine the maximum number of feats allowed.
                     // Base is 1, plus any bonuses (like from being Human).
-                    const maxFeats = 1 + (player.modifiers.get('feats.max')?.getTotal() || 0);
+                    const maxFeats = 1 + player.modifiers.getValue('feats.max', 0);
 
                     // Check if the player can select another feat.
                     if (player.feats.length >= maxFeats) {

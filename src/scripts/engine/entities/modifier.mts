@@ -7,6 +7,7 @@ export interface Modifier {
     target: string; // "stats.str", "ac", "saves.will", etc.
     source: string; // "Iron Will Feat", "Bless Spell", etc. etc.
     sourceId?: string; // The unique instance ID of the item or effect that applied this.
+    duration?: number; // in rounds. undefined means permanent.
 }
 
 /**
@@ -16,6 +17,11 @@ export interface Modifier {
  */
 export class ModifierList {
     private modifiers: Modifier[] = [];
+    private modifierTypes: Map<string, any>;
+
+    constructor(modifierTypes: Map<string, any>) {
+        this.modifierTypes = modifierTypes;
+    }
 
     public add(modifier: Modifier): void {
         this.modifiers.push(modifier);
@@ -37,13 +43,20 @@ export class ModifierList {
         let total = 0;
 
         for (const mod of this.modifiers) {
-            // Untyped, Dodge, and Circumstance bonuses always stack.
-            if (mod.type === 'untyped' || mod.type === 'dodge' || mod.type === 'circumstance') {
+            const typeInfo = this.modifierTypes.get(mod.type);
+
+            if (!typeInfo) {
+                console.warn(`Unknown modifier type: ${mod.type}`);
+                total += mod.value; // Treat unknown types as 'untyped'
+                continue;
+            }
+
+            if (typeInfo.stacking === 'sum') {
                 total += mod.value;
                 continue;
             }
 
-            // For typed bonuses, find the best bonus and worst penalty.
+            // For typed bonuses that don't sum, find the best bonus and worst penalty.
             if (mod.value > 0) { // It's a bonus
                 if (!bestBonuses[mod.type] || mod.value > bestBonuses[mod.type]) {
                     bestBonuses[mod.type] = mod.value;

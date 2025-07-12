@@ -149,7 +149,7 @@ export class Entity {
 
         const ranks = this.getSkillRank(skillId);
 
-        const otherBonuses = this.modifiers.get(`skills.${skillId}`)?.getTotal() || 0;
+        const otherBonuses = this.modifiers.getValue(`skills.${skillId}`, 0);
 
         return ranks + abilityMod + otherBonuses;
     }
@@ -241,10 +241,10 @@ export class Entity {
         const dexMod = calculateModifier(this.stats.dex);
 
         // Cap DEX bonus based on equipped armor
-        const maxDex = this.modifiers.get('ac.max_dex')?.getLowest() ?? 99; // Get lowest value (most restrictive)
+        const maxDex = this.modifiers.getValue('ac.max_dex', 99); // Get lowest value (most restrictive)
         const cappedDexMod = Math.min(dexMod, maxDex);
 
-        const armorBonuses = this.modifiers.get('ac')?.getTotal() || 0;
+        const armorBonuses = this.modifiers.getValue('ac', 0);
 
         return baseAC + cappedDexMod + armorBonuses;
     }

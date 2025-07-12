@@ -1,6 +1,7 @@
 import { ItemInstance } from "./components/itemInstance.mjs";
 import { ContentItem } from "./entities/contentItem.mjs";
 import { Entity, EntityClass } from "./entities/entity.mjs";
+import { ModifierManager } from "./modifierManager.mjs";
 import { MapTile } from "./entities/mapTile.mjs";
 import { ModifierList } from "./entities/modifier.mjs";
 import { GameEvents } from "./events.mjs";
@@ -14,10 +15,10 @@ import { calculateModifier, EntityPosition, getRandomInt, rollD20 } from "./util
 export class RulesEngine {
     constructor() {
         globalServiceLocator.eventBus.subscribe(GameEvents.ACTION_ATTACK_DECLARED,
-            (data) => this.resolveAttack(data)
+            (event) => this.resolveAttack(event.data)
         );
         globalServiceLocator.eventBus.subscribe(GameEvents.ACTION_MOVE_DECLARED,
-            (data) => this.resolveMove(data)
+            (event) => this.resolveMove(event.data)
         );
     }
 
@@ -47,7 +48,7 @@ export class RulesEngine {
                 d20: 0,
                 base: attacker.baseAttackBonus,
                 abilityMod: calculateModifier(attacker.stats.str), // Assuming melee for now
-                misc: new ModifierList(), // For Power Attack, Bless, etc.
+                misc: new ModifierList(globalServiceLocator.modifierManager.modifierTypes), // For Power Attack, Bless, etc.
                 final: 0,
             },
             outcome: 'pending' as 'pending' | 'miss' | 'hit' | 'critical_threat' | 'critical_hit',
@@ -132,7 +133,7 @@ export class RulesEngine {
      */
     public calculateStats(entity: Entity): void {
         console.log(`Calculating stats for ${entity.name}...`);
-        entity.modifiers.clear(); // Start fresh
+        entity.modifiers = new ModifierManager(); // Start fresh
 
         // --- 1. GATHER SOURCES ---
         const sources: ContentItem[] = [];
@@ -187,7 +188,7 @@ export class RulesEngine {
         });
 
         // Add HP bonuses from feats like Toughness
-        totalHP += entity.modifiers.get('hit_points')?.getTotal() || 0;
+        totalHP += entity.modifiers.getValue('hit_points', 0);
 
         entity.hitPoints.max = totalHP;
         entity.hitPoints.current = totalHP;
@@ -202,7 +203,7 @@ export class RulesEngine {
     private addModifier(entity: Entity, target: string, value: number, type: string, source: string) {
         // The ModifierManager handles the creation of the list if it doesn't exist.
         // We just create the modifier object and add it.
-        entity.modifiers.add(target, { value, type, source, target });
+        entity.modifiers.add({ value, type, source, target });
     }
 
     private resolveDamage(context: any): void {

@@ -36,7 +36,7 @@ export function initUIManager(): void {
   characterSummaryView = new CharacterSummaryView();
   inventoryView = new InventoryView();
 
-  // // --- Wire up events controlled by the UI Manager ---
+  // --- Wire up events controlled by the UI Manager ---
   const state = globalServiceLocator.state;
   if (!state) {
     console.error('ERROR! STATE NOT LOADED');

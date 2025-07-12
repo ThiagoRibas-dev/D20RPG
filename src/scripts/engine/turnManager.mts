@@ -22,8 +22,8 @@ export class TurnManager {
 
     constructor() {
         console.log("TurnManager initialized.");
-        globalServiceLocator.eventBus.subscribe(GameEvents.CHARACTER_DIED, (data: { entity: Entity }) => {
-            this.removeEntityFromCombat(data.entity);
+        globalServiceLocator.eventBus.subscribe(GameEvents.CHARACTER_DIED, (event) => {
+            this.removeEntityFromCombat(event.data.entity);
             this._pendingCombatEndCheck = true;
         });
     }

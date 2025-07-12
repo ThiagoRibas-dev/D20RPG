@@ -1,4 +1,5 @@
 import { EquipmentSlot } from "../components/equipmentComponent.mjs";
+import { ContentItem } from "../entities/contentItem.mjs";
 import { Npc } from "../entities/npc.mjs";
 import { globalServiceLocator } from "../serviceLocator.mjs";
 import { EntityPosition } from "../utils.mjs";
@@ -6,15 +7,19 @@ import { EntityPosition } from "../utils.mjs";
 export class NpcFactory {
     public async create(prefabId: string, prefabType: 'monsters' | 'npcs', position: EntityPosition): Promise<Npc | null> {
         const content = await globalServiceLocator.contentLoader.getContent();
+        if (!content) {
+            console.error(`Could not access content loader`);
+            return null;
+        }
+        
         const prefab = await content.prefabs[prefabType][prefabId].get();
-
         if (!prefab) {
             console.error(`Could not find NPC prefab: ${prefabId}`);
             return null;
         }
 
-        const race = await content.races[prefab.race]?.get();
-        const cls = await content.classes[prefab.class]?.get();
+        const race: ContentItem = await content.races[prefab.race]?.get();
+        const cls: ContentItem = await content.classes[prefab.class]?.get();
 
         // 1. Create the basic NPC instance
         const npc: Npc = new Npc(prefab.name, prefabId, race, position);

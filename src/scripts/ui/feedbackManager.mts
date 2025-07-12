@@ -9,16 +9,16 @@ export class FeedbackManager {
     constructor() {
         this.logElement = globalServiceLocator.ui.els.combatLogText;
         globalServiceLocator.eventBus.subscribe(GameEvents.ACTION_ATTACK_RESOLVED,
-            (data) => this.onAttackResolved(data)
+            (event) => this.onAttackResolved(event.data)
         );
         globalServiceLocator.eventBus.subscribe(GameEvents.ACTION_DAMAGE_RESOLVED,
-            (data) => this.onDamageResolved(data)
+            (event) => this.onDamageResolved(event.data)
         );
         globalServiceLocator.eventBus.subscribe(GameEvents.CHARACTER_DIED,
-            (data) => this.onCharacterDied(data)
+            (event) => this.onCharacterDied(event.data)
         );
         globalServiceLocator.eventBus.subscribe(GameEvents.ACTION_MOVE_BLOCKED,
-            (data) => this.onMoveBlocked(data)
+            (event) => this.onMoveBlocked(event.data)
         );
     }
 
