@@ -43,5 +43,29 @@
         }
     ],
     "restriction": "It relies on your training, magical attunement, experience and also can rely on a hardcoded file/path or data format within your dynamically created data structure or within other game behaviors. These specific behaviors require specific class types to access/make usage or their effects (especially if those spells use magic or are class or level-specific with specific conditions for said use).",
-    "untrained": "You may sense magic and some general features but details and specific functionality will always elude untrained individuals. Also it requires knowledge on magic for understanding those systems so specific data will only be detected (or activated/used through it), when proper knowledge has been learned."
+    "untrained": "You may sense magic and some general features but details and specific functionality will always elude untrained individuals. Also it requires knowledge on magic for understanding those systems so specific data will only be detected (or activated/used through it), when proper knowledge has been learned.",
+    "active_uses": [
+        {
+          "use_id": "identify_magic_item",
+          "name": "Identify Magic Item",
+          "target_type": "item",
+          "dc": {
+            "base": 15,
+            "add": "target_caster_level" 
+          },
+          "on_success": {
+            "trigger_effect": "eff_identify"
+          }
+        },
+        {
+          "use_id": "identify_potion",
+          "name": "Identify Potion",
+          "target_type": "item",
+          "target_tags": ["potion"],
+          "dc": { "base": 25 },
+          "on_success": {
+            "trigger_effect": "eff_identify"
+          }
+        }
+      ]
 }

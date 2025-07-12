@@ -1,0 +1,17 @@
+{
+  "id": "potion_cure_light_wounds",
+  "name": "Potion of Cure Light Wounds",
+  "type": "potion",
+  "description": "A vial of shimmering red liquid that knits wounds.",
+  "tags": ["consumable", "magical", "healing", "potion"],
+  "weight": 1,
+  "cost": 50,
+  "caster_level": 1,
+  "activation": {
+    "type": "standard_action",
+    "provokesAoO": true
+  },
+  "effects_on_use": [
+    "eff_cure_light_wounds" 
+  ]
+}

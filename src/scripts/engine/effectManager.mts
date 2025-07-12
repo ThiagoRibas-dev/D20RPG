@@ -1,6 +1,7 @@
 // src/scripts/engine/effectManager.mts
 
 import { ActiveEffect } from './activeEffect.mjs';
+import { ItemInstance } from './components/itemInstance.mjs';
 import { ContentItem } from './entities/contentItem.mjs';
 import { Entity } from './entities/entity.mjs';
 import { EventBus } from './eventBus.mjs';
@@ -19,6 +20,30 @@ export class EffectManager {
         const eventBus: EventBus = globalServiceLocator.eventBus;
         // Subscribe to the end of a character's turn to tick down durations.
         eventBus.subscribe(GameEvents.COMBAT_TURN_END, (data: { entity: Entity }) => this.tickDownEffectsFor(data.entity));
+    }
+
+    public async triggerEffect(effectId: string, actor: Entity, item?: ItemInstance) {
+        const effectData = await globalServiceLocator.contentLoader.loadEffect(effectId);
+
+        if (!effectData) {
+            console.error(`Could not load effect data for ID: ${effectId}`);
+            return;
+        }
+
+        console.log(`Triggering effect: ${effectData.id} for ${actor.name}`);
+
+        for (const component of effectData.components) {
+            switch (component.type) {
+                case 'heal':
+                    // In the future, this would call a method on the RulesEngine
+                    // e.g., globalServiceLocator.rulesEngine.processHeal(actor, component, item.caster_level);
+                    console.log(`Healing ${actor.name} for ${component.amount.dice}+${component.amount.bonus}`);
+                    break;
+                // Other cases for different effect components would go here
+                default:
+                    console.warn(`Unknown effect component type: ${component.type}`);
+            }
+        }
     }
 
     /**

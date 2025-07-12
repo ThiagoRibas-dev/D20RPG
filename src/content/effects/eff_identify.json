@@ -1,0 +1,16 @@
+{
+  "id": "eff_identify",
+  "source_spell": "Identify",
+  "type": "instantaneous",
+  "target": { "type": "item" },
+  "components": [
+    {
+      "type": "remove_tag",
+      "tag": "state:unidentified"
+    },
+    {
+      "type": "add_tag",
+      "tag": "state:identified"
+    }
+  ]
+}

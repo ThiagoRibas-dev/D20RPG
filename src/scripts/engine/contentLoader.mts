@@ -103,4 +103,32 @@ export class ContentLoader {
         }
         return this.campaignData;
     }
+
+    public async loadEffect(effectId: string): Promise<any> {
+        const filePath = `./content/effects/${effectId}.json`;
+        try {
+            const response = await fetch(filePath);
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error(`Error loading effect: ${filePath}`, error);
+            return null;
+        }
+    }
+
+    public async loadSkill(skillId: string): Promise<any> {
+        const filePath = `./content/skills/${skillId}.json`;
+        try {
+            const response = await fetch(filePath);
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error(`Error loading skill: ${filePath}`, error);
+            return null;
+        }
+    }
 }

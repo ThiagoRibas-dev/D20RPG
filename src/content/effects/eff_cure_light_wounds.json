@@ -1,0 +1,19 @@
+{
+  "id": "eff_cure_light_wounds",
+  "source_spell": "Cure Light Wounds", 
+  "type": "instantaneous",
+  "target": {
+    "type": "self"
+  },
+  "components": [
+    {
+      "type": "heal",
+      "amount": { "dice": "1d8", "bonus": "caster_level", "max": 5 },
+      "descriptor": "positive_energy"
+    }
+  ],
+  "saving_throw": {
+    "ability": "will",
+    "effect": "harmless"
+  }
+}

@@ -41,9 +41,21 @@ export class FeatSelectionView {
                         return;
                     }
 
-                    // Simple push for now. A real implementation would check prerequisites
-                    // and limit the number of feats that can be selected.
+                    // Determine the maximum number of feats allowed.
+                    // Base is 1, plus any bonuses (like from being Human).
+                    const maxFeats = 1 + (player.modifiers.get('feats.max')?.getTotal() || 0);
+
+                    // Check if the player can select another feat.
+                    if (player.feats.length >= maxFeats) {
+                        console.log("Cannot select more feats. Maximum reached.");
+                        // Optional: Provide UI feedback to the user.
+                        updateSelectionInfo({ name: "Maximum Feats Reached", description: `You can only select ${maxFeats} feat(s).` });
+                        return;
+                    }
+
+                    // Check for prerequisites and if the feat is already selected.
                     if (!player.feats.find(f => f.name === featData.name)) {
+                        // TODO: Add prerequisite checking logic here.
                         player.feats.push(featData);
                         console.log(`Feat selected: ${featData.name}`);
                     } else {

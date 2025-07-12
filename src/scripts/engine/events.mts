@@ -24,6 +24,7 @@ export const GameEvents = {
   COMBAT_TURN_SKIPPED: 'combat:turn:skipped',
 
   // Character/Entity Events
+  ITEM_STATE_CHANGED: 'item:state:changed',
   CHARACTER_DIED: 'character:died',
   CHARACTER_HP_CHANGED: 'character:hp:changed',
   CHARACTER_EFFECT_APPLIED: 'character:effect:applied',

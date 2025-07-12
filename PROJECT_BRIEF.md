@@ -15,6 +15,7 @@
 
 **Key Design Concepts & Technical Requirements:**
 *   **Architectural Pillars:**
+    *   **Data-Driven Logic with Scripting Hooks:** The engine must favor a declarative approach, avoiding hardcoded behaviors wherever possible. Core logic should be defined in data (.json files), with complex, unique behaviors implemented in companion script files (.mjs). This ensures the engine's hardcoded systems remain generic and reusable, maximizing modability for all features and content.
     *   **Service Locator:** A single, global point of access for all engine systems and the game state, ensuring controlled, explicit dependencies.
     *   **Event Bus:** A central nervous system for decoupled communication, allowing systems to react to game events (like `action:move:provokes_aoo`) without direct knowledge of one another.
     *   **Hybrid Turn System:** A stateful `TurnManager` that seamlessly transitions between real-time "Exploration Mode" and a strict, initiative-based "Combat Mode," correctly handling out-of-turn actions like Attacks of Opportunity.
@@ -57,12 +58,23 @@
 #### **Phase 2: Deep Equipment & Itemization (Revised)**
 *   `[x]` **Task 2.1: Implement the Full Equipment System.**
 *   `[x]` **Task 2.2: Implement Combinatorial Item Generation (`LootFactory`).**
-*   `[ ]` **Task 2.3: Implement the "Use Item" Action.**
-    *   `[ ]` **Sub-task 2.3.1:** Define "Use Item" as a Standard Action by default (e.g., drinking a potion, reading a scroll).
-    *   `[ ]` **Sub-task 2.3.2:** Implement logic for item uses that provoke Attacks of Opportunity (AoOs), such as drinking a potion or applying an oil.
-    *   `[ ]` **Sub-task 2.3.3:** Differentiate activation types (Spell Completion, Command Word, Use-Activated) and ensure they do not provoke AoOs unless specified.
-*   `[ ]` **Task 2.4: Implement Item Identification.**
-*   `[ ]` **Task 2.5: Implement Item States via Tags.** (e.g., `[state:cursed]`, `[state:identified]`, `[state:broken]`)
+*   `[x]` **Task 2.3: Implement the "Use Item" Action.**
+    *   `[x]` **Sub-task 2.3.1:** Define "Use Item" as a Standard Action by default (e.g., drinking a potion, reading a scroll).
+    *   `[x]` **Sub-task 2.3.2:** Implement logic for item uses that provoke Attacks of Opportunity (AoOs), such as drinking a potion or applying an oil.
+    *   `[x]` **Sub-task 2.3.3:** Differentiate activation types (Spell Completion, Command Word, Use-Activated) and ensure they do not provoke AoOs unless specified.
+*   `[x]` **Task 2.4: Implement Item Identification.**
+    *   **Status:** Done. The `RulesEngine` now handles the `Spellcraft` skill to identify items, changing their state.
+*   `[x]` **Task 2.5: Implement Item States via Tags.** (e.g., `[state:cursed]`, `[state:identified]`, `[state:broken]`)
+    *   **Status:** Done. The `LootFactory` now correctly applies the `[state:unidentified]` tag to magical items, and the `InventoryView` has been updated to conditionally display item information and actions based on this tag.
+*   `[x]` **Task 2.6: Design and Implement the Unified Effect System.**
+    *   `[x]` **Sub-task 2.6.1:** Create a generic, data-driven `Effect` object structure.
+    *   `[x]` **Sub-task 2.6.2:** Refactor item definitions to point to reusable `Effect` objects.
+*   `[x]` **Task 2.7: Implement Data-Driven Skill System.**
+    *   `[x]` **Sub-task 2.7.1:** Create JSON definitions for skills with `active_uses`.
+    *   `[x]` **Sub-task 2.7.2:** Implement `RulesEngine.resolveSkillUse` to interpret skill JSON.
+*   `[x]` **Task 2.8: Implement `UseSkillAction`.**
+    *   `[x]` **Sub-task 2.8.1:** Create the generic `UseSkillAction`.
+    *   `[x]` **Sub-task 2.8.2:** Integrate the action with the UI.
 
 ---
 #### **Phase 3: Advanced Combat Tactics (Revised)**

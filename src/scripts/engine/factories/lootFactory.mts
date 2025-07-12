@@ -43,6 +43,14 @@ export class LootFactory {
             deepMerge(finalItemData, propData);
         }
 
+        // If the item has any properties or a special material, it starts as unidentified.
+        if (propertyIds.length > 0 || materialId) {
+            if (!finalItemData.tags) {
+                finalItemData.tags = [];
+            }
+            finalItemData.tags.push('state:unidentified');
+        }
+
         // 4. Generate a procedural name
         const prefix = propertyIds.map(id => content.magic_properties[id]?.get()?.name_prefix).filter(Boolean).join(' ');
         const suffix = propertyIds.map(id => content.magic_properties[id]?.get()?.name_suffix).filter(Boolean).join(' ');

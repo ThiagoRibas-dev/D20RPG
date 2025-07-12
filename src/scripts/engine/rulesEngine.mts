@@ -1,3 +1,4 @@
+import { ItemInstance } from "./components/itemInstance.mjs";
 import { ContentItem } from "./entities/contentItem.mjs";
 import { Entity, EntityClass } from "./entities/entity.mjs";
 import { MapTile } from "./entities/mapTile.mjs";
@@ -396,5 +397,75 @@ export class RulesEngine {
             return parseInt(rangeStr.split('-')[0], 10);
         }
         return parseInt(rangeStr, 10);
+    }
+
+    public async resolveSkillUse(actor: Entity, skillId: string, useId: string, target: ItemInstance | Entity) {
+        const skillData = await globalServiceLocator.contentLoader.loadSkill(skillId);
+        if (!skillData) {
+            console.error(`Could not load skill data for ID: ${skillId}`);
+            return;
+        }
+
+        const skillUseData = skillData.active_uses?.find((use: any) => use.use_id === useId);
+        if (!skillUseData) {
+            console.error(`Could not find skill use ${useId} in ${skillId}`);
+            return;
+        }
+
+        // Target validation and name extraction
+        let targetName: string;
+        if (skillUseData.target_type === 'item') {
+            if (!(target instanceof ItemInstance)) {
+                console.error(`Skill use ${useId} requires an item target.`);
+                return;
+            }
+            targetName = target.itemData.name;
+        } else if (skillUseData.target_type === 'entity') {
+            if (!(target instanceof Entity)) {
+                console.error(`Skill use ${useId} requires an entity target.`);
+                return;
+            }
+            targetName = target.name;
+        } else {
+            targetName = "an unknown target";
+        }
+
+
+        // Calculate DC
+        let dc = skillUseData.dc.base || 0;
+        if (skillUseData.dc.add === 'target_caster_level' && target instanceof ItemInstance) {
+            dc += target.itemData.caster_level || 0;
+        }
+
+        // Roll skill check
+        const skillRoll = rollD20() + actor.getSkillModifier(skillId);
+
+        console.log(`${actor.name} attempts to ${skillUseData.name} on ${targetName}. Roll: ${skillRoll} vs DC: ${dc}`);
+
+        if (skillRoll >= dc) {
+            console.log("Skill check successful!");
+            globalServiceLocator.feedback.addMessageToLog(`${actor.name} successfully uses ${skillData.name} on ${targetName}.`, 'green');
+
+            // Handle the specific "identify_item" case
+            if (useId === 'identify_item' && target instanceof ItemInstance) {
+                const unidentifiedIndex = target.itemData.tags.indexOf('state:unidentified');
+                if (unidentifiedIndex > -1) {
+                    target.itemData.tags.splice(unidentifiedIndex, 1);
+                    target.itemData.tags.push('state:identified');
+                    console.log(`Item ${target.itemData.name} identified!`);
+                    globalServiceLocator.feedback.addMessageToLog(`You have identified the ${target.itemData.name}.`, 'cyan');
+                    // Announce that the item's state has changed so the UI can update
+                    globalServiceLocator.eventBus.publish(GameEvents.ITEM_STATE_CHANGED, { item: target });
+                }
+            }
+
+            if (skillUseData.on_success.trigger_effect) {
+                const effectTarget = skillUseData.target_type === 'item' ? target as ItemInstance : undefined;
+                globalServiceLocator.effectManager.triggerEffect(skillUseData.on_success.trigger_effect, actor, effectTarget);
+            }
+        } else {
+            console.log("Skill check failed.");
+            globalServiceLocator.feedback.addMessageToLog(`${actor.name} fails to use ${skillData.name} on ${targetName}.`, 'orange');
+        }
     }
 }
