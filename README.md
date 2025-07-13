@@ -9,7 +9,7 @@ This project is a 2D, tile-based, **Hybrid Turn-Based Tactical RPG** inspired by
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Running the Game](#running-the-game)
-- [User-Generated Content (UGC)](#user-generated-content-ugc)
+- [User-Generated Content](#user-generated-content)
   - [Content Structure](#content-structure)
   - [Creating New Content](#creating-new-content)
 - [Development & Contribution](#development--contribution)
@@ -65,7 +65,7 @@ To get a local copy up and running, follow these simple steps.
     ```
     The executable will be generated in the `output/` directory.
 
-## User-Generated Content (UGC)
+## User-Generated Content
 
 One of the core philosophies of this project is to empower users to create and share their own content. All game data, from character races and classes to items, spells, and entire campaigns, is defined in simple, human-readable JSON files.
 
