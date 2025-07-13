@@ -4,6 +4,7 @@ import { GameState } from './engine/entities/gameState.mjs';
 import { UIHolder } from './engine/entities/uiHolder.mjs';
 import { EventBus } from './engine/eventBus.mjs';
 import { GameEvents } from './engine/events.mjs';
+import { InterruptManager } from './engine/interruptManager.mjs';
 import { LootFactory } from './engine/factories/lootFactory.mjs';
 import { NpcFactory } from './engine/factories/npcFactory.mjs';
 import { Game } from './engine/game.mjs';
@@ -34,6 +35,7 @@ async function initializeGame(winObj: any) {
   globalServiceLocator.npcFactory = new NpcFactory();
   globalServiceLocator.rulesEngine = new RulesEngine();
   globalServiceLocator.turnManager = new TurnManager();
+  globalServiceLocator.interruptManager = new InterruptManager();
 
 
   // --- SETUP THE CONTROLLER LOGIC (EVENT SUBSCRIPTIONS) ---

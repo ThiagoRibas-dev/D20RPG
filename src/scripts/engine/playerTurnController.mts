@@ -1,6 +1,7 @@
 import { Action, ActionType } from './actions/action.mjs';
 import { MeleeAttackAction } from './actions/meleeAttackAction.mjs';
 import { MoveAction } from './actions/moveAction.mjs';
+import { PassTurnAction } from './actions/passTurnAction.mjs';
 import { Entity } from './entities/entity.mjs';
 import { GameEvents } from './events.mjs';
 import { globalServiceLocator } from './serviceLocator.mjs';
@@ -10,7 +11,7 @@ import { EntityPosition } from './utils.mjs';
 /**
 * Defines the different states the player can be in during their turn.
 */
-type PlayerInteractionState = 'AWAITING_INPUT' | 'TARGETING';
+type PlayerInteractionState = 'AWAITING_INPUT' | 'TARGETING' | 'AWAITING_INTERRUPT';
 
 /**
  * Manages the player's turn, including their action budget and UI interaction state.
@@ -39,6 +40,16 @@ export class PlayerTurnController {
                 this.updateAvailableActionUI();
             }
         });
+
+        eventBus.subscribe(GameEvents.PLAYER_INTERRUPT_PROMPT, () => {
+            this.interactionState = 'AWAITING_INTERRUPT';
+            this.updateAvailableActionUI();
+        });
+
+        eventBus.subscribe(GameEvents.UI_INTERRUPT_RESOLVED, () => {
+            this.interactionState = 'AWAITING_INPUT';
+            this.updateAvailableActionUI();
+        });
     }
 
     /**
@@ -51,7 +62,10 @@ export class PlayerTurnController {
             return;
         }
         const actionToProcess = this.pendingAction(entity);
-        this.processAction(actionToProcess);
+        globalServiceLocator.turnManager.processPlayerAction(actionToProcess);
+        this.interactionState = 'AWAITING_INPUT';
+        globalServiceLocator.ui.els.body.style.cursor = 'default';
+        this.updateAvailableActionUI();
     }
 
     public onAttackButtonClick(): void {
@@ -71,7 +85,8 @@ export class PlayerTurnController {
         if (this.interactionState !== 'AWAITING_INPUT' || !this.canAfford(ActionType.Move) || !player) return;
 
         const moveAction = new MoveAction(player, direction);
-        this.processAction(moveAction);
+        globalServiceLocator.turnManager.processPlayerAction(moveAction);
+        this.updateAvailableActionUI();
     }
 
     /**
@@ -79,9 +94,10 @@ export class PlayerTurnController {
      * This is the only way to advance the turn queue when it is the player's turn.
      */
     private onEndTurnClick(): void {
+        const player = globalServiceLocator.state.player;
+        if (!player) return;
         // This button should only be clickable during combat.
-        globalServiceLocator.turnManager.advanceTurn();
-        globalServiceLocator.turnManager.checkForCombatEnd();
+        globalServiceLocator.turnManager.processPlayerAction(new PassTurnAction(player));
     }
 
     public cancelTargeting(): void {
@@ -95,26 +111,6 @@ export class PlayerTurnController {
     * Processes a single player action. It deducts the cost and executes the action.
     * Crucially, it only advances the turn automatically when in Exploration mode.
     */
-    private processAction(action: Action): void {
-        if (!this.canAfford(action.cost)) {
-            console.log("Cannot afford action.");
-            return;
-        }
-
-        this.spendCost(action.cost);
-        this.interactionState = 'AWAITING_INPUT';
-        globalServiceLocator.ui.els.body.style.cursor = 'default';
-
-        action.execute(); // Trigger the event chain
-
-        this.updateAvailableActionUI(); // Refresh UI based on new budget
-
-        // In Exploration Mode, the world gets a "tick" immediately after the player acts.
-        if (!globalServiceLocator.turnManager.isCombatActive) {
-            globalServiceLocator.turnManager.advanceTurn();
-        }
-        // In Combat Mode, we do NOT advance the turn here. We wait for the "End Turn" button.
-    }
 
     /**
      * Checks if the current action budget can pay for a given action cost.
@@ -158,13 +154,14 @@ export class PlayerTurnController {
        */
     private updateAvailableActionUI(): void {
         const isCombat = globalServiceLocator.turnManager.isCombatActive;
+        const isPlayerTurn = this.interactionState !== 'AWAITING_INTERRUPT';
         const ui = globalServiceLocator.ui;
 
-        // The "End Turn" button is only visible and relevant during combat.
-        ui.btns['endTurnButton'].style.display = isCombat ? '' : 'none';
+        // The "End Turn" button is only visible and relevant during combat and if it's the player's turn.
+        ui.btns['endTurnButton'].style.display = isCombat && isPlayerTurn ? '' : 'none';
 
-        // Disable/enable action buttons based on affordability.
-        ui.btns['attackButton'].disabled = !this.canAfford(ActionType.Standard);
+        // Disable/enable action buttons based on affordability and if it's the player's turn.
+        ui.btns['attackButton'].disabled = !this.canAfford(ActionType.Standard) || !isPlayerTurn;
         // ... update other buttons for Move, Cast Spell, etc.
     }
 }

@@ -1,7 +1,7 @@
 
 # Eversummer Days
 
-This project is a 2D, tile-based, **Hybrid Turn-Based Tactical RPG** inspired by the mechanics of the D20 system (D&D 3.5e) and classic RPGs like Pool of Radiance and Knights of the Chalice. It draws significant inspiration from the strategic, systems-driven combat of **Incursion: Halls of the Goblin King** and the profound emergent interactions and player freedom of **NetHack**. "The game seamlessly transitions between a "WeGo" turn-based "Exploration Mode" and a strict, initiative-based "Combat Mode."
+This project is a 2D, tile-based, **Hybrid Turn-Based Tactical RPG** inspired by the mechanics of the D20 system (D&D 3.5e) and classic RPGs like Pool of Radiance and Knights of the Chalice. It draws significant inspiration from the strategic, systems-driven combat of **Incursion: Halls of the Goblin King** and the profound emergent interactions and player freedom of **NetHack**. The game seamlessly transitions between a "WeGo" turn-based "Exploration Mode" and a strict, initiative-based "Combat Mode."
 
 ## Table of Contents
 - [Key Features](#key-features)

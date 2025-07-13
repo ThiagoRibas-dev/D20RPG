@@ -1,5 +1,6 @@
 import { ContentItem } from "../engine/entities/contentItem.mjs";
 import { PlayerCharacter } from "../engine/entities/playerCharacter.mjs";
+import { GameEvents } from "../engine/events.mjs";
 import { globalServiceLocator } from "../engine/serviceLocator.mjs";
 import { setActiveScreen } from "./uiHelpers.mjs";
 import { AbilityScoreSelectionView } from "./views/abilityScoreSelectionView.mjs";
@@ -10,6 +11,7 @@ import { FeatSelectionView } from "./views/featSelectionView.mjs";
 import { InventoryView } from "./views/inventoryView.mjs";
 import { RaceSelectionView } from "./views/raceSelectionView.mjs";
 import { SkillSelectionView } from "./views/skillSelectionView.mjs";
+import { InterruptPromptView } from "./views/interruptPromptView.mjs";
 
 // --- VIEW INSTANCES ---
 // Create one instance of each view to manage its respective UI section.
@@ -21,6 +23,7 @@ let featSelectionView: FeatSelectionView;
 let skillSelectionView: SkillSelectionView;
 let characterSummaryView: CharacterSummaryView;
 let inventoryView: InventoryView;
+let interruptPromptView: InterruptPromptView;
 
 /**
  * Initializes all the UI View classes.
@@ -35,6 +38,7 @@ export function initUIManager(): void {
   skillSelectionView = new SkillSelectionView();
   characterSummaryView = new CharacterSummaryView();
   inventoryView = new InventoryView();
+  interruptPromptView = new InterruptPromptView();
 
   // --- Wire up events controlled by the UI Manager ---
   const state = globalServiceLocator.state;
@@ -62,6 +66,10 @@ export function initUIManager(): void {
   });
   setBtnOnCLick('back-btn', () => eventBus.publish('ui:creation:prev_step'));
   setBtnOnCLick('next-btn', () => eventBus.publish('ui:creation:next_step'));
+
+  eventBus.subscribe(GameEvents.PLAYER_INTERRUPT_PROMPT, (event) => {
+    interruptPromptView.render(event.data);
+  });
 
 
   const ui = globalServiceLocator.ui;
@@ -169,4 +177,3 @@ function setBtnOnCLick(btnId: string, callback: () => void) {
     callback()
   };
 }
-

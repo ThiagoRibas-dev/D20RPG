@@ -3,6 +3,7 @@ import { EffectManager } from "./effectManager.mjs";
 import { GameState } from "./entities/gameState.mjs";
 import { UIHolder } from "./entities/uiHolder.mjs";
 import { EventBus } from "./eventBus.mjs";
+import { InterruptManager } from "./interruptManager.mjs";
 import { LootFactory } from "./factories/lootFactory.mjs";
 import { NpcFactory } from "./factories/npcFactory.mjs";
 import { PlayerTurnController } from "./playerTurnController.mjs";
@@ -27,6 +28,7 @@ class ServiceLocator {
     public renderer!: Renderer;
     public ui!: UIHolder;
     public eventBus!: EventBus;
+    public interruptManager!: InterruptManager;
     public npcFactory!: NpcFactory;
     public playerTurnController!: PlayerTurnController;
     public state!: GameState;

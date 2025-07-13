@@ -86,17 +86,17 @@
 
 ---
 #### **Phase 3: Advanced Combat Tactics (Revised)**
-*   `[ ]` **Task 3.0: Implement Player-Prompted Interrupt System.**
+*   `[x]` **Task 3.0: Implement Player-Prompted Interrupt System.**
     *   **Description:** Implement a generic, event-driven system to manage all out-of-turn actions (including Attacks of Opportunity, Immediate Actions, etc.). This system must be capable of pausing the game state, prompting the player for a decision when an opportunity to act arises, and then executing the chosen action before resuming the normal turn order. This is a foundational system for advanced tactical play.
-    *   `[ ]` **Sub-task 3.0.1: Create an Action Queue/Stack in `TurnManager`.**
+    *   `[x]` **Sub-task 3.0.1: Create an Action Queue/Stack in `TurnManager`.**
         *   **Guidance:** The `TurnManager` must be refactored to manage a stack of actions rather than a single current action. This allows a new action (the interrupt) to be pushed on top of the stack, processed first, and then popped off to resume the original action.
-    *   `[ ]` **Sub-task 3.0.2: Develop a generic `Interrupt` data structure.**
+    *   `[x]` **Sub-task 3.0.2: Develop a generic `Interrupt` data structure.**
         *   **Guidance:** Define a standard format for an interrupt opportunity, e.g., `{ triggeringEvent: GameEvent, sourceEntity: Entity, potentialActions: Action[] }`. This structure will be passed from the rules engine to the UI.
-    *   `[ ]` **Sub-task 3.0.3: Create a central `InterruptManager` service.**
+    *   `[x]` **Sub-task 3.0.3: Create a central `InterruptManager` service.**
         *   **Guidance:** This service will listen for all potentially interrupt-generating game events (e.g., `action:provokes_aoo`, `entity:takes_damage`). It will be responsible for checking if any entity has a relevant ability and, if that entity is the player, packaging the potential actions into an `Interrupt` object.
-    *   `[ ]` **Sub-task 3.0.4: Implement the Player Prompt UI.**
+    *   `[x]` **Sub-task 3.0.4: Implement the Player Prompt UI.**
         *   **Guidance:** The `UIManager` must be able to receive an `Interrupt` object and display a modal choice to the player (e.g., "Goblin provokes AoO. [Attack] [Decline]"). The UI will then send the player's chosen action (or a 'decline' signal) back to the `InterruptManager`.
-    *   `[ ]` **Sub-task 3.0.5: Integrate AI decision-making for interrupts.**
+    *   `[x]` **Sub-task 3.0.5: Integrate AI decision-making for interrupts.**
         *   **Guidance:** For NPCs, the `InterruptManager` will pass the `Interrupt` object to the AI system, which will decide whether to take the action based on its behavioral flags (e.g., an `aggressive` AI always accepts, a `cautious` AI might decline).
 *   `[ ]` **Task 3.1: Implement Attacks of Opportunity (AoO) System.**
     *   `[ ]` **Sub-task 3.1.1:** Implement the core AoO trigger: leaving a threatened square.

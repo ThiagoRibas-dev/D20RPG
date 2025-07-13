@@ -4,6 +4,8 @@ export const GameEvents = {
   UI_MAP_CLICKED: 'ui:map:clicked',
   UI_INPUT_CANCELED: 'ui:input:canceled',
   UI_BUTTON_ATTACK_CLICKED: 'ui:button:attack_clicked',
+  PLAYER_INTERRUPT_PROMPT: 'player:interrupt:prompt',
+  UI_INTERRUPT_RESOLVED: 'ui:interrupt:resolved',
 
   // Action Events
   ACTION_ATTACK_DECLARED: 'action:attack:declared',

@@ -13,10 +13,10 @@ type TurnQueueEntry = {
 
 export class TurnManager {
     private turnQueue: TurnQueueEntry[] = [];
+    private actionStack: Action[] = [];
     private currentTurnIndex: number = -1;
     private roundNumber: number = 0;
     private _isCombatActive: boolean = false;
-    private _pendingCombatEndCheck: boolean = false;
 
     public get isCombatActive(): boolean { return this._isCombatActive; }
 
@@ -24,7 +24,7 @@ export class TurnManager {
         console.log("TurnManager initialized.");
         globalServiceLocator.eventBus.subscribe(GameEvents.CHARACTER_DIED, (event) => {
             this.removeEntityFromCombat(event.data.entity);
-            this._pendingCombatEndCheck = true;
+            this.checkForCombatEnd();
         });
     }
 
@@ -95,6 +95,12 @@ export class TurnManager {
         console.log(`${entity.name} joins the fight!`);
     }
 
+    public addInterrupt(action: Action): void {
+        // Interrupts are pushed to the front of the stack to be processed first.
+        this.actionStack.unshift(action);
+        this.processActionStack();
+    }
+
     public async advanceTurn() {
         if (!this._isCombatActive) {
             this.runExplorationTick();
@@ -128,20 +134,12 @@ export class TurnManager {
     }
 
     private async runCombatTurn() {
-        // A. Check for Combat End condition at a safe point in the loop.
-        if (this._pendingCombatEndCheck) {
-            this._pendingCombatEndCheck = false; // Reset flag immediately
-            // Check if any hostile NPCs are left in the turn queue.
-            const hostilesRemain = this.turnQueue.some((item: TurnQueueEntry) =>
-                (item.entity instanceof Npc) && item.entity.disposition === 'hostile'
-            );
-            if (!hostilesRemain) {
-                this.endCombat();
-                return; // Exit combat flow entirely
-            }
-        }
+        this.processActionStack();
 
-        // B. End the previous actor's turn, if one existed.
+        // If combat ended during the action stack processing, don't continue.
+        if (!this.isCombatActive) return;
+
+        // End the previous actor's turn, if one existed.
         if (this.currentTurnIndex >= 0 && this.turnQueue[this.currentTurnIndex]) {
             const previousCombatant = this.turnQueue[this.currentTurnIndex];
             globalServiceLocator.eventBus.publish(GameEvents.COMBAT_TURN_END, { entity: previousCombatant });
@@ -192,66 +190,96 @@ export class TurnManager {
             await this.handleNpcTurn(currentActor);
         } else {
             // Actor is NPC without AI or some other entity, auto-pass turn.
-            this.processNpcAction(new PassTurnAction(currentActor));
-            await this.advanceTurn(); // Auto-pass and advance for non-AI entities
+            this.addInterrupt(new PassTurnAction(currentActor));
         }
     }
 
     private async handleNpcTurn(npc: Npc) {
-        while (npc.actionBudget.standard > 0 || npc.actionBudget.move > 0) {
-            const action = npc.aiPackage.decideAction();
-
-            if (action instanceof PassTurnAction || !this.canAfford(npc, action.cost)) {
-                break;//ends the turn
-            }
-
-            // Await the completion of the action, including its render delay
-            await this.processNpcAction(action);
-        }
-
-        // The NPC's turn is over, advance to the next combatant
-        await this.advanceTurn();
+        const action = npc.aiPackage.decideAction();
+        this.actionStack.push(action);
+        this.processActionStack();
     }
 
-    /**
-     * Executes an NPC's chosen action and immediately advances the turn.
-     * This simple model (1 action -> end turn) can be expanded later.
-     */
-    public async processNpcAction(action: Action) {
-        if (!action) return;
+    public async processPlayerAction(action: Action): Promise<void> {
+        // If we're not in combat, actions execute immediately and trigger an exploration tick.
+        if (!this.isCombatActive) {
+            action.execute();
+            this.advanceTurn();
+            return;
+        }
 
-        // Deduct cost (future-proofing for multi-action NPCs)
-        const budget = action.actor.actionBudget;
-        switch (action.cost) {
+        // If in combat, use the action stack for tactical timing.
+        this.actionStack.push(action);
+        await this.processActionStack();
+    }
+
+    private async processActionStack(): Promise<void> {
+        while (this.actionStack.length > 0) {
+            const action = this.actionStack.shift(); // Get the next action
+            if (!action) continue;
+
+            if (!this.canAfford(action.actor, action.cost)) {
+                console.log(`${action.actor.name} cannot afford ${action.constructor.name}.`);
+                continue;
+            }
+
+            this.spendCost(action.actor, action.cost);
+
+            // Execute the action's logic (which publishes events, etc.)
+            action.execute();
+
+            // For NPCs or any non-player action, we add a delay for visual feedback.
+            if (!(action.actor instanceof PlayerCharacter)) {
+                const RENDER_DELAY_MS = 150;
+                await new Promise(resolve => setTimeout(resolve, RENDER_DELAY_MS));
+            }
+
+            // If the action was a PassTurnAction or the actor is out of actions, advance the turn.
+            if (action instanceof PassTurnAction || this.isTurnOver(action.actor)) {
+                // Check for combat end before advancing the turn
+                this.checkForCombatEnd();
+                if (this.isCombatActive) {
+                    await this.advanceTurn();
+                }
+            }
+        }
+    }
+
+    private isTurnOver(actor: Entity): boolean {
+        if (!this.isCombatActive) return false;
+        const budget = actor.actionBudget;
+        // A turn is over if the actor is out of standard actions and has no movement points left.
+        // Or if they have taken a full-round action.
+        return (budget.standard <= 0 && budget.movementPoints <= 0) || (budget.move <= 0);
+    }
+
+    private spendCost(actor: Entity, cost: ActionType): void {
+        if (!this.isCombatActive) return;
+        const budget = actor.actionBudget;
+        if (!budget) return;
+
+        switch (cost) {
             case ActionType.Standard: budget.standard--; break;
-            case ActionType.Move: budget.move--; break;
-            case ActionType.FullRound: budget.standard--; budget.move--; break;
+            case ActionType.Move: break; // Move cost is handled by movementPoints in RulesEngine
+            case ActionType.FullRound: budget.standard = 0; budget.move = 0; break;
             case ActionType.Swift: budget.swift--; break;
             case ActionType.Free: budget.free--; break;
         }
-
-        // Execute the action's logic (which publishes events, etc.)
-        action.execute();
-
-        // Wait for a short duration to allow the UI to update and render the result.
-        // This makes the NPC's actions feel sequential to the player.
-        const RENDER_DELAY_MS = 150; // Tune this value for game feel
-        await new Promise(resolve => setTimeout(resolve, RENDER_DELAY_MS));
     }
 
     /**
      * Checks if the current action budget can pay for a given action cost.
      */
-    private canAfford(npc: Npc, cost: ActionType): boolean {
+    private canAfford(actor: Entity, cost: ActionType): boolean {
         // Outside of combat, actions are always affordable.
-        if (!globalServiceLocator.turnManager.isCombatActive) return true;
+        if (!this.isCombatActive) return true;
 
-        const budget = npc.actionBudget;
+        const budget = actor.actionBudget;
         if (!budget) return false;
 
         switch (cost) {
             case ActionType.Standard: return budget.standard > 0;
-            case ActionType.Move: return budget.move > 0;
+            case ActionType.Move: return budget.movementPoints > 0; // Check for movement points
             case ActionType.FullRound: return budget.standard > 0 && budget.move > 0;
             case ActionType.Swift: return budget.swift > 0;
             case ActionType.Free: return budget.free > 0;

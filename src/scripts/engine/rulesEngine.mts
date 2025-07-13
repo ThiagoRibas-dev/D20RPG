@@ -4,6 +4,7 @@ import { Entity, EntityClass } from "./entities/entity.mjs";
 import { ModifierManager } from "./modifierManager.mjs";
 import { MapTile } from "./entities/mapTile.mjs";
 import { ModifierList } from "./entities/modifier.mjs";
+import { MoveAction } from "./actions/moveAction.mjs";
 import { GameEvents } from "./events.mjs";
 import { globalServiceLocator } from "./serviceLocator.mjs";
 import { calculateModifier, EntityPosition, getRandomInt, rollD20 } from "./utils.mjs";
@@ -255,6 +256,30 @@ export class RulesEngine {
             return;
         }
 
+        // Find adjacent hostile enemies who are threatening the starting square.
+        const threateningNpcs = globalServiceLocator.state.npcs.filter(npc =>
+            npc.isAlive() &&
+            npc.disposition === 'hostile' && // Or based on faction
+            (Math.abs(npc.position.x - prevPlayerPosition.x) <= 1 && Math.abs(npc.position.y - prevPlayerPosition.y) <= 1)
+        );
+
+        // If there are threats, we publish the interrupt event and DO NOT complete the move yet.
+        if (threateningNpcs.length > 0) {
+            console.log(`${actor.name}'s movement provokes an AoO from ${threateningNpcs.map(n => n.name).join(', ')}!`);
+            globalServiceLocator.eventBus.publish(GameEvents.ACTION_PROVOKES_AOO, {
+                provokingActor: actor,
+                threateningActors: threateningNpcs,
+                continuationAction: new MoveAction(actor, direction)
+            });
+            return; // STOP execution of the move. It will be resumed later.
+        }
+
+        // If no one threatens, complete the move immediately.
+        this.executeMove(actor, direction);
+    }
+
+    public executeMove(actor: Entity, direction: EntityPosition): void {
+        const prevPlayerPosition = { ...actor.position };
         const currentPosition = actor.position;
         const intendedNewPosition = {
             x: currentPosition.x + direction.x,
@@ -273,123 +298,99 @@ export class RulesEngine {
             return;
         }
 
-        // Find adjacent hostile enemies who are threatening the starting square.
-        const threateningNpcs = globalServiceLocator.state.npcs.filter(npc =>
-            npc.isAlive() &&
-            npc.disposition === 'hostile' && // Or based on faction
-            (Math.abs(npc.position.x - prevPlayerPosition.x) <= 1 && Math.abs(npc.position.y - prevPlayerPosition.y) <= 1)
-        );
+        const mapTiles = map.tiles; // Get map tiles
+        const mapHeight = mapTiles.length;
+        const mapWidth = mapTiles[0].length;
 
-        // Callback that contains the rest of the move logic.
-        const completeTheMove = () => {
-            const mapTiles = map.tiles; // Get map tiles
-            const mapHeight = mapTiles.length;
-            const mapWidth = mapTiles[0].length;
-
-            // --- Boundary Check ---
-            const isValidMovement: boolean = intendedNewPosition.x >= 0
-                && intendedNewPosition.x < mapWidth
-                && intendedNewPosition.y >= 0
-                && intendedNewPosition.y < mapHeight;
-            if (!isValidMovement) {
-                console.log("Movement blocked by map boundary");
-                globalServiceLocator.eventBus.publish(GameEvents.ACTION_MOVE_BLOCKED, {
-                    actor: actor,
-                    reason: 'boundary',
-                    blocker: null // No specific object, just the edge of the world
-                });
-                return;
-            }
-
-            // --- Tile Definition and Cost Check ---
-            const tileSymbol = map.tiles[intendedNewPosition.y][intendedNewPosition.x];
-            const tileDef = tileDefs.find(def => def.symbol === tileSymbol);
-            const moveCost = tileDef?.moveCost || 5; // Default cost is 5ft.
-
-            if (actor.actionBudget.movementPoints < moveCost) {
-                globalServiceLocator.feedback.addMessageToLog("You don't have enough movement left.", "yellow");
-                return;
-            }
-
-            // --- Tile Collision Check ---
-            if (tileDef?.isBlocking) {
-                console.log(`Movement for ${actor.name} blocked by ${tileDef.name}.`);
-                globalServiceLocator.eventBus.publish(GameEvents.ACTION_MOVE_BLOCKED, {
-                    actor: actor,
-                    reason: 'tile',
-                    blocker: tileDef // Pass the tile definition as the blocker
-                });
-                return;
-            }
-
-            // --- Entity Collision Check ---
-            const blockingEntity = globalServiceLocator.renderer.findEntityAt(intendedNewPosition);
-            if (blockingEntity) {
-                console.log(`Movement for ${actor.name} blocked by ${blockingEntity.name}.`);
-                globalServiceLocator.eventBus.publish(GameEvents.ACTION_MOVE_BLOCKED, {
-                    actor: actor,
-                    reason: 'entity',
-                    blocker: blockingEntity // Pass the entity as the blocker
-                });
-                return;
-            }
-
-            // --- Success! Deduct cost and update state. ---
-            actor.actionBudget.movementPoints -= moveCost;
-            actor.position = intendedNewPosition;
-
-            globalServiceLocator.eventBus.publish(GameEvents.ENTITY_MOVED, {
-                entity: actor,
-                from: prevPlayerPosition,
-                to: intendedNewPosition,
-                cost: moveCost
+        // --- Boundary Check ---
+        const isValidMovement: boolean = intendedNewPosition.x >= 0
+            && intendedNewPosition.x < mapWidth
+            && intendedNewPosition.y >= 0
+            && intendedNewPosition.y < mapHeight;
+        if (!isValidMovement) {
+            console.log("Movement blocked by map boundary");
+            globalServiceLocator.eventBus.publish(GameEvents.ACTION_MOVE_BLOCKED, {
+                actor: actor,
+                reason: 'boundary',
+                blocker: null // No specific object, just the edge of the world
             });
-
-
-            if (tileDef && tileDef.isTrigger) {
-                console.log("Stepped on a trigger tile!");
-
-                const triggerSymbol = tileSymbol;
-                const trigger = globalServiceLocator.state.currentMapData.triggers.find(
-                    (triggerDef: MapTile) => triggerDef.symbol === triggerSymbol
-                );
-
-                if (trigger) {
-                    const targetMapName = trigger.targetMap;
-                    const targetLocation = trigger.targetLocation;
-                    console.log('Hit trigger', targetMapName, targetLocation);
-
-                    const newMapData = globalServiceLocator.state.currentCampaignData?.maps[targetMapName].get();
-                    if (!newMapData) {
-                        console.error("Failed to load target map:", targetMapName);
-                    }
-
-                    actor.position = targetLocation;
-                    globalServiceLocator.state.currentMapData = newMapData;
-                    globalServiceLocator.renderer.renderMapFull(newMapData);
-                    return; // Exit after map transition
-                } else {
-                    console.error("Trigger definition not found for symbol:", triggerSymbol);
-                }
-            }
-
-            globalServiceLocator.renderer.redrawTiles(prevPlayerPosition, intendedNewPosition);
-            globalServiceLocator.renderer.renderSingleEntity(actor);
-        };
-
-        // If there are threats, we publish the interrupt event and DO NOT complete the move yet.
-        if (threateningNpcs.length > 0) {
-            console.log(`${actor.name}'s movement provokes an AoO from ${threateningNpcs.map(n => n.name).join(', ')}!`);
-            globalServiceLocator.eventBus.publish(GameEvents.ACTION_PROVOKES_AOO, {
-                provokingActor: actor,
-                threateningActors: threateningNpcs,
-                onComplete: completeTheMove // Pass the continuation callback.
-            });
-            return; // STOP execution of the move. It will be resumed later.
+            return;
         }
 
-        // If no one threatens, complete the move immediately.
-        completeTheMove();
+        // --- Tile Definition and Cost Check ---
+        const tileSymbol = map.tiles[intendedNewPosition.y][intendedNewPosition.x];
+        const tileDef = tileDefs.find(def => def.symbol === tileSymbol);
+        const moveCost = tileDef?.moveCost || 5; // Default cost is 5ft.
+
+        if (actor.actionBudget.movementPoints < moveCost) {
+            globalServiceLocator.feedback.addMessageToLog("You don't have enough movement left.", "yellow");
+            return;
+        }
+
+        // --- Tile Collision Check ---
+        if (tileDef?.isBlocking) {
+            console.log(`Movement for ${actor.name} blocked by ${tileDef.name}.`);
+            globalServiceLocator.eventBus.publish(GameEvents.ACTION_MOVE_BLOCKED, {
+                actor: actor,
+                reason: 'tile',
+                blocker: tileDef // Pass the tile definition as the blocker
+            });
+            return;
+        }
+
+        // --- Entity Collision Check ---
+        const blockingEntity = globalServiceLocator.renderer.findEntityAt(intendedNewPosition);
+        if (blockingEntity) {
+            console.log(`Movement for ${actor.name} blocked by ${blockingEntity.name}.`);
+            globalServiceLocator.eventBus.publish(GameEvents.ACTION_MOVE_BLOCKED, {
+                actor: actor,
+                reason: 'entity',
+                blocker: blockingEntity // Pass the entity as the blocker
+            });
+            return;
+        }
+
+        // --- Success! Deduct cost and update state. ---
+        actor.actionBudget.movementPoints -= moveCost;
+        actor.position = intendedNewPosition;
+
+        globalServiceLocator.eventBus.publish(GameEvents.ENTITY_MOVED, {
+            entity: actor,
+            from: prevPlayerPosition,
+            to: intendedNewPosition,
+            cost: moveCost
+        });
+
+
+        if (tileDef && tileDef.isTrigger) {
+            console.log("Stepped on a trigger tile!");
+
+            const triggerSymbol = tileSymbol;
+            const trigger = globalServiceLocator.state.currentMapData.triggers.find(
+                (triggerDef: MapTile) => triggerDef.symbol === triggerSymbol
+            );
+
+            if (trigger) {
+                const targetMapName = trigger.targetMap;
+                const targetLocation = trigger.targetLocation;
+                console.log('Hit trigger', targetMapName, targetLocation);
+
+                const newMapData = globalServiceLocator.state.currentCampaignData?.maps[targetMapName].get();
+                if (!newMapData) {
+                    console.error("Failed to load target map:", targetMapName);
+                }
+
+                actor.position = targetLocation;
+                globalServiceLocator.state.currentMapData = newMapData;
+                globalServiceLocator.renderer.renderMapFull(newMapData);
+                return; // Exit after map transition
+            } else {
+                console.error("Trigger definition not found for symbol:", triggerSymbol);
+            }
+        }
+
+        globalServiceLocator.renderer.redrawTiles(prevPlayerPosition, intendedNewPosition);
+        globalServiceLocator.renderer.renderSingleEntity(actor);
     }
 
     // Helper to parse threat range like "18-20"
