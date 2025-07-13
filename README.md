@@ -89,9 +89,9 @@ For an overview of the project's vision, current status, and future development 
 
 ## License & Disclaimer
 
-This project is licensed under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+This project is licensed under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/). A copy of this license can be found in the `LICENSE_CREATIVE_COMMONS.md` file in the root of this repository.
 
-This project utilizes mechanics and content based on the Dungeons & Dragons 3.5 Edition rules, which are licensed under the [Open Game License Version 1.0a (OGL 1.0a)](https://media.wizards.com/2016/dnd/downloads/OGL_V1.0a.pdf) by Wizards of the Coast. A copy of the OGL 1.0a can be found in the `OGL.txt` file in this repository.
+This project utilizes mechanics and content based on the Dungeons & Dragons 3.5 Edition rules, which are licensed under the [Open Game License Version 1.0a (OGL 1.0a)](https://media.wizards.com/2016/dnd/downloads/OGL_V1.0a.pdf) by Wizards of the Coast. A copy of the OGL 1.0a can be found in the `OGL.md` file in the root of this repository.
 
 **Disclaimer:**
 This project is not affiliated with or endorsed by Wizards of the Coast. It is a fan-made project created for and entertainment purposes. All content derived from D&D 3.5e rules is used under the Open Game License 1.0a.
