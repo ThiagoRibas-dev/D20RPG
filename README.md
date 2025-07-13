@@ -1,7 +1,7 @@
 
 # Eversummer Days
 
-This project is a 2D, tile-based, **Hybrid Turn-Based Tactical RPG** inspired by the mechanics of the D20 system (D&D 3.5e) and classic RPGs like Pool of Radiance and Knights of the Chalice. It draws significant inspiration from the strategic, systems-driven combat of **Incursion: Halls of the Goblin King** and the profound emergent interactions and player freedom of **NetHack**. The game seamlessly transitions between a real-time "Exploration Mode" and a strict, initiative-based "Combat Mode."
+This project is a 2D, tile-based, **Hybrid Turn-Based Tactical RPG** inspired by the mechanics of the D20 system (D&D 3.5e) and classic RPGs like Pool of Radiance and Knights of the Chalice. It draws significant inspiration from the strategic, systems-driven combat of **Incursion: Halls of the Goblin King** and the profound emergent interactions and player freedom of **NetHack**. "The game seamlessly transitions between a "WeGo" turn-based "Exploration Mode" and a strict, initiative-based "Combat Mode."
 
 ## Table of Contents
 - [Key Features](#key-features)
@@ -22,7 +22,7 @@ This project is a 2D, tile-based, **Hybrid Turn-Based Tactical RPG** inspired by
 ## Key Features
 
 *   **D20 Game Mechanics:** The game uses a simplified version of the D&D 3.5e ruleset, under the Open Game License (OGL) 1.0a.
-*   **Hybrid Turn System:** The game features a dynamic turn system that transitions between a real-time "Exploration Mode" for general movement and interaction, and a strict, initiative-based "Combat Mode" for tactical encounters. In Combat Mode, actions are resolved in initiative order, allowing for strategic decision-making, similar to Incursion.
+*   **Hybrid Turn System:** The game features a dynamic turn system that transitions between a "WeGo" turn-based "Exploration Mode" for simultaneous-resolution turns, and a strict, initiative-based "Combat Mode" for tactical encounters. In Combat Mode, actions are resolved in initiative order, allowing for strategic decision-making, similar to Incursion.
 *   **Emergent Gameplay & Systemic Interactivity:** Inspired by NetHack, the engine prioritizes systemic interactivity and emergent gameplay. The game provides a toolbox of universal actions and a rich set of object properties, with gameplay emerging from the interactions between these systems.
 *   **User-Generated Content :** The primary design goal of the project is allowing users to create and modify game content easily. Users can add their own races, classes, items, spells, maps, quests, and campaigns using simple JSON files. This extensibility allows for endless customization and new adventures.
 *   **Campaign-Based Structure:** The game supports multiple campaigns, each with its own self-contained set of maps, characters, organizations, and quests, providing a modular approach to storytelling and world-building.
