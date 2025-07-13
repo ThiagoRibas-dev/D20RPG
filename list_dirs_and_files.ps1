@@ -45,7 +45,8 @@ function Get-DirectoryTreeString {
     "*pnpm-lock.yaml",
     "*package-lock.json",
     "*.DS_Store", # macOS folder metadata file
-    "*Thumbs.db"   # Windows thumbnail cache file
+    "*Thumbs.db",   # Windows thumbnail cache file
+    "*docs*"        # Exclude documentation directory
 )
 
 $directoryToCrawl = ".\" #  <---  Set your directory path here
