@@ -4,7 +4,10 @@ import { Entity, EntityClass } from "./entities/entity.mjs";
 import { ModifierManager } from "./modifierManager.mjs";
 import { MapTile } from "./entities/mapTile.mjs";
 import { ModifierList } from "./entities/modifier.mjs";
+import { ActiveEffect } from "./activeEffect.mjs";
+import { Action } from "./actions/action.mjs";
 import { MoveAction } from "./actions/moveAction.mjs";
+import { UsePowerAction } from "./actions/usePowerAction.mjs";
 import { GameEvents } from "./events.mjs";
 import { globalServiceLocator } from "./serviceLocator.mjs";
 import { calculateModifier, EntityPosition, getRandomInt, rollD20 } from "./utils.mjs";
@@ -21,15 +24,28 @@ export class RulesEngine {
         globalServiceLocator.eventBus.subscribe(GameEvents.ACTION_MOVE_DECLARED,
             (event) => this.resolveMove(event.data)
         );
+        globalServiceLocator.eventBus.subscribe(GameEvents.ACTION_USE_POWER_DECLARED,
+            (event) => this.resolvePowerUse(event.data)
+        );
+        globalServiceLocator.eventBus.subscribe(GameEvents.CHARACTER_TAKES_DAMAGE,
+            (event) => this.resolveConcentrationCheck(event.data)
+        );
     }
 
     /**
     * Manages the entire resolution of a single attack, from roll to outcome.
     * This is the heart of the combat event chain.
     */
-    private resolveAttack(data: { attacker: Entity, target: Entity, weapon: ContentItem }): void {
-        const { attacker, target, weapon } = data;
+    private resolveAttack(data: { attacker: Entity, target: Entity, weapon: ContentItem, continuationAction?: Action }): void {
+        const { attacker, target, weapon, continuationAction } = data;
         console.log(`--- Resolving attack from ${attacker.name} to ${target.name} ---`);
+
+        if (!continuationAction && weapon.tags.includes('ranged')) {
+            const attackAction = new (Action as any)(attacker, weapon, target);
+            if (this.checkForAoO(attackAction, 'ranged')) {
+                return;
+            }
+        }
 
         // If we aren't in combat and this is a hostile action, start combat.
         if (!globalServiceLocator.turnManager.isCombatActive) {
@@ -234,7 +250,7 @@ export class RulesEngine {
 
         // 4. Apply damage
         console.log(`${attacker.name} deals ${damageRoll.total} ${context.damageType} damage to ${target.name}.`);
-        target.takeDamage(damageRoll.total);
+        target.takeDamage(damageRoll.total, attacker);
         globalServiceLocator.eventBus.publish(GameEvents.CHARACTER_HP_CHANGED, { entity: target });
 
         if (!target.isAlive()) {
@@ -250,32 +266,107 @@ export class RulesEngine {
             return;
         }
 
-        const prevPlayerPosition = { ...actor.position };
-        if (!prevPlayerPosition) {
-            console.log("Actor's Original Position is not initialized");
-            return;
-        }
-
-        // Find adjacent hostile enemies who are threatening the starting square.
-        const threateningNpcs = globalServiceLocator.state.npcs.filter(npc =>
-            npc.isAlive() &&
-            npc.disposition === 'hostile' && // Or based on faction
-            (Math.abs(npc.position.x - prevPlayerPosition.x) <= 1 && Math.abs(npc.position.y - prevPlayerPosition.y) <= 1)
-        );
-
-        // If there are threats, we publish the interrupt event and DO NOT complete the move yet.
-        if (threateningNpcs.length > 0) {
-            console.log(`${actor.name}'s movement provokes an AoO from ${threateningNpcs.map(n => n.name).join(', ')}!`);
-            globalServiceLocator.eventBus.publish(GameEvents.ACTION_PROVOKES_AOO, {
-                provokingActor: actor,
-                threateningActors: threateningNpcs,
-                continuationAction: new MoveAction(actor, direction)
-            });
-            return; // STOP execution of the move. It will be resumed later.
+        const moveAction = new MoveAction(actor, direction);
+        if (this.checkForAoO(moveAction, 'move')) {
+            return; // Stop execution, AoO is being handled.
         }
 
         // If no one threatens, complete the move immediately.
         this.executeMove(actor, direction);
+    }
+
+    public validateFeatPrerequisites(entity: Entity, feat: ContentItem): boolean {
+        if (!feat.prerequisites) {
+            return true; // No prerequisites, always valid.
+        }
+
+        for (const preq of feat.prerequisites) {
+            if (preq.type === 'ability') {
+                if (entity.stats[preq.ability] < preq.value) {
+                    return false;
+                }
+            } else if (preq.type === 'feat') {
+                if (!entity.feats.some(f => f.id === preq.featId)) {
+                    return false;
+                }
+            } else if (preq.type === 'bab') {
+                if (entity.baseAttackBonus < preq.value) {
+                    return false;
+                }
+            }
+            // Add more prerequisite types here (e.g., class, level, skills)
+        }
+
+        return true;
+    }
+
+    public resolveConcentrationCheck(data: { entity: Entity, amount: number, source: Entity | null }): void {
+        const { entity, amount } = data;
+        if (entity.hasTag('casting')) {
+            const dc = 10 + amount;
+            const concentrationRoll = rollD20() + entity.getSkillModifier('concentration');
+            if (concentrationRoll < dc) {
+                entity.tags.delete('casting');
+                globalServiceLocator.feedback.addMessageToLog(`${entity.name} loses concentration!`, 'red');
+            } else {
+                globalServiceLocator.feedback.addMessageToLog(`${entity.name} maintains concentration.`, 'green');
+            }
+        }
+    }
+
+    public resolvePowerUse(data: { actor: Entity, power: ContentItem, target: any, castOnDefensive?: boolean, isTouch?: boolean }): void {
+        const { actor, power, target, castOnDefensive, isTouch } = data;
+        console.log(`${actor.name} is using power: ${power.name}`);
+
+        actor.tags.add('casting');
+
+        if (isTouch) {
+            actor.tags.add('holding_the_charge');
+            const effect: ActiveEffect = {
+                id: 'effect-holding-the-charge',
+                name: 'Holding the Charge',
+                source: power.name,
+                description: `You are holding the charge of ${power.name}.`,
+                script: '',
+                context: {
+                    power: power,
+                    target: target
+                },
+                tags: ['holding_the_charge'],
+                sourceEffect: power,
+                target: actor,
+                durationInRounds: 1, // Lasts until discharged
+                remainingRounds: 1,
+                scriptInstance: null
+            };
+            actor.activeEffects.push(effect);
+            globalServiceLocator.feedback.addMessageToLog(`${actor.name} is holding the charge of ${power.name}.`, 'yellow');
+            return;
+        }
+
+        if (castOnDefensive) {
+            const dc = 15 + (power.level * 2);
+            const concentrationRoll = rollD20() + actor.getSkillModifier('concentration');
+            if (concentrationRoll < dc) {
+                globalServiceLocator.feedback.addMessageToLog(`${actor.name} fails to cast defensively and loses the power!`, 'red');
+                return;
+            }
+        } else {
+            const powerAction = new UsePowerAction(actor, power, target);
+            if (this.checkForAoO(powerAction, 'cast')) {
+                return; // Stop execution, AoO is being handled.
+            }
+        }
+
+
+        // In a real implementation, this would be much more complex,
+        // handling different power types, targeting, saving throws, etc.
+        // For now, we'll just log the event.
+        if (power.trigger_effect) {
+            globalServiceLocator.effectManager.triggerEffect(power.trigger_effect, actor, target);
+        }
+
+        actor.tags.delete('casting');
     }
 
     public executeMove(actor: Entity, direction: EntityPosition): void {
@@ -399,6 +490,37 @@ export class RulesEngine {
             return parseInt(rangeStr.split('-')[0], 10);
         }
         return parseInt(rangeStr, 10);
+    }
+
+    public checkForAoO(provokingAction: Action, triggerType: string) {
+        const { actor } = provokingAction;
+        const threateningNpcs = globalServiceLocator.state.npcs.filter(npc =>
+            npc.isAlive() &&
+            npc.disposition === 'hostile' && // Or based on faction
+            (Math.abs(npc.position.x - actor.position.x) <= 1 && Math.abs(npc.position.y - actor.position.y) <= 1) &&
+            this.canMakeAoO(npc)
+        );
+
+        if (threateningNpcs.length > 0) {
+            console.log(`${actor.name}'s action (${triggerType}) provokes an AoO from ${threateningNpcs.map(n => n.name).join(', ')}!`);
+            globalServiceLocator.eventBus.publish(GameEvents.ACTION_PROVOKES_AOO, {
+                provokingActor: actor,
+                threateningActors: threateningNpcs,
+                continuationAction: provokingAction,
+                triggerType: triggerType
+            });
+            return true; // Indicates an AoO was provoked
+        }
+        return false; // No AoO provoked
+    }
+
+    private canMakeAoO(entity: Entity): boolean {
+        if (entity.aoo_used_this_round >= entity.max_aoo_per_round) {
+            return false;
+        }
+        // In the future, check for statuses like stunned, paralyzed, etc.
+        // For now, we assume the entity can always make an AoO if they have one available.
+        return true;
     }
 
     public async resolveSkillUse(actor: Entity, skillId: string, useId: string, target: ItemInstance | Entity) {

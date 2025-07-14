@@ -1,0 +1,42 @@
+{
+  "id": "template-half-dragon",
+  "name": "Half-Dragon",
+  "type": "template",
+  "description": "A creature with a dragon as one of its parents, granting immense power.",
+  "script": "half-dragon.mjs",
+  "bonuses": [
+    { "target": "stats.str", "value": 8, "type": "racial" },
+    { "target": "stats.con", "value": 2, "type": "racial" },
+    { "target": "stats.int", "value": 2, "type": "racial" },
+    { "target": "stats.cha", "value": 2, "type": "racial" },
+    { "target": "ac", "value": 4, "type": "natural_armor", "source": "Half-Dragon" }
+  ],
+  "tags": [
+    "dragon",
+    "darkvision_60ft",
+    "low_light_vision",
+    "immunity_sleep",
+    "immunity_paralysis"
+  ],
+  "choices": [
+    {
+      "id": "dragon_variety",
+      "name": "Dragon Variety",
+      "description": "Select the variety of your draconic parent.",
+      "type": "select",
+      "options": [
+        { "id": "black", "name": "Black Dragon", "description": "Grants Acid immunity and an acid breath weapon." },
+        { "id": "blue", "name": "Blue Dragon", "description": "Grants Electricity immunity and a lightning breath weapon." },
+        { "id": "green", "name": "Green Dragon", "description": "Grants Acid immunity and a corrosive gas breath weapon." },
+        { "id": "red", "name": "Red Dragon", "description": "Grants Fire immunity and a fire breath weapon." },
+        { "id": "white", "name": "White Dragon", "description": "Grants Cold immunity and a cold breath weapon." },
+        { "id": "brass", "name": "Brass Dragon", "description": "Grants Fire immunity and a fire breath weapon." },
+        { "id": "bronze", "name": "Bronze Dragon", "description": "Grants Electricity immunity and a lightning breath weapon." },
+        { "id": "copper", "name": "Copper Dragon", "description": "Grants Acid immunity and an acid breath weapon." },
+        { "id": "gold", "name": "Gold Dragon", "description": "Grants Fire immunity and a fire breath weapon." },
+        { "id": "silver", "name": "Silver Dragon", "description": "Grants Cold immunity and a cold breath weapon." }
+      ]
+    }
+  ],
+  "level_adjustment": 3
+}

@@ -55,9 +55,13 @@ export class FeatSelectionView {
 
                     // Check for prerequisites and if the feat is already selected.
                     if (!player.feats.find(f => f.name === featData.name)) {
-                        // TODO: Add prerequisite checking logic here.
-                        player.feats.push(featData);
-                        console.log(`Feat selected: ${featData.name}`);
+                        if (globalServiceLocator.rulesEngine.validateFeatPrerequisites(player, featData)) {
+                            player.feats.push(featData);
+                            console.log(`Feat selected: ${featData.name}`);
+                        } else {
+                            console.log(`Prerequisites not met for feat: ${featData.name}`);
+                            updateSelectionInfo({ name: "Prerequisites Not Met", description: `You do not meet the requirements for ${featData.name}.` });
+                        }
                     } else {
                         console.log(`Feat already selected: ${featData.name}`);
                     }

@@ -17,7 +17,7 @@ export class Npc extends Entity {
         ascii_char: string = 'M',
         color: string = 'red'
     ) {
-        super(name, selectedRace, [], 0, { remaining: 0, allocations: new Map() }, [], position, stats, hitPoints);
+        super(name, selectedRace, null, [], 0, { remaining: 0, allocations: new Map() }, [], position, stats, hitPoints);
         this.prefabId = prefabId;
 
         this.renderable = {

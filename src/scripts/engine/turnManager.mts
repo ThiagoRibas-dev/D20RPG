@@ -165,6 +165,8 @@ export class TurnManager {
         // D. Get the current actor.
         const currentActor: Entity = this.turnQueue[this.currentTurnIndex].entity;
 
+        currentActor.aoo_used_this_round = 0;
+
         // E. Reset the actor's action budget for their new turn. Should be gotten from the actor prototype/template since it could have more actions of a given type
         currentActor.actionBudget = { standard: 1, move: 1, swift: 1, free: 99, hasTaken5FootStep: false, movementPoints: 30 };
 

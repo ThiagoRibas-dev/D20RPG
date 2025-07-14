@@ -16,6 +16,7 @@ export const GameEvents = {
   ACTION_ATTACK_BEFORE_ROLL: 'action:attack:before_roll',
   ACTION_DAMAGE_BEFORE_ROLL: 'action:damage:before_roll',
   ACTION_PROVOKES_AOO: 'action:provokes_aoo',
+  ACTION_USE_POWER_DECLARED: 'action:use_power:declared',
 
   // Combat Events
   COMBAT_START: 'combat:start',
@@ -29,6 +30,7 @@ export const GameEvents = {
   ITEM_STATE_CHANGED: 'item:state:changed',
   CHARACTER_DIED: 'character:died',
   CHARACTER_HP_CHANGED: 'character:hp:changed',
+  CHARACTER_TAKES_DAMAGE: 'character:takes_damage',
   CHARACTER_EFFECT_APPLIED: 'character:effect:applied',
   CHARACTER_EFFECT_REMOVED: 'character:effect:removed',
   ENTITY_MOVED: 'entity:moved',

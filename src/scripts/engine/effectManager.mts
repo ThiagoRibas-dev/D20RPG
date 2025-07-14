@@ -80,13 +80,17 @@ export class EffectManager {
             const newEffect: ActiveEffect = {
                 id,
                 name: effectData.name,
+                source: effectData.source || 'Unknown',
+                description: effectData.description || '',
+                script: effectData.script,
+                context: effectData.context || {},
+                tags: effectData.tags || [],
                 sourceEffect: effectDefinition,
                 target,
                 caster,
                 durationInRounds: effectData.duration || 0,
                 remainingRounds: effectData.duration || 0,
                 scriptInstance: null,
-
             };
 
             // Instantiate the dynamically imported class.

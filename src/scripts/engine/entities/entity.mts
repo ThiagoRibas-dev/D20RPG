@@ -3,6 +3,7 @@ import { EquipmentComponent } from "../components/equipmentComponent.mjs";
 import { InventoryComponent } from "../components/inventoryComponent.mjs";
 import { Renderable } from "../components/renderable.mjs";
 import { ModifierManager } from "../modifierManager.mjs";
+import { globalServiceLocator } from "../serviceLocator.mjs";
 import { calculateModifier, EntityPosition, rollD20 } from "../utils.mjs";
 import { ContentItem } from "./contentItem.mjs";
 
@@ -60,6 +61,7 @@ export class Entity {
     id: string;
     name: string;
     selectedRace: ContentItem | null;
+    template: ContentItem | null;
     classes: EntityClass[];
     totalLevel: number;
     skills: EntitySkills;
@@ -72,6 +74,8 @@ export class Entity {
     activeEffects: ActiveEffect[];
     renderable: Renderable | null;
     actionBudget: ActionBudget;
+    aoo_used_this_round: number;
+    max_aoo_per_round: number;
     public inventory: InventoryComponent;
     public equipment: EquipmentComponent;
     public tags: Set<string>;
@@ -82,10 +86,13 @@ export class Entity {
     // A map for every modifiable value in the game.
     // The key is the target (e.g., "stats.str", "saves.will", "skills.spot")
     public modifiers: ModifierManager;
+    powerSystem: string | null;
+    powerSystemRules: any | null;
 
     constructor(
         name: string = "",
         selectedRace: ContentItem | null = null,
+        template: ContentItem | null = null,
         classes: EntityClass[] = [],
         totalLevel: number = 0,
         skills: EntitySkills = { remaining: 0, allocations: new Map() },
@@ -105,6 +112,7 @@ export class Entity {
         this.id = `entity-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
         this.name = name;
         this.selectedRace = selectedRace;
+        this.template = template;
         this.classes = classes;
         this.totalLevel = totalLevel;
         this.skills = skills;
@@ -130,9 +138,13 @@ export class Entity {
             hasTaken5FootStep: false,
             movementPoints: 0
         }
+        this.aoo_used_this_round = 0;
+        this.max_aoo_per_round = 1;
         this.inventory = new InventoryComponent(this);
         this.equipment = new EquipmentComponent(this);
         this.tags = new Set<string>();
+        this.powerSystem = null;
+        this.powerSystemRules = null;
         this.updateTags();
     }
 
@@ -198,11 +210,12 @@ export class Entity {
         return this.tags.has(tag);
     }
 
-    takeDamage(amount: number) {
+    takeDamage(amount: number, source: Entity | null = null) {
         this.hitPoints.current -= amount;
         if (this.hitPoints.current < 0) {
             this.hitPoints.current = 0;
         }
+        globalServiceLocator.eventBus.publish('character:takes_damage', { entity: this, amount, source });
     }
 
     isAlive(): boolean {

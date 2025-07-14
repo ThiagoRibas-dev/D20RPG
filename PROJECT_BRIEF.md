@@ -63,7 +63,7 @@
     *   **Status:** Done. The `TurnManager` now grants movement points, and the `RulesEngine` deducts them based on tile cost.
 
 ---
-#### **Phase 2: Deep Equipment & Itemization (Revised)**
+#### **Phase 2: Deep Equipment & Itemization**
 *   `[x]` **Task 2.1: Implement the Full Equipment System.**
 *   `[x]` **Task 2.2: Implement Combinatorial Item Generation (`LootFactory`).**
 *   `[x]` **Task 2.3: Implement the "Use Item" Action.**
@@ -85,51 +85,58 @@
     *   `[x]` **Sub-task 2.8.2:** Integrate the action with the UI.
 
 ---
-#### **Phase 3: Advanced Combat Tactics (Revised)**
-*   `[x]` **Task 3.0: Implement Player-Prompted Interrupt System.**
-    *   **Description:** Implement a generic, event-driven system to manage all out-of-turn actions (including Attacks of Opportunity, Immediate Actions, etc.). This system must be capable of pausing the game state, prompting the player for a decision when an opportunity to act arises, and then executing the chosen action before resuming the normal turn order. This is a foundational system for advanced tactical play.
-    *   `[x]` **Sub-task 3.0.1: Create an Action Queue/Stack in `TurnManager`.**
-        *   **Guidance:** The `TurnManager` must be refactored to manage a stack of actions rather than a single current action. This allows a new action (the interrupt) to be pushed on top of the stack, processed first, and then popped off to resume the original action.
-    *   `[x]` **Sub-task 3.0.2: Develop a generic `Interrupt` data structure.**
-        *   **Guidance:** Define a standard format for an interrupt opportunity, e.g., `{ triggeringEvent: GameEvent, sourceEntity: Entity, potentialActions: Action[] }`. This structure will be passed from the rules engine to the UI.
-    *   `[x]` **Sub-task 3.0.3: Create a central `InterruptManager` service.**
-        *   **Guidance:** This service will listen for all potentially interrupt-generating game events (e.g., `action:provokes_aoo`, `entity:takes_damage`). It will be responsible for checking if any entity has a relevant ability and, if that entity is the player, packaging the potential actions into an `Interrupt` object.
-    *   `[x]` **Sub-task 3.0.4: Implement the Player Prompt UI.**
-        *   **Guidance:** The `UIManager` must be able to receive an `Interrupt` object and display a modal choice to the player (e.g., "Goblin provokes AoO. [Attack] [Decline]"). The UI will then send the player's chosen action (or a 'decline' signal) back to the `InterruptManager`.
-    *   `[x]` **Sub-task 3.0.5: Integrate AI decision-making for interrupts.**
-        *   **Guidance:** For NPCs, the `InterruptManager` will pass the `Interrupt` object to the AI system, which will decide whether to take the action based on its behavioral flags (e.g., an `aggressive` AI always accepts, a `cautious` AI might decline).
-*   `[ ]` **Task 3.1: Implement Attacks of Opportunity (AoO) System.**
-    *   `[ ]` **Sub-task 3.1.1:** Implement the core AoO trigger: leaving a threatened square.
-    *   `[ ]` **Sub-task 3.1.2:** Implement AoO triggers for combat actions (e.g., making a Ranged Attack while threatened, Unarmed Strikes without the `Improved Unarmed Strike` feat).
-    *   `[ ]` **Sub-task 3.1.3:** Implement AoO triggers for general actions (e.g., Casting a Spell, Drinking a Potion, Standing Up from Prone).
-    *   `[ ]` **Sub-task 3.1.4:** Implement the AoO economy. An AoO is a special Free Action that does not consume the attacker's normal actions. Implement a per-round counter on each entity to track AoO uses. This counter should be reset at the start of each entity's turn. Ensure an entity cannot take more AoOs than their per-round limit (typically 1, but modified by `Modifiers` from feats like Combat Reflexes).
-*   `[x]` **Task 3.2: Implement Terrain Movement Costs.**
-*   `[ ]` **Task 3.3: Implement Special Combat Actions.**
-    *   `[ ]` **Sub-task 3.3.1:** Implement **Charge** (Full-Round Action).
-    *   `[ ]` **Sub-task 3.3.2:** Implement **Trip** (replaces a normal melee attack).
-    *   `[ ]` **Sub-task 3.3.3:** Implement **Disarm** (replaces a normal melee attack).
-    *   `[ ]` **Sub-task 3.3.4:** Implement **Bull Rush** (Standard Action).
-    *   `[ ]` **Sub-task 3.3.5:** Implement **Feint** (Standard Action in combat).
-    *   `[ ]` **Sub-task 3.3.6:** Implement **Grapple** (replaces an attack, with special follow-up rules).
-*   `[ ]` **Task 3.4: Implement Tactical Actions.**
-    *   `[ ]` **Sub-task 3.4.1:** Implement **Aid Another** to help allies with attacks or skills.
-    *   `[ ]` **Sub-task 3.4.2:** Implement the **Ready** action (to prepare a Standard Action).
-    *   `[ ]` **Sub-task 3.4.3:** Implement the **Total Defense** action (+4 dodge bonus to AC).
-    *   `[ ]` **Sub-task 3.4.4:** Implement the **Withdraw** action (Full-Round Action to safely move out of melee).
+#### **Phase 3: Core Character Progression & Powers**
+*   `[x]` **Task 3.1: Implement Full Data-Driven Character Creation.**
+    *   **Description:** Finalize the character creation pipeline by implementing the remaining data-driven systems.
+    *   `[x]` **Sub-task 3.1.1: Enhance Class Selection Logic.**
+        *   **Status:** Complete.
+    *   `[x]` **Sub-task 3.1.2: Implement Feat Prerequisite Checking.**
+        *   **Status:** Complete.
+    *   `[x]` **Sub-task 3.1.3: Implement Template Selection.**
+        *   **Status:** Complete.
+    *   `[x]` **Sub-task 3.1.4: Implement Equipment Purchasing.**
+        *   **Status:** Complete.
+*   `[x]` **Task 3.2: Implement the Unified Power System (Selection & Casting).**
+    *   **Description:** Build the unified system for selecting and using all types of character powers (spells, invocations, maneuvers, etc.).
+    *   `[x]` **Sub-task 3.2.1: Create a Generic Power Selection View.**
+        *   **Status:** Complete.
+    *   `[x]` **Sub-task 3.2.2: Implement the "Cast/Use Power" Action.**
+        *   **Status:** Complete.
+    *   `[x]` **Sub-task 3.2.3:** Implement **Concentration** checks when taking damage or being affected by distractions while casting.
+        *   **Status:** Complete.
+    *   `[x]` **Sub-task 3.2.4:** Implement the **"Cast on the Defensive"** option (requires a Concentration check to avoid provoking an AoO).
+        *   **Status:** Complete.
+    *   `[x]` **Sub-task 3.2.5:** Implement **Touch Spells**, including Melee/Ranged Touch Attacks and the ability to "Hold the Charge".
+        *   **Status:** Complete.
+    *   `[x]` **Sub-task 3.2.6:** Differentiate casting times (Standard Action, Full-Round, Free Action for quickened spells) and their impact on the combat round.
+        *   **Status:** Complete.
 
 ---
-#### **Phase 4: Advanced World Systems (Revised)**
-*   `[ ]` **Task 4.1: Implement Modular AI with Behavioral Flags.**
-*   `[ ]` **Task 4.2: Implement the Unified Spellbook & Casting System.**
-    *   `[ ]` **Sub-task 4.2.1:** Implement **Concentration** checks when taking damage or being affected by distractions while casting.
-    *   `[ ]` **Sub-task 4.2.2:** Implement the **"Cast on the Defensive"** option (requires a Concentration check to avoid provoking an AoO).
-    *   `[ ]` **Sub-task 4.2.3:** Implement **Touch Spells**, including Melee/Ranged Touch Attacks and the ability to "Hold the Charge".
-    *   `[ ]` **Sub-task 4.2.4:** Differentiate spell casting times (Standard Action, Full-Round, Free Action for quickened spells) and their impact on the combat round.
-*   `[ ]` **Task 4.3: Implement Advanced Procedural Generation.**
-*   `[ ]` **Task 4.4: Implement Saving and Loading.**
+#### **Phase 4: Advanced Combat & AI**
+*   `[x]` **Task 4.1: Implement Player-Prompted Interrupt System.**
+    *   **Status:** Complete.
+*   `[x]` **Task 4.2: Implement Attacks of Opportunity (AoO) System.**
+    *   **Guidance:** The implementation will be based on the Interrupt System for both the Player and NPCs.
+    *   `[x]` **Sub-task 4.2.1:** Implement the core AoO trigger: leaving a threatened square.
+    *   `[x]` **Sub-task 4.2.2:** Implement AoO triggers for combat actions (e.g., making a Ranged Attack while threatened, Unarmed Strikes without the `Improved Unarmed Strike` feat).
+    *   `[x]` **Sub-task 4.2.3:** Implement AoO triggers for general actions (e.g., Casting a Spell, Drinking a Potion, Standing Up from Prone).
+    *   `[x]` **Sub-task 4.2.4:** Implement the AoO economy. An AoO is a special Free Action that does not consume the attacker's normal actions. Implement a per-round counter on each entity to track AoO uses. This counter should be reset at the start of each entity's turn. Ensure an entity cannot take more AoOs than their per-round limit (typically 1, but modified by `Modifiers` from feats like Combat Reflexes).
+*   `[ ]` **Task 4.3: Implement Special Combat Actions.**
+    *   `[ ]` **Sub-task 4.3.1:** Implement **Charge** (Full-Round Action).
+    *   `[ ]` **Sub-task 4.3.2:** Implement **Trip** (replaces a normal melee attack).
+    *   `[ ]` **Sub-task 4.3.3:** Implement **Disarm** (replaces a normal melee attack).
+    *   `[ ]` **Sub-task 4.3.4:** Implement **Bull Rush** (Standard Action).
+    *   `[ ]` **Sub-task 4.3.5:** Implement **Feint** (Standard Action in combat).
+    *   `[ ]` **Sub-task 4.3.6:** Implement **Grapple** (replaces an attack, with special follow-up rules).
+*   `[ ]` **Task 4.4: Implement Tactical Actions.**
+    *   `[ ]` **Sub-task 4.4.1:** Implement **Aid Another** to help allies with attacks or skills.
+    *   `[ ]` **Sub-task 4.4.2:** Implement the **Ready** action (to prepare a Standard Action).
+    *   `[ ]` **Sub-task 4.4.3:** Implement the **Total Defense** action (+4 dodge bonus to AC).
+    *   `[ ]` **Sub-task 4.4.4:** Implement the **Withdraw** action (Full-Round Action to safely move out of melee).
+*   `[ ]` **Task 4.5: Implement Modular AI with Behavioral Flags.**
 
 ---
-#### **Phase 5: Systemic Interactions (The NetHack Factor) (Revised)**
+#### **Phase 5: Systemic Interactions (The NetHack Factor)**
 *   `[ ]` **Task 5.1: Implement Material Interactions (D&D 3.5e Hardness & NetHack Erosion).**
     *   `[ ]` **Sub-task 5.1.1:** Implement object hardness and hit points based on material (e.g., wood, stone, iron, mithril) as per D&D 3.5e rules.
     *   `[ ]` **Sub-task 5.1.2:** Implement item erosion states (`[state:rusty]`, `[state:corroded]`, `[state:burnt]`, `[state:rotted]`).
@@ -161,7 +168,6 @@
 *   https://www.d20srd.org/index.htm
 *   https://www.realmshelps.net
 *   https://srd.dndtools.org/
-*   http://dndsrd.net/
 *   https://dndtools.net
 *   https://dnd.arkalseif.info
 

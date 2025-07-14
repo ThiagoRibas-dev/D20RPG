@@ -60,6 +60,10 @@ export class ClassSelectionView {
                     player.classes.push(newClass);
                     player.totalLevel = player.classes.reduce((sum, cls) => sum + cls.level, 0);
 
+                    // --- NEW: Set Power System Rules ---
+                    player.powerSystem = classData.powerSystem || null;
+                    player.powerSystemRules = classData.powerSystemRules || null;
+
                     updateSelectionInfo(classData);
                 };
 

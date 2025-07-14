@@ -8,6 +8,11 @@ import { Entity } from "./entities/entity.mjs";
 export interface ActiveEffect {
     id: string;                      // A unique ID for this specific instance of the effect.
     name: string;                    // The display name of the effect, e.g., "Bless".
+    source: string;                  // The source of the effect, e.g., "Bless Spell".
+    description: string;             // The description of the effect.
+    script: string;                  // The path to the effect's script.
+    context: any;                    // The context for the effect's script.
+    tags: string[];                  // The tags for the effect.
     sourceEffect: ContentItem;       // A reference to the original definition (JSON/script).
 
     target: Entity;                  // The entity this effect is applied to.
