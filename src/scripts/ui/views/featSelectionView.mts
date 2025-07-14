@@ -7,9 +7,11 @@ import { updateSelectionInfo } from '../uiHelpers.mjs';
  */
 export class FeatSelectionView {
     private container: HTMLElement;
+    private messageContainer: HTMLElement;
 
     constructor() {
         this.container = globalServiceLocator.ui.els['feats-selector'];
+        this.messageContainer = globalServiceLocator.ui.els['feat-selection-message'];
     }
 
     /**
@@ -41,32 +43,31 @@ export class FeatSelectionView {
                         return;
                     }
 
-                    // Determine the maximum number of feats allowed.
-                    // Base is 1, plus any bonuses (like from being Human).
-                    const maxFeats = 1 + player.modifiers.getValue('feats.max', 0);
+                    const alreadySelectedIndex = player.feats.findIndex(f => f.name === featData.name);
 
-                    // Check if the player can select another feat.
-                    if (player.feats.length >= maxFeats) {
-                        console.log("Cannot select more feats. Maximum reached.");
-                        // Optional: Provide UI feedback to the user.
-                        updateSelectionInfo({ name: "Maximum Feats Reached", description: `You can only select ${maxFeats} feat(s).` });
-                        return;
-                    }
+                    if (alreadySelectedIndex !== -1) {
+                        // Deselect the feat
+                        player.feats.splice(alreadySelectedIndex, 1);
+                        featButton.classList.remove('selected');
+                        this.updateFeatMessage(`Feat '${featData.name}' deselected.`);
+                        updateSelectionInfo({ name: "", description: "" }); // Clear description
+                    } else {
+                        // Select the feat
+                        const maxFeats = 1 + player.modifiers.getValue('feats.max', 0);
+                        if (player.feats.length >= maxFeats) {
+                            this.updateFeatMessage(`Cannot select more feats. Maximum reached (${maxFeats}).`);
+                            return;
+                        }
 
-                    // Check for prerequisites and if the feat is already selected.
-                    if (!player.feats.find(f => f.name === featData.name)) {
                         if (globalServiceLocator.rulesEngine.validateFeatPrerequisites(player, featData)) {
                             player.feats.push(featData);
-                            console.log(`Feat selected: ${featData.name}`);
+                            featButton.classList.add('selected');
+                            this.updateFeatMessage(`Feat '${featData.name}' selected.`);
+                            updateSelectionInfo(featData);
                         } else {
-                            console.log(`Prerequisites not met for feat: ${featData.name}`);
-                            updateSelectionInfo({ name: "Prerequisites Not Met", description: `You do not meet the requirements for ${featData.name}.` });
+                            this.updateFeatMessage(`Prerequisites not met for feat: ${featData.name}.`);
                         }
-                    } else {
-                        console.log(`Feat already selected: ${featData.name}`);
                     }
-
-                    updateSelectionInfo(featData);
                 };
 
                 this.container.appendChild(featButton);
@@ -74,6 +75,18 @@ export class FeatSelectionView {
         }
     }
 
-    public show(): void { this.container.style.display = ''; }
-    public hide(): void { this.container.style.display = 'none'; }
+    private updateFeatMessage(message: string): void {
+        this.messageContainer.textContent = message;
+        this.messageContainer.style.display = message ? 'block' : 'none';
+    }
+
+    public show(): void {
+        this.container.style.display = '';
+        this.messageContainer.style.display = 'block';
+    }
+
+    public hide(): void {
+        this.container.style.display = 'none';
+        this.messageContainer.style.display = 'none';
+    }
 }

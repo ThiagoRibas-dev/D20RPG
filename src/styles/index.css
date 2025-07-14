@@ -260,4 +260,8 @@ body {
     overflow-y: scroll;
   }
 
+  .selected {
+    border: 2px solid #ffffff54; /* White glowy border for selected items */
+    box-shadow: 0 0 10px #ffffff54;
+}
   /* END OF CHARACTER CREATION */

@@ -128,7 +128,8 @@ export class Entity {
         };
         this.renderable = null;
 
-        this.baseStats = stats;
+        this.baseStats = { ...stats };
+        this.stats = { ...stats };
         this.modifiers = new ModifierManager();
         this.actionBudget = {
             standard: 1,
@@ -208,6 +209,54 @@ export class Entity {
      */
     public hasTag(tag: string): boolean {
         return this.tags.has(tag);
+    }
+
+    /**
+     * Recalculates all stats that are derived from race, class, or ability scores.
+     * This should be called whenever a character's race or class is chosen or changed.
+     */
+    public recalculateDerivedStats(): void {
+        if (!this.selectedRace || this.classes.length === 0) {
+            return;
+        }
+
+        // Reset modifiers that are recalculated here. We use the source as an ID.
+        this.modifiers.removeBySourceId('Racial Bonus');
+
+        // 1. Apply Bonuses (including declarative feats)
+        this.selectedRace.bonuses?.forEach((bonus: any) => {
+            if (bonus.type === "feat" && bonus.level === 1) {
+                this.modifiers.add({
+                    value: bonus.value,
+                    type: 'racial',
+                    source: 'Racial Bonus',
+                    target: 'feats.max',
+                    sourceId: 'Racial Bonus' // Use a consistent sourceId
+                });
+            }
+        });
+
+        // 2. Calculate Skill Points
+        this.skills.remaining = 0;
+        const intModifier = calculateModifier(this.stats.int);
+        const firstClass = this.classes[0].class;
+        const classSkillPoints = firstClass.skill_points_per_level?.base || 0;
+
+        let skillPoints = (classSkillPoints + intModifier) * 4;
+
+        // Add racial skill point bonuses
+        this.selectedRace.bonuses?.forEach((bonus: any) => {
+            if (bonus.type === "skill_points" && bonus.level === 1) {
+                skillPoints += bonus.value;
+            }
+        });
+
+        this.skills.remaining = skillPoints;
+        console.log(`Recalculated skill points for ${this.name}: ${this.skills.remaining}`);
+
+        // 3. Update other derived stats
+        this.updateTags();
+        globalServiceLocator.eventBus.publish('character:stats_recalculated', { entity: this });
     }
 
     takeDamage(amount: number, source: Entity | null = null) {

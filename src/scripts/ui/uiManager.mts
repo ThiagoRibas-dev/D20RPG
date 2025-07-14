@@ -65,7 +65,12 @@ export function initUIManager(): void {
     updateUI();
   });
   setBtnOnCLick('back-btn', () => eventBus.publish('ui:creation:prev_step'));
-  setBtnOnCLick('next-btn', () => eventBus.publish('ui:creation:next_step'));
+  setBtnOnCLick('next-btn', () => {
+    if (state.creationSteps[state.creationStep] === 'abilityScoreSelection') {
+      abilityScoreSelectionView.saveAbilities();
+    }
+    eventBus.publish('ui:creation:next_step');
+  });
 
   eventBus.subscribe(GameEvents.PLAYER_INTERRUPT_PROMPT, (event) => {
     interruptPromptView.render(event.data);

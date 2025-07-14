@@ -174,6 +174,7 @@ function getUiScreens(winDoc: Document): UIHolder {
       'wis-mod': winDoc.getElementById(`wis-mod`) as HTMLSpanElement,
       'cha-mod': winDoc.getElementById(`cha-mod`) as HTMLSpanElement,
       'feats-selector': winDoc.getElementById('feats-selector') as HTMLElement,
+      'feat-selection-message': winDoc.getElementById('feat-selection-message') as HTMLElement,
       'character-summary': winDoc.getElementById('character-summary') as HTMLElement,
       'combatLogPanel': winDoc.getElementById('combatLogPanel') as HTMLElement,
       'characterStatusPanel': winDoc.getElementById('characterStatusPanel') as HTMLElement,

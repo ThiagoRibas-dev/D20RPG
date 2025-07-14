@@ -42,11 +42,30 @@ export class RaceSelectionView {
                         return;
                     }
 
-                    // Update the central info panel
-                    updateSelectionInfo(raceData);
+                    const isSelected = raceButton.classList.contains('selected');
 
-                    // Set the selected race on the player object in globalServiceLocator.state
-                    player.selectedRace = raceData;
+                    // Deselect all other buttons
+                    this.container.querySelectorAll('button').forEach(btn => {
+                        btn.classList.remove('selected');
+                    });
+
+                    if (isSelected) {
+                        // If it was already selected, unselect it
+                        player.selectedRace = null;
+                        updateSelectionInfo(null);
+                    } else {
+                        // Otherwise, select it
+                        raceButton.classList.add('selected');
+
+                        // Update the central info panel
+                        updateSelectionInfo(raceData);
+
+                        // Set the selected race on the player object in globalServiceLocator.state
+                        player.selectedRace = raceData;
+                    }
+
+                    // Recalculate stats to apply racial bonuses/penalties
+                    player.recalculateDerivedStats();
                 };
 
                 // Add an icon if it exists

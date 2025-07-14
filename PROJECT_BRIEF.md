@@ -42,11 +42,13 @@
 *   `[x]` **Formalize the Action Economy.**
 *   `[x]` **Task 0.1: Centralize Internal Engine Event Strings.**
     *   **Status:** Done. Created `src/scripts/engine/events.mts` and refactored all engine and UI code to use the new `GameEvents` constants instead of raw strings.
-*   `[x]` **Task 0.2: Implement the Modifier Pipeline (`ModifierManager`).**
+*   `[ ]` **Task 0.2: Implement the Modifier Pipeline (`ModifierManager`).**
     *   **Guidance:** Create a system to manage and apply `Modifiers` from all sources, correctly handling D&D 3.5e's complex stacking and layering rules.
-    *   `[x]` **Sub-task 0.2.1:** Establish a layered calculation order: apply base/inherent stats first, then persistent modifiers from equipment, and finally temporary effects from spells or conditions.
-    *   `[x]` **Sub-task 0.2.2:** Implement a data-driven system for modifier types. Instead of hardcoding behavior, define types (`enhancement`, `racial`, `dodge`, etc.) in data files. Each definition should specify its stacking behavior (e.g., `stacking: 'highest'`, `stacking: 'sum'`) and other rules.
-    *   `[x]` **Sub-task 0.2.3:** Implement duration tracking for temporary effects (rounds, minutes, hours) and ensure they are removed upon expiration.
+    *   `[ ]` **Sub-task 0.2.1:** Establish a layered calculation order: apply base/inherent stats first, then persistent modifiers from equipment, and finally temporary effects from spells or conditions.
+    *   `[ ]` **Sub-task 0.2.2:** Implement a data-driven system for modifier types. Instead of hardcoding behavior, define types (`enhancement`, `racial`, `dodge`, etc.) in data files. Each definition should specify its stacking behavior (e.g., `stacking: 'highest'`, `stacking: 'sum'`) and other rules.
+    *   `[ ]` **Sub-task 0.2.3:** Implement duration tracking for temporary effects (rounds, minutes, hours) and ensure they are removed upon expiration.
+    *   `[ ]` **Sub-task 0.2.4: Centralize Stat Calculation in `Entity`.**
+        *   **Guidance:** Create getter methods (e.g., `getStrength()`) on the `Entity` class that serve as the single point of truth for calculating final stats by combining the base value with the result from the `ModifierManager`.
 *   `[x]` **Task 0.3: Implement the Core Event Bus.**
     *   **Guidance:** Build the central event dispatch system that allows for decoupled communication between game components, as described in the brief.
 *   `[x]` **Task 0.4: Refactor Content Loading for `modifier_types.json`.**
@@ -83,19 +85,33 @@
 *   `[x]` **Task 2.8: Implement `UseSkillAction`.**
     *   `[x]` **Sub-task 2.8.1:** Create the generic `UseSkillAction`.
     *   `[x]` **Sub-task 2.8.2:** Integrate the action with the UI.
+*   `[ ]` **Task 2.9: Update Content to Use New Modifier System.**
+    *   **Guidance:** Audit all content files (`.json`) and update their `bonuses` to use the new detailed modifier structure, including `type` and `layer`.
+*   `[ ]` **Task 2.10: Integrate Modifier System with Game Mechanics.**
+    *   **Guidance:** Refactor `EquipmentComponent` and `EffectManager` to add and remove modifiers from the `ModifierManager` when items are equipped or effects are applied/expire.
 
 ---
 #### **Phase 3: Core Character Progression & Powers**
-*   `[x]` **Task 3.1: Implement Full Data-Driven Character Creation.**
+*   `[ ]` **Task 3.1: Implement Full Data-Driven Character Creation.**
     *   **Description:** Finalize the character creation pipeline by implementing the remaining data-driven systems.
     *   `[x]` **Sub-task 3.1.1: Enhance Class Selection Logic.**
         *   **Status:** Complete.
-    *   `[x]` **Sub-task 3.1.2: Implement Feat Prerequisite Checking.**
+    *   `[x]` **Sub-taks 3.1.2: Implement Feat Prerequisite Checking.**
         *   **Status:** Complete.
     *   `[x]` **Sub-task 3.1.3: Implement Template Selection.**
         *   **Status:** Complete.
     *   `[x]` **Sub-task 3.1.4: Implement Equipment Purchasing.**
         *   **Status:** Complete.
+    *   `[x]` **Sub-task 3.1.5: Implement Recalculation of Derived Stats.**
+        *   **Status:** Done. The `recalculateDerivedStats` method now correctly applies racial and class bonuses.
+    *   `[x]` **Sub-task 3.1.6: Correct Skill Point Calculation.**
+        *   **Status:** Done. Skill point calculation is now centralized in `recalculateDerivedStats`, fixing accumulation bugs and ensuring racial bonuses are applied.
+    *   `[x]` **Sub-task 3.1.7: Implement Racial Special Ability Application.**
+        *   **Status:** Done. Racial bonuses, including the human's extra feat, are now correctly applied via the `ModifierManager` during character creation.
+    *   `[x]` **Sub-task 3.1.8: Isolate Base Stats from Final Stats.**
+        *   **Status:** Done. The `Entity` class now correctly separates `baseStats` from final `stats`, which are calculated on the fly.
+    *   `[x]` **Sub-task 3.1.9: Improve Character Creation UI.**
+        *   **Status:** Done. Removed the redundant "Take Roll" button, added a dedicated message area for the feat selection screen, and implemented feat deselection.
 *   `[x]` **Task 3.2: Implement the Unified Power System (Selection & Casting).**
     *   **Description:** Build the unified system for selecting and using all types of character powers (spells, invocations, maneuvers, etc.).
     *   `[x]` **Sub-task 3.2.1: Create a Generic Power Selection View.**

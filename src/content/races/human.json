@@ -35,15 +35,15 @@
       "type": "skill_points_per_level",
       "value": 1,
       "description": "1 extra skill point at each additional level."
-    }
-  ],
-  "special_abilities": [
+    },
     {
-      "name": "Bonus Feat",
-      "description": "Gets an extra feat at 1st level.",
-      "script": "src/scripts/engine/special_abilities/humanBonusFeat.mjs"
+      "type": "feat",
+      "value": 1,
+      "description": "1 extra feat at 1st level.",
+      "level": 1
     }
   ],
+  "special_abilities": [],
   "weapon_proficiencies": [],
   "weapon_familiarity": [],
   "automatic_languages": [

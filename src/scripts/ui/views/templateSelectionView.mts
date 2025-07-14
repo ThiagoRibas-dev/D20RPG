@@ -33,27 +33,42 @@ export class TemplateSelectionView {
                         return;
                     }
 
-                    // For now, we only allow one template.
-                    // A more complex system could allow multiple templates.
-                    player.template = templateData;
+                    const isSelected = templateButton.classList.contains('selected');
 
-                    // If the template has choices, we need to present them to the user.
-                    // This is a placeholder for a more complex UI.
-                    if (templateData.choices) {
-                        const choices: { [key: string]: string } = {};
-                        templateData.choices.forEach((choice: any) => {
-                            // For now, just pick the first option automatically.
-                            choices[choice.id] = choice.options[0].id;
-                        });
+                    // Deselect all other buttons
+                    this.container.querySelectorAll('button').forEach(btn => {
+                        btn.classList.remove('selected');
+                    });
 
-                        // In a real implementation, you would show a UI to the user
-                        // and get their selections.
-                        this.applyTemplate(player, templateData, choices);
+                    if (isSelected) {
+                        // If it was already selected, unselect it
+                        player.template = null;
+                        updateSelectionInfo(null);
+                        // TODO: Add logic to un-apply template effects
                     } else {
-                        this.applyTemplate(player, templateData, {});
-                    }
+                        templateButton.classList.add('selected');
+                        // For now, we only allow one template.
+                        // A more complex system could allow multiple templates.
+                        player.template = templateData;
 
-                    updateSelectionInfo(templateData);
+                        // If the template has choices, we need to present them to the user.
+                        // This is a placeholder for a more complex UI.
+                        if (templateData.choices) {
+                            const choices: { [key: string]: string } = {};
+                            templateData.choices.forEach((choice: any) => {
+                                // For now, just pick the first option automatically.
+                                choices[choice.id] = choice.options[0].id;
+                            });
+
+                            // In a real implementation, you would show a UI to the user
+                            // and get their selections.
+                            this.applyTemplate(player, templateData, choices);
+                        } else {
+                            this.applyTemplate(player, templateData, {});
+                        }
+
+                        updateSelectionInfo(templateData);
+                    }
                 };
 
                 this.container.appendChild(templateButton);

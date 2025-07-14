@@ -1,3 +1,4 @@
+import { ContentItem } from '../../engine/entities/contentItem.mjs';
 import { globalServiceLocator } from '../../engine/serviceLocator.mjs';
 import { EntityAbilityScores } from '../../engine/entities/entity.mjs';
 import { calculateModifier, getRandomInt } from '../../engine/utils.mjs';
@@ -31,7 +32,6 @@ export class AbilityScoreSelectionView {
 
         // Add event listeners to the buttons on this view
         (this.container.querySelector('#roll-ability-scores') as HTMLElement).onclick = () => this.rollAbilities();
-        (this.container.querySelector('#take-roll-btn') as HTMLElement).onclick = () => this.saveAbilities();
     }
 
     /**
@@ -95,16 +95,25 @@ export class AbilityScoreSelectionView {
         this.updateDisplay(); // Update display after rolling
     }
 
-    private saveAbilities(): void {
+    public saveAbilities(): void {
         const player = globalServiceLocator.state.player;
         if (!player) return;
 
+        // 1. Save the chosen scores to baseStats
         for (const key in this.scoreInputs) {
             const ability = key as keyof EntityAbilityScores;
-            player.stats[ability] = parseInt(this.scoreInputs[key].value, 10);
+            player.baseStats[ability] = parseInt(this.scoreInputs[key].value, 10);
         }
 
-        globalServiceLocator.eventBus.publish('ui:creation:next_step');
+        // 2. Calculate final stats by applying racial modifiers
+        for (const key in player.baseStats) {
+            const ability = key as keyof EntityAbilityScores;
+            const racialMod = player.selectedRace?.ability_score_adjustments?.[ability] || 0;
+            player.stats[ability] = player.baseStats[ability] + racialMod;
+        }
+
+        // Now that stats are set, recalculate everything.
+        player.recalculateDerivedStats();
     }
 
     public show(): void { this.container.style.display = ''; }

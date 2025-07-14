@@ -42,29 +42,48 @@ export class ClassSelectionView {
                         return;
                     }
 
-                    // For now, we only allow one class at level 1. A multiclassing
-                    // system would require more complex logic here.
-                    if (player.classes.length > 0) {
-                        player.classes = []; // Reset if they change their mind
+                    const isSelected = classButton.classList.contains('selected');
+
+                    // Deselect all other buttons
+                    this.container.querySelectorAll('button').forEach(btn => {
+                        btn.classList.remove('selected');
+                    });
+
+                    if (isSelected) {
+                        // If it was already selected, unselect it
+                        player.classes = [];
+                        updateSelectionInfo(null);
+                    } else {
+                        // Otherwise, select it
+                        classButton.classList.add('selected');
+
+                        // For now, we only allow one class at level 1. A multiclassing
+                        // system would require more complex logic here.
+                        if (player.classes.length > 0) {
+                            player.classes = []; // Reset if they change their mind
+                        }
+
+                        const hitDieValue: number = parseInt(classData.hit_die.replace('d', ''), 10);
+
+                        const newClass: EntityClass = {
+                            class: classData,
+                            level: 1,
+                            classSkills: classData.class_skills || [],
+                            hitDice: hitDieValue || 8 // Default to d8 if missing
+                        };
+
+                        player.classes.push(newClass);
+                        player.totalLevel = player.classes.reduce((sum, cls) => sum + cls.level, 0);
+
+                        // --- NEW: Set Power System Rules ---
+                        player.powerSystem = classData.powerSystem || null;
+                        player.powerSystemRules = classData.powerSystemRules || null;
+
+                        // Recalculate stats to apply class bonuses/penalties
+                        player.recalculateDerivedStats();
+
+                        updateSelectionInfo(classData);
                     }
-
-                    const hitDieValue: number = parseInt(classData.hit_die.replace('d', ''), 10);
-
-                    const newClass: EntityClass = {
-                        class: classData,
-                        level: 1,
-                        classSkills: classData.class_skills || [],
-                        hitDice: hitDieValue || 8 // Default to d8 if missing
-                    };
-
-                    player.classes.push(newClass);
-                    player.totalLevel = player.classes.reduce((sum, cls) => sum + cls.level, 0);
-
-                    // --- NEW: Set Power System Rules ---
-                    player.powerSystem = classData.powerSystem || null;
-                    player.powerSystemRules = classData.powerSystemRules || null;
-
-                    updateSelectionInfo(classData);
                 };
 
                 // Add an icon if it exists

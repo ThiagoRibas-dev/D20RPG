@@ -1,4 +1,3 @@
-import { calculateModifier } from '../../engine/utils.mjs';
 import { ContentItem } from '../../engine/entities/contentItem.mjs';
 import { globalServiceLocator } from '../../engine/serviceLocator.mjs';
 
@@ -27,17 +26,7 @@ export class SkillSelectionView {
             return;
         }
 
-        // --- Calculate Total Skill Points ---
-        const intModifier = calculateModifier(player.stats.int);
-        const basePointsPerLevel = player.classes.reduce((sum, cls) => sum + (cls.class.skill_points_per_level?.base || 2), 0);
-        const totalPointsForLevel = (basePointsPerLevel + intModifier) * (player.totalLevel === 1 ? 4 : 1);
-
-        // Initialize remaining points only if they haven't been set for this level-up.
-        if (player.skills.remaining <= 0) {
-            player.skills.remaining = totalPointsForLevel;
-        }
-
-        this.updateSkillPointDisplay(totalPointsForLevel);
+        this.updateSkillPointDisplay(player.skills.remaining);
 
         // --- Render Each Skill ---
         const skillsCategory = contentData.skills;
@@ -46,7 +35,7 @@ export class SkillSelectionView {
                 const loadedSkill = await skillsCategory[skillId].get();
                 if (!loadedSkill) continue;
 
-                this.createSkillInputRow(loadedSkill, skillId, totalPointsForLevel);
+                this.createSkillInputRow(loadedSkill, skillId);
             }
         }
 
@@ -57,7 +46,7 @@ export class SkillSelectionView {
     /**
      * Creates a single row in the skill list.
      */
-    private createSkillInputRow(skillData: any, skillId: string, totalPointsForLevel: number): void {
+    private createSkillInputRow(skillData: any, skillId: string): void {
         const player = globalServiceLocator.state.player!; // We know player exists from the check in render()
         const skillItem = this.container.ownerDocument.createElement('li');
 
@@ -67,6 +56,7 @@ export class SkillSelectionView {
 
         const pointsSpent = player.skills.allocations.get(skillId) || 0;
         const currentRanks = isClassSkill ? pointsSpent : pointsSpent / 2;
+        const skillPointTotal = player.skills.remaining;//The remaining skill points before spending any skill ranks is the maximum number of skill ranks player can spend
 
         // Create and configure the input element
         const input = skillItem.ownerDocument.createElement("input");
@@ -98,7 +88,7 @@ export class SkillSelectionView {
 
             // Update UI
             input.value = (isClassSkill ? newPointsToSpend : newPointsToSpend / 2).toFixed(isClassSkill ? 0 : 1);
-            this.updateSkillPointDisplay(totalPointsForLevel);
+            this.updateSkillPointDisplay(skillPointTotal);
         };
 
         // Create labels and other display elements
