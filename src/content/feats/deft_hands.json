@@ -1,0 +1,21 @@
+{
+  "name": "Deft Hands",
+  "description": "You have nimble fingers.",
+  "type": [
+    "General"
+  ],
+  "prerequisites": [],
+  "benefit": "You get a +2 bonus on all Sleight of Hand checks and Use Rope checks.",
+  "bonuses": [
+    {
+      "type": "skill",
+      "skill": "Sleight of Hand",
+      "value": 2
+    },
+    {
+      "type": "skill",
+      "skill": "Use Rope",
+      "value": 2
+    }
+  ]
+}

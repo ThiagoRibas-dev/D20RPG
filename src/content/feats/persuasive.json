@@ -1,0 +1,21 @@
+{
+  "name": "Persuasive",
+  "description": "You are skilled at influencing others.",
+  "type": [
+    "General"
+  ],
+  "prerequisites": [],
+  "benefit": "You get a +2 bonus on all Bluff checks and Intimidate checks.",
+  "bonuses": [
+    {
+      "type": "skill",
+      "skill": "Bluff",
+      "value": 2
+    },
+    {
+      "type": "skill",
+      "skill": "Intimidate",
+      "value": 2
+    }
+  ]
+}

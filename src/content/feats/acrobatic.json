@@ -1,0 +1,21 @@
+{
+  "name": "Acrobatic",
+  "description": "You are skilled at jumping and tumbling.",
+  "type": [
+    "General"
+  ],
+  "prerequisites": [],
+  "benefit": "You get a +2 bonus on all Jump checks and Tumble checks.",
+  "bonuses": [
+    {
+      "type": "skill",
+      "skill": "Jump",
+      "value": 2
+    },
+    {
+      "type": "skill",
+      "skill": "Tumble",
+      "value": 2
+    }
+  ]
+}

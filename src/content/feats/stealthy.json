@@ -1,0 +1,21 @@
+{
+  "name": "Stealthy",
+  "description": "You are good at hiding and moving silently.",
+  "type": [
+    "General"
+  ],
+  "prerequisites": [],
+  "benefit": "You get a +2 bonus on all Hide checks and Move Silently checks.",
+  "bonuses": [
+    {
+      "type": "skill",
+      "skill": "Hide",
+      "value": 2
+    },
+    {
+      "type": "skill",
+      "skill": "Move Silently",
+      "value": 2
+    }
+  ]
+}

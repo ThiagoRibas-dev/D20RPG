@@ -1,0 +1,21 @@
+{
+  "name": "Investigator",
+  "description": "You are skilled at finding information.",
+  "type": [
+    "General"
+  ],
+  "prerequisites": [],
+  "benefit": "You get a +2 bonus on all Gather Information checks and Search checks.",
+  "bonuses": [
+    {
+      "type": "skill",
+      "skill": "Gather Information",
+      "value": 2
+    },
+    {
+      "type": "skill",
+      "skill": "Search",
+      "value": 2
+    }
+  ]
+}

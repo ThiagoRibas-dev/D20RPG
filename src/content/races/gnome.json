@@ -1,0 +1,99 @@
+{
+  "name": "Gnome",
+  "description": "Gnomes are welcome everywhere as good-natured technicians, alchemists, and inventors.",
+  "tags": [
+    "humanoid",
+    "gnome"
+  ],
+  "ability_score_adjustments": {
+    "str": -2,
+    "dex": 0,
+    "con": 2,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  },
+  "size": "Small",
+  "base_speed": 20,
+  "low_light_vision": true,
+  "darkvision": 0,
+  "immunities": [],
+  "resistances": {},
+  "bonuses": [
+    {
+      "type": "size_ac",
+      "value": 1
+    },
+    {
+      "type": "size_attack",
+      "value": 1
+    },
+    {
+      "type": "skill",
+      "skill": "Hide",
+      "value": 4
+    },
+    {
+      "type": "save",
+      "target": "illusions",
+      "value": 2,
+      "description": "+2 racial bonus on saving throws against illusions."
+    },
+    {
+      "type": "attack",
+      "target": ["kobold", "goblinoid"],
+      "value": 1,
+      "description": "+1 racial bonus on attack rolls against kobolds and goblinoids."
+    },
+    {
+      "type": "dodge_ac",
+      "target": "giant",
+      "value": 4,
+      "description": "+4 dodge bonus to Armor Class against monsters of the giant type."
+    },
+    {
+      "type": "skill",
+      "skill": "Listen",
+      "value": 2
+    },
+    {
+      "type": "skill",
+      "skill": "Craft (alchemy)",
+      "value": 2
+    }
+  ],
+  "special_abilities": [
+    {
+      "name": "Illusion Affinity",
+      "description": "Add +1 to the Difficulty Class for all saving throws against illusion spells cast by gnomes.",
+      "script": "/content/races/gnome_illusion_affinity.mjs"
+    },
+    {
+      "name": "Speak with Burrowing Mammals",
+      "description": "Can speak with a burrowing mammal (a badger, fox, rabbit, or the like). This ability is innate to gnomes.",
+      "script": "/content/races/gnome_speak_with_animals.mjs"
+    },
+    {
+      "name": "Spell-Like Abilities",
+      "description": "1/day—speak with animals (burrowing mammal only, duration 1 minute). A gnome with a Charisma score of at least 10 also has the following spell-like abilities: 1/day—dancing lights, ghost sound, prestidigitation. Caster level 1st; save DC 10 + gnome’s Cha modifier + spell level.",
+      "script": "/content/races/gnome_spell_like_abilities.mjs"
+    }
+  ],
+  "weapon_familiarity": [
+    "gnome hooked hammer"
+  ],
+  "automatic_languages": [
+    "Common",
+    "Gnome"
+  ],
+  "bonus_languages": [
+    "Draconic",
+    "Dwarven",
+    "Elven",
+    "Giant",
+    "Goblin",
+    "Orc"
+  ],
+  "favored_class": "Bard",
+  "level_adjustment": 0
+}

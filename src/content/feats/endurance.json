@@ -1,0 +1,54 @@
+{
+  "name": "Endurance",
+  "description": "You are able to push your body beyond its normal limits.",
+  "type": [
+    "General"
+  ],
+  "prerequisites": [],
+  "benefit": "You gain a +4 bonus on several checks and saves related to resisting nonlethal damage and fatigue. You may also sleep in light or medium armor without becoming fatigued.",
+  "bonuses": [
+    {
+      "type": "check",
+      "target": "Swim",
+      "condition": "resist nonlethal damage",
+      "value": 4
+    },
+    {
+      "type": "check",
+      "target": "Constitution",
+      "condition": "continue running",
+      "value": 4
+    },
+    {
+      "type": "check",
+      "target": "Constitution",
+      "condition": "avoid nonlethal damage from a forced march",
+      "value": 4
+    },
+    {
+      "type": "check",
+      "target": "Constitution",
+      "condition": "hold your breath",
+      "value": 4
+    },
+    {
+      "type": "check",
+      "target": "Constitution",
+      "condition": "avoid nonlethal damage from starvation or thirst",
+      "value": 4
+    },
+    {
+      "type": "save",
+      "target": "Fortitude",
+      "condition": "avoid nonlethal damage from hot or cold environments",
+      "value": 4
+    },
+    {
+      "type": "save",
+      "target": "Fortitude",
+      "condition": "resist damage from suffocation",
+      "value": 4
+    }
+  ],
+  "special": "You may sleep in light or medium armor without becoming fatigued. A ranger automatically gains Endurance as a bonus feat at 3rd level."
+}

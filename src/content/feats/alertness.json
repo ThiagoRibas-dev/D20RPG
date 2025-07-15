@@ -1,29 +1,22 @@
 {
   "name": "Alertness",
-  "description": "You are always on the lookout, gaining a bonus to alertness-related skills.",
+  "description": "You have keen senses.",
   "type": [
     "General"
   ],
-  "tags": [
-    "bonus",
-    "skill",
-    "listen",
-    "spot"
-  ],
   "prerequisites": [],
-  "benefit": "You gain a +2 bonus on Listen checks, and a +2 bonus on Spot checks.",
+  "benefit": "You get a +2 bonus on all Listen checks and Spot checks.",
   "bonuses": [
     {
       "type": "skill",
-      "subtype": "Listen",
-      "value": 2,
-      "description": "+2 racial bonus on Listen checks."
+      "skill": "Listen",
+      "value": 2
     },
     {
       "type": "skill",
-      "subtype": "Spot",
-      "value": 2,
-      "description": "+2 racial bonus on Spot checks."
+      "skill": "Spot",
+      "value": 2
     }
-  ]
+  ],
+  "special": "The master of a familiar gains the benefit of the Alertness feat whenever the familiar is within arm’s reach."
 }

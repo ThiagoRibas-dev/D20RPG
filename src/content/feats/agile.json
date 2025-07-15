@@ -1,0 +1,21 @@
+{
+  "name": "Agile",
+  "description": "You are skilled at maintaining your balance and escaping bonds.",
+  "type": [
+    "General"
+  ],
+  "prerequisites": [],
+  "benefit": "You get a +2 bonus on all Balance checks and Escape Artist checks.",
+  "bonuses": [
+    {
+      "type": "skill",
+      "skill": "Balance",
+      "value": 2
+    },
+    {
+      "type": "skill",
+      "skill": "Escape Artist",
+      "value": 2
+    }
+  ]
+}

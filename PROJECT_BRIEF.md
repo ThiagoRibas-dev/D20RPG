@@ -178,6 +178,10 @@
         *   Dipping a `unicorn horn` into a `potion of poison` neutralizes it into a `potion of water`.
         *   Dipping an `amethyst` into a `potion of booze` transmutes it into a `potion of fruit juice`.
 
+---
+#### **Phase 6: Core Content Implementation**
+*   `[x]` **Task 6.1: Implement Core SRD Races, Classes, and Feats.**
+    *   **Status:** Done. Created JSON and script files for Human, Elf, Dwarf, Gnome, Half-Elf, Half-Orc, Halfling races; Cleric and Warrior classes; and a foundational set of General feats.
 
 ---
 ### Online references for D&D 3.5e and the d20 System : 

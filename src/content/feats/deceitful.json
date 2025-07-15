@@ -1,0 +1,21 @@
+{
+  "name": "Deceitful",
+  "description": "You are skilled at deception.",
+  "type": [
+    "General"
+  ],
+  "prerequisites": [],
+  "benefit": "You get a +2 bonus on all Disguise checks and Forgery checks.",
+  "bonuses": [
+    {
+      "type": "skill",
+      "skill": "Disguise",
+      "value": 2
+    },
+    {
+      "type": "skill",
+      "skill": "Forgery",
+      "value": 2
+    }
+  ]
+}

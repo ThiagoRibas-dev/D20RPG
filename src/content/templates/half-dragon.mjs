@@ -44,7 +44,7 @@ export function onApply(entity, choices) {
     // 3. Add natural attacks (bite and claws).
     // We'll add these as modifiers that grant new attack options.
     // The actual logic for using them will be in the combat system.
-    const size = entity.tags.has('size_large') ? 'large' : 'medium'; // Simplified size check
+    const size = entity.getSize(); // Assumes an entity.getSize() method returns a string like "Medium", "Large", etc.
     const biteDamage = getNaturalAttackDamage(size, 'bite');
     const clawDamage = getNaturalAttackDamage(size, 'claw');
 
@@ -68,7 +68,8 @@ export function onApply(entity, choices) {
 
 
     // 5. Handle wings for Large+ creatures.
-    if (size === 'large') {
+    const sizeCategory = entity.getSizeCategory(); // Assumes a method that returns a numeric size category or similar
+    if (sizeCategory >= 4) { // Assuming 4 represents Large size
         const flySpeed = Math.min(entity.stats.speed * 2, 120);
         rules.addModifier(entity, 'speed.fly', flySpeed, 'racial', 'Half-Dragon Wings');
     }
@@ -130,8 +131,15 @@ function getBreathWeaponShape(variety) {
 
 function getNaturalAttackDamage(size, type) {
     const damageBySize = {
-        medium: { bite: '1d6', claw: '1d4' },
-        large: { bite: '1d8', claw: '1d6' },
+        "Fine": { bite: '1', claw: '-' },
+        "Diminutive": { bite: '1d2', claw: '1' },
+        "Tiny": { bite: '1d3', claw: '1d2' },
+        "Small": { bite: '1d4', claw: '1d3' },
+        "Medium": { bite: '1d6', claw: '1d4' },
+        "Large": { bite: '1d8', claw: '1d6' },
+        "Huge": { bite: '2d6', claw: '1d8' },
+        "Gargantuan": { bite: '3d6', claw: '2d6' },
+        "Colossal": { bite: '4d6', claw: '3d6' }
     };
-    return damageBySize[size]?.[type] || '1d4'; // Default to medium claw
+    return damageBySize[size]?.[type] || '1d4';
 }

@@ -1,0 +1,16 @@
+{
+  "name": "Great Fortitude",
+  "description": "You are tougher than normal.",
+  "type": [
+    "General"
+  ],
+  "prerequisites": [],
+  "benefit": "You get a +2 bonus on all Fortitude saving throws.",
+  "bonuses": [
+    {
+      "type": "save",
+      "target": "Fortitude",
+      "value": 2
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "Negotiator",
+  "description": "You are a skilled negotiator.",
+  "type": [
+    "General"
+  ],
+  "prerequisites": [],
+  "benefit": "You get a +2 bonus on all Diplomacy checks and Sense Motive checks.",
+  "bonuses": [
+    {
+      "type": "skill",
+      "skill": "Diplomacy",
+      "value": 2
+    },
+    {
+      "type": "skill",
+      "skill": "Sense Motive",
+      "value": 2
+    }
+  ]
+}

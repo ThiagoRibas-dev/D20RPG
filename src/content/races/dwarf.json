@@ -1,0 +1,90 @@
+{
+  "name": "Dwarf",
+  "description": "Dwarves are known for their skill in warfare, their ability to withstand physical and magical punishment, their knowledge of the earth's secrets, their hard work, and their love of fine craftsmanship.",
+  "tags": [
+    "humanoid",
+    "dwarf"
+  ],
+  "ability_score_adjustments": {
+    "str": 0,
+    "dex": 0,
+    "con": 2,
+    "int": 0,
+    "wis": 0,
+    "cha": -2
+  },
+  "size": "Medium",
+  "base_speed": 20,
+  "special_movement": "Dwarves can move at their base speed even when wearing medium or heavy armor or when carrying a medium or heavy load.",
+  "low_light_vision": false,
+  "darkvision": 60,
+  "immunities": [],
+  "resistances": {},
+  "bonuses": [
+    {
+      "type": "save",
+      "target": "poison",
+      "value": 2,
+      "description": "+2 racial bonus on saving throws against poison."
+    },
+    {
+      "type": "save",
+      "target": "spells",
+      "value": 2,
+      "description": "+2 racial bonus on saving throws against spells and spell-like effects."
+    },
+    {
+      "type": "attack",
+      "target": ["orc", "goblinoid"],
+      "value": 1,
+      "description": "+1 racial bonus on attack rolls against orcs and goblinoids."
+    },
+    {
+      "type": "dodge_ac",
+      "target": "giant",
+      "value": 4,
+      "description": "+4 dodge bonus to Armor Class against monsters of the giant type."
+    },
+    {
+      "type": "skill",
+      "skill": "Appraise",
+      "condition": "related to stone or metal items",
+      "value": 2
+    },
+    {
+      "type": "skill",
+      "skill": "Craft",
+      "condition": "related to stone or metal items",
+      "value": 2
+    }
+  ],
+  "special_abilities": [
+    {
+      "name": "Stonecunning",
+      "description": "Grants a +2 racial bonus on Search checks to notice unusual stonework. A dwarf who merely comes within 10 feet of unusual stonework can make a Search check as if actively searching. Can use Search to find stonework traps as a rogue. Can also intuit depth underground.",
+      "script": "/content/races/dwarf_stonecunning.mjs"
+    }
+  ],
+  "weapon_familiarity": [
+    "dwarven waraxe",
+    "dwarven urgrosh"
+  ],
+  "automatic_languages": [
+    "Common",
+    "Dwarven"
+  ],
+  "bonus_languages": [
+    "Giant",
+    "Gnome",
+    "Goblin",
+    "Orc",
+    "Terran",
+    "Undercommon"
+  ],
+  "stability": {
+    "value": 4,
+    "condition": "resisting bull rush or trip when standing on the ground"
+  },
+  "favored_class": "Fighter",
+  "level_adjustment": 0
+}

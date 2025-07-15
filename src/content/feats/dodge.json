@@ -1,0 +1,13 @@
+{
+  "name": "Dodge",
+  "description": "You are adept at dodging attacks.",
+  "type": [
+    "General",
+    "Fighter Bonus Feat"
+  ],
+  "prerequisites": [
+    "Dexterity 13"
+  ],
+  "benefit": "During your action, you designate an opponent and receive a +1 dodge bonus to Armor Class against attacks from that opponent. You can select a new opponent on any action.",
+  "script": "/content/feats/dodge.mjs"
+}

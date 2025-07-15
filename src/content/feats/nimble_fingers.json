@@ -1,0 +1,21 @@
+{
+  "name": "Nimble Fingers",
+  "description": "You are skilled at delicate work.",
+  "type": [
+    "General"
+  ],
+  "prerequisites": [],
+  "benefit": "You get a +2 bonus on all Disable Device checks and Open Lock checks.",
+  "bonuses": [
+    {
+      "type": "skill",
+      "skill": "Disable Device",
+      "value": 2
+    },
+    {
+      "type": "skill",
+      "skill": "Open Lock",
+      "value": 2
+    }
+  ]
+}

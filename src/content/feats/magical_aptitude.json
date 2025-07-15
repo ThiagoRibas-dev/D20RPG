@@ -1,0 +1,21 @@
+{
+  "name": "Magical Aptitude",
+  "description": "You are skilled at the art of magic.",
+  "type": [
+    "General"
+  ],
+  "prerequisites": [],
+  "benefit": "You get a +2 bonus on all Spellcraft checks and Use Magic Device checks.",
+  "bonuses": [
+    {
+      "type": "skill",
+      "skill": "Spellcraft",
+      "value": 2
+    },
+    {
+      "type": "skill",
+      "skill": "Use Magic Device",
+      "value": 2
+    }
+  ]
+}

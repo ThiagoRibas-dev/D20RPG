@@ -1,0 +1,21 @@
+{
+  "name": "Self-Sufficient",
+  "description": "You are skilled at surviving in the wild.",
+  "type": [
+    "General"
+  ],
+  "prerequisites": [],
+  "benefit": "You get a +2 bonus on all Heal checks and Survival checks.",
+  "bonuses": [
+    {
+      "type": "skill",
+      "skill": "Heal",
+      "value": 2
+    },
+    {
+      "type": "skill",
+      "skill": "Survival",
+      "value": 2
+    }
+  ]
+}

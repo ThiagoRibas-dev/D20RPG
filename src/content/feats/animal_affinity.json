@@ -1,0 +1,21 @@
+{
+  "name": "Animal Affinity",
+  "description": "You are good with animals.",
+  "type": [
+    "General"
+  ],
+  "prerequisites": [],
+  "benefit": "You get a +2 bonus on all Handle Animal checks and Ride checks.",
+  "bonuses": [
+    {
+      "type": "skill",
+      "skill": "Handle Animal",
+      "value": 2
+    },
+    {
+      "type": "skill",
+      "skill": "Ride",
+      "value": 2
+    }
+  ]
+}

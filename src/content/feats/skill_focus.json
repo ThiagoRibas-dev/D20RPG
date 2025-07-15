@@ -1,0 +1,10 @@
+{
+  "name": "Skill Focus",
+  "description": "You are particularly adept at a specific skill.",
+  "type": [
+    "General"
+  ],
+  "prerequisites": [],
+  "benefit": "You get a +3 bonus on all checks involving the chosen skill.",
+  "script": "/content/feats/skill_focus.mjs"
+}

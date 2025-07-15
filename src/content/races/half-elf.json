@@ -1,0 +1,73 @@
+{
+  "name": "Half-Elf",
+  "description": "Half-elves are a mix of human and elven heritage, possessing the curiosity and ambition of their human ancestors with the refined senses and love of nature of their elven kin.",
+  "tags": [
+    "humanoid",
+    "half-elf",
+    "elf"
+  ],
+  "ability_score_adjustments": {
+    "str": 0,
+    "dex": 0,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  },
+  "size": "Medium",
+  "base_speed": 30,
+  "low_light_vision": true,
+  "darkvision": 0,
+  "immunities": [
+    "sleep"
+  ],
+  "resistances": {},
+  "bonuses": [
+    {
+      "type": "save",
+      "target": "enchantment",
+      "value": 2,
+      "description": "+2 racial bonus on saving throws against enchantment spells or effects."
+    },
+    {
+      "type": "skill",
+      "skill": "Listen",
+      "value": 1
+    },
+    {
+      "type": "skill",
+      "skill": "Search",
+      "value": 1
+    },
+    {
+      "type": "skill",
+      "skill": "Spot",
+      "value": 1
+    },
+    {
+      "type": "skill",
+      "skill": "Diplomacy",
+      "value": 2
+    },
+    {
+      "type": "skill",
+      "skill": "Gather Information",
+      "value": 2
+    }
+  ],
+  "special_abilities": [
+    {
+      "name": "Elven Blood",
+      "description": "For all effects related to race, a half-elf is considered an elf."
+    }
+  ],
+  "automatic_languages": [
+    "Common",
+    "Elven"
+  ],
+  "bonus_languages": [
+    "Any"
+  ],
+  "favored_class": "Any",
+  "level_adjustment": 0
+}

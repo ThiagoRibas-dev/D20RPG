@@ -1,0 +1,21 @@
+{
+  "name": "Diligent",
+  "description": "You are a skilled appraiser and cryptographer.",
+  "type": [
+    "General"
+  ],
+  "prerequisites": [],
+  "benefit": "You get a +2 bonus on all Appraise checks and Decipher Script checks.",
+  "bonuses": [
+    {
+      "type": "skill",
+      "skill": "Appraise",
+      "value": 2
+    },
+    {
+      "type": "skill",
+      "skill": "Decipher Script",
+      "value": 2
+    }
+  ]
+}

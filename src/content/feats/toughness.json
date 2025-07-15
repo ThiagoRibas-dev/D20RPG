@@ -4,10 +4,6 @@
   "type": [
     "General"
   ],
-  "tags": [
-    "bonus",
-    "hit_points"
-  ],
   "prerequisites": [],
   "benefit": "You gain +3 hit points.",
   "bonuses": [

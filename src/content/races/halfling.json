@@ -1,0 +1,89 @@
+{
+  "name": "Halfling",
+  "description": "Halflings are clever, capable, and resourceful.",
+  "tags": [
+    "humanoid",
+    "halfling"
+  ],
+  "ability_score_adjustments": {
+    "str": -2,
+    "dex": 2,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  },
+  "size": "Small",
+  "base_speed": 20,
+  "low_light_vision": false,
+  "darkvision": 0,
+  "immunities": [],
+  "resistances": {},
+  "bonuses": [
+    {
+      "type": "size_ac",
+      "value": 1
+    },
+    {
+      "type": "size_attack",
+      "value": 1
+    },
+    {
+      "type": "skill",
+      "skill": "Hide",
+      "value": 4
+    },
+    {
+      "type": "skill",
+      "skill": "Climb",
+      "value": 2
+    },
+    {
+      "type": "skill",
+      "skill": "Jump",
+      "value": 2
+    },
+    {
+      "type": "skill",
+      "skill": "Listen",
+      "value": 2
+    },
+    {
+      "type": "skill",
+      "skill": "Move Silently",
+      "value": 2
+    },
+    {
+      "type": "save",
+      "target": "all",
+      "value": 1,
+      "description": "+1 racial bonus on all saving throws."
+    },
+    {
+      "type": "morale_save",
+      "target": "fear",
+      "value": 2,
+      "description": "+2 morale bonus on saving throws against fear."
+    },
+    {
+      "type": "attack",
+      "target": ["thrown", "sling"],
+      "value": 1,
+      "description": "+1 racial bonus on attack rolls with thrown weapons and slings."
+    }
+  ],
+  "special_abilities": [],
+  "automatic_languages": [
+    "Common",
+    "Halfling"
+  ],
+  "bonus_languages": [
+    "Dwarven",
+    "Elven",
+    "Gnome",
+    "Goblin",
+    "Orc"
+  ],
+  "favored_class": "Rogue",
+  "level_adjustment": 0
+}
