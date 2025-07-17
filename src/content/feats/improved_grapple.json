@@ -1,0 +1,29 @@
+{
+    "id": "improved_grapple",
+    "name": "Improved Grapple",
+    "description": "You are more adept at grappling opponents.",
+    "prerequisites": [
+        {
+            "type": "feat",
+            "featId": "improved_unarmed_strike"
+        },
+        {
+            "type": "ability",
+            "ability": "dex",
+            "value": 13
+        }
+    ],
+    "effects": [
+        {
+            "type": "bonus",
+            "target": "grapple_check",
+            "bonus_type": "circumstance",
+            "value": 4
+        },
+        {
+            "type": "tag",
+            "tag": "feat:improved_grapple"
+        }
+    ],
+    "tags": ["combat", "feat"]
+}

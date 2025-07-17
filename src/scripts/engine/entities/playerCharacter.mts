@@ -16,7 +16,7 @@ export class PlayerCharacter extends Entity {
         hitPoints: EntityHitPoints = { current: 0, max: 0 },
         baseAttackBonus: number = 0
     ) {
-        super(name, selectedRace, template, classes, totalLevel, skills, feats, [], position, stats, hitPoints, baseAttackBonus);
+        super(name, 'Medium', selectedRace, template, classes, totalLevel, skills, feats, [], position, stats, hitPoints, baseAttackBonus);
 
         // Define the player's appearance via the Renderable component.
         this.renderable = {

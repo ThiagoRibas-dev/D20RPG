@@ -12,16 +12,32 @@ export interface Interrupt {
     potentialActions: Action[];
 }
 
+export interface ReadiedAction {
+    actor: Entity;
+    trigger: string;
+    action: Action | null;
+}
+
 /**
  * Listens for game events that can trigger out-of-turn actions (interrupts)
  * and manages their resolution.
  */
 export class InterruptManager {
+    private readiedActions: ReadiedAction[] = [];
+
     constructor() {
         globalServiceLocator.eventBus.subscribe(
             GameEvents.ACTION_PROVOKES_AOO,
             (event) => this.handleAoO(event.data)
         );
+
+        // A generic listener for all events to check for readied action triggers.
+        // This is not very efficient, but it's the simplest way to implement this for now.
+        globalServiceLocator.eventBus.subscribe('*', (event) => this.checkReadiedActions(event.name));
+    }
+
+    public add(readiedAction: ReadiedAction): void {
+        this.readiedActions.push(readiedAction);
     }
 
     private handleAoO(data: { provokingActor: Entity, threateningActors: Entity[], continuationAction: Action }): void {
@@ -60,5 +76,29 @@ export class InterruptManager {
 
         // After queuing all interrupts, queue the original action that was interrupted.
         globalServiceLocator.turnManager.addInterrupt(continuationAction);
+    }
+
+    private checkReadiedActions(eventName: string): void {
+        const triggered: ReadiedAction[] = [];
+
+        for (const readied of this.readiedActions) {
+            // This is a very simple trigger check. A real implementation would
+            // need a more robust way to define and check triggers.
+            if (readied.trigger === eventName) {
+                triggered.push(readied);
+            }
+        }
+
+        for (const readied of triggered) {
+            if (readied.action) {
+                console.log(`${readied.actor.name}'s readied action is triggered by ${eventName}!`);
+                globalServiceLocator.turnManager.addInterrupt(readied.action);
+            }
+            // Remove the readied action once it has been triggered.
+            const index = this.readiedActions.indexOf(readied);
+            if (index > -1) {
+                this.readiedActions.splice(index, 1);
+            }
+        }
     }
 }

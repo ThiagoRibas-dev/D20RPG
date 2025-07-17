@@ -5,6 +5,10 @@ import { globalServiceLocator } from "../serviceLocator.mjs";
 
 export class UseSkillAction extends Action {
     public readonly cost: ActionType = ActionType.Standard;
+    public readonly id: string;
+    public readonly name: string;
+    public readonly description: string;
+
     private readonly skillId: string;
     private readonly useId: string;
     private readonly target: ItemInstance | Entity;
@@ -14,12 +18,21 @@ export class UseSkillAction extends Action {
         this.skillId = skillId;
         this.useId = useId;
         this.target = target;
+        this.id = `use-skill-${skillId}-${useId}`;
+        this.name = `Use ${skillId}`;
+        this.description = `Use the ${skillId} skill.`;
     }
 
-    public execute(): void {
+    canExecute(): boolean {
+        // Basic check: does the actor have any ranks in the skill?
+        return (this.actor.skills.allocations.get(this.skillId) || 0) > 0;
+    }
+
+    public async execute(): Promise<void> {
         const targetName = this.target instanceof ItemInstance ? this.target.itemData.name : this.target.name;
         console.log(`${this.actor.name} uses skill ${this.skillId} (${this.useId}) on ${targetName}`);
-        globalServiceLocator.rulesEngine.resolveSkillUse(this.actor, this.skillId, this.useId, this.target);
-        globalServiceLocator.eventBus.publish("action:use-skill", {action: this});
+        await globalServiceLocator.rulesEngine.resolveSkillUse(this.actor, this.skillId, this.useId, this.target);
+        globalServiceLocator.eventBus.publish("action:use-skill", { action: this });
+        return Promise.resolve();
     }
 }

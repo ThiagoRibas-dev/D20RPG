@@ -3,29 +3,40 @@ import { Action, ActionType } from "./action.mjs";
 import { GameEvents } from "../events.mjs";
 import { globalServiceLocator } from "../serviceLocator.mjs";
 import { ContentItem } from "../entities/contentItem.mjs";
-import { EntityPosition } from "../utils.mjs";
-
-export type PowerTarget = Entity | Entity[] | EntityPosition;
+import { Point } from "../../utils/point.mjs";
 
 export class UsePowerAction extends Action {
+    public readonly id: string;
+    public readonly name: string;
+    public readonly description: string;
     public readonly cost: ActionType;
 
     constructor(
         actor: Entity,
         private power: ContentItem,
-        private target: PowerTarget,
         public castOnDefensive: boolean = false,
         public isTouch: boolean = false
     ) {
         super(actor);
+        this.id = `use_power_${power.id}`;
+        this.name = `Use ${power.name}`;
+        this.description = power.description || 'Use a special power or spell.';
         this.cost = this.getCostFromPower(power);
+        this.provokesAoO = true; // Spells and powers generally provoke AoO
     }
 
-    public execute(): void {
+    public canExecute(): boolean {
+        // Basic check. In the future, this could check for spell slots, components, etc.
+        return this.actor.actionBudget.hasAction(this.cost);
+    }
+
+    public async execute(target?: Entity | Point): Promise<void> {
         globalServiceLocator.eventBus.publish(GameEvents.ACTION_USE_POWER_DECLARED, {
             actor: this.actor,
             power: this.power,
-            target: this.target
+            target: target,
+            castOnDefensive: this.castOnDefensive,
+            isTouch: this.isTouch
         });
     }
 

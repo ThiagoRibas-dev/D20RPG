@@ -129,7 +129,18 @@ export class TurnManager {
         // 2. Reset the player's action budget to full for their next action.
         const player = globalServiceLocator.state.player;
         if (player) {
-            player.actionBudget = { standard: 1, move: 1, swift: 1, free: 99, hasTaken5FootStep: false, movementPoints: 30 };
+            player.actionBudget = {
+                standard: 1, move: 1, swift: 1, free: 99, hasTaken5FootStep: false, movementPoints: 30,
+                hasAction(actionType: ActionType): boolean {
+                    switch (actionType) {
+                        case ActionType.Standard: return this.standard > 0;
+                        case ActionType.Move: return this.move > 0;
+                        case ActionType.Swift: return this.swift > 0;
+                        case ActionType.Free: return this.free > 0;
+                        default: return false;
+                    }
+                }
+            };
         }
     }
 
@@ -168,7 +179,18 @@ export class TurnManager {
         currentActor.aoo_used_this_round = 0;
 
         // E. Reset the actor's action budget for their new turn. Should be gotten from the actor prototype/template since it could have more actions of a given type
-        currentActor.actionBudget = { standard: 1, move: 1, swift: 1, free: 99, hasTaken5FootStep: false, movementPoints: 30 };
+        currentActor.actionBudget = {
+            standard: 1, move: 1, swift: 1, free: 99, hasTaken5FootStep: false, movementPoints: 30,
+            hasAction(actionType: ActionType): boolean {
+                switch (actionType) {
+                    case ActionType.Standard: return this.standard > 0;
+                    case ActionType.Move: return this.move > 0;
+                    case ActionType.Swift: return this.swift > 0;
+                    case ActionType.Free: return this.free > 0;
+                    default: return false;
+                }
+            }
+        };
 
         // F. Handle Action Denial (Stunned, Paralyzed, etc.).
         // TODO: Replace with a real status effect check, e.g., currentActor.hasStatus('stunned')

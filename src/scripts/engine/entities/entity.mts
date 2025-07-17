@@ -54,6 +54,10 @@ export type SavingThrows = {
     will: SavingThrow
 }
 
+export type EntitySize = 'Fine' | 'Diminutive' | 'Tiny' | 'Small' | 'Medium' | 'Large' | 'Huge' | 'Gargantuan' | 'Colossal';
+
+import { ActionType } from "../actions/action.mjs";
+
 export type ActionBudget = {
     standard: number;
     move: number;
@@ -61,11 +65,13 @@ export type ActionBudget = {
     free: number;
     hasTaken5FootStep: boolean;
     movementPoints: number;
+    hasAction: (actionType: ActionType) => boolean;
 }
 
 export class Entity {
     id: string;
     name: string;
+    size: EntitySize;
     selectedRace: ContentItem | null;
     template: ContentItem | null;
     classes: EntityClass[];
@@ -98,6 +104,7 @@ export class Entity {
 
     constructor(
         name: string = "",
+        size: EntitySize = 'Medium',
         selectedRace: ContentItem | null = null,
         template: ContentItem | null = null,
         classes: EntityClass[] = [],
@@ -119,6 +126,7 @@ export class Entity {
     ) {
         this.id = `entity-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
         this.name = name;
+        this.size = size;
         this.selectedRace = selectedRace;
         this.template = template;
         this.classes = classes;
@@ -145,7 +153,21 @@ export class Entity {
             swift: 1,
             free: 99,
             hasTaken5FootStep: false,
-            movementPoints: 0
+            movementPoints: 0,
+            hasAction(actionType: ActionType): boolean {
+                switch (actionType) {
+                    case ActionType.Standard:
+                        return this.standard > 0;
+                    case ActionType.Move:
+                        return this.move > 0;
+                    case ActionType.Swift:
+                        return this.swift > 0;
+                    case ActionType.Free:
+                        return this.free > 0;
+                    default:
+                        return false;
+                }
+            }
         }
         this.aoo_used_this_round = 0;
         this.max_aoo_per_round = 1;

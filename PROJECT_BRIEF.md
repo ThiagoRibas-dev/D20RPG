@@ -57,9 +57,9 @@
     *   **Status:** Complete. Implemented the Action Economy, Attack action, damage calculation, critical hits, and the movement system.
 *   `[x]` **Task 1.2: Implement Attacks of Opportunity (AoO).**
     *   **Status:** Complete. The `InterruptManager` now correctly handles AoOs triggered by movement, ranged attacks, spellcasting, and other actions. The per-round AoO economy is also functional.
-*   `[ ]` **Task 1.3: Implement Special & Tactical Combat Actions.**
-    *   `[ ]` **Sub-task 1.3.1:** Implement Special Attacks (Charge, Trip, Disarm, Bull Rush, Feint, Grapple).
-    *   `[ ]` **Sub-task 1.3.2:** Implement Tactical Actions (Aid Another, Ready, Total Defense, Withdraw).
+*   `[x]` **Task 1.3: Implement Special & Tactical Combat Actions.**
+    *   `[x]` **Sub-task 1.3.1:** Implement Special Attacks (Charge, Trip, Disarm, Bull Rush, Feint, Grapple).
+    *   `[x]` **Sub-task 1.3.2:** Implement Tactical Actions (Aid Another, Ready, Total Defense, Withdraw).
 
 ---
 #### **Phase 2: Itemization & Skill Systems**
@@ -82,16 +82,56 @@
     *   `[ ]` **Sub-task 4.2.1:** Implement Material Interactions (Hardness & Erosion).
     *   `[ ]` **Sub-task 4.2.2:** Implement Environmental Interactions (Flammable terrain, Water/Lava hazards, Spell combos).
     *   `[ ]` **Sub-task 4.2.3:** Implement Item-on-Item Interactions (Dipping).
+*   `[ ]` **Task 4.3: Implement Flexible Map Generation.**
+    *   **Principle:** The engine must treat map files (`.json`) as definitions that can describe either a static, handcrafted layout or the parameters for a procedurally generated area. The `ContentLoader` will be responsible for interpreting these files and generating the appropriate map data at runtime.
+    *   `[ ]` **Sub-task 4.3.1: Enhance the Map File Schema.**
+        *   **Guidance:** Modify the map `.json` schema to be a discriminated union. A `generation_type` field will determine how to interpret the rest of the file.
+            *   `generation_type: "static"`: The file will contain the existing `tiles`, `tileTypes`, and `triggers` fields for handcrafted maps.
+            *   `generation_type: "procedural"`: The file will contain a new `procedural_parameters` object. This object will define the rules for the generator, such as:
+                *   `algorithm`: (e.g., `"cellular_automata"`, `"dungeon_rooms_and_corridors"`)
+                *   `dimensions`: `{ "width": 80, "height": 24 }`
+                *   `tags`: (e.g., `["cave", "dungeon", "high_monster_density"]`) to influence tile sets, monster spawns, and loot tables.
+                *   `persistence`: (e.g., `"persistent"`, `"regenerate_on_entry"`)
+    *   `[ ]` **Sub-task 4.3.2: Implement the Procedural Map Generator.**
+        *   **Guidance:** Create a `ProceduralMapGenerator` service using NetHack's source code as inspiration. This service will take the `procedural_parameters` from a map file and return a complete map object (with `tiles`, `tileTypes`, etc.), ready to be used by the engine. Research and adapt algorithms from games like NetHack or Incursion for this purpose. The generator will use the `tags` to select appropriate tile definitions, monster prefabs, and item prefabs from the content library.
+    *   `[ ]` **Sub-task 4.3.3: Update the `ContentLoader` and `Trigger` System.**
+        *   **Guidance:** Refactor the `ContentLoader` to read the `generation_type` of a map file. If it's `"static"`, it will load the map as it does now. If it's `"procedural"`, it will call the `ProceduralMapGenerator` to create the map data. The `triggers` in any map (static or procedural) must be able to target any other map file by its filename, allowing for seamless transitions between the two types.
 
 ---
-#### **Phase 5: Core Content Implementation**
-*   `[x]` **Task 5.1: Implement & Refactor Core SRD Content.**
-    *   **Status:** Done. Created and refactored the initial set of SRD races, classes, feats, and templates to conform to the new JSON schemas and unified `effects` system.
+#### **Phase 5: Full SRD Content Implementation**
+*   **Description:** Systematically create JSON and companion `.mjs` files for all content listed in the D&D 3.5e System Reference Document (SRD).
 
----
-#### **Phase 6: Maintenance & Bugfixes**
-*   `[x]` **Task 6.1: Fix Feat Selection Bug.**
-    *   **Status:** Complete. Resolved an issue where feats were not being correctly selected or displayed in the character creation UI. The root cause was that content items were not being assigned a unique `id` during the loading process, causing the selection logic to fail.
+*   `[ ]` **Task 5.1: Basic Rules Content**
+    *   `[ ]` **5.1.1: Races:** Implement all standard player races.
+    *   `[ ]` **5.1.2: Classes:** Implement all base classes, NPC classes, and Prestige Classes.
+    *   `[ ]` **5.1.3: Feats:** Implement all feats from the SRD.
+    *   `[ ]` **5.1.4: Skills:** Ensure all skills and their uses are defined.
+    *   `[ ]` **5.1.5: Equipment:** All weapons, armor, shields, and adventuring gear.
+    *   `[ ]` **5.1.6: Special Materials:** Adamantine, Mithral, etc.
+    *   `[ ]` **5.1.7: Special Abilities & Conditions:** Gaze Attacks, Incorporeal, Energy Drain, etc.
+
+*   `[ ]` **Task 5.2: Spells & Magic**
+    *   `[ ]` **5.2.1: Spell Lists:** Implement all spells for all spellcasting classes.
+    *   `[ ]` **5.2.2: Domains:** Implement all Cleric domains.
+
+*   `[ ]` **Task 5.3: Magic Items**
+    *   `[ ]` **5.3.1: Base Items:** Potions, Scrolls, Wands, Rings, Rods, Staves, Wondrous Items.
+    *   `[ ]` **5.3.2: Magic Properties:** All weapon, armor, and shield special abilities.
+    *   `[ ]` **5.3.3: Cursed Items & Artifacts.**
+
+*   `[ ]` **Task 5.4: Monsters & Templates**
+    *   `[ ]` **5.4.1: All Monsters:** Implement every monster from the SRD.
+    *   `[ ]` **5.4.2: Templates:** Implement all monster templates.
+
+*   `[ ]` **Task 5.5: Divine Content**
+    *   `[ ]` **5.5.1: Deities & Demigods:** Implement the sample pantheon.
+
+*   `[ ]` **Task 5.6: Psionics**
+    *   `[ ]` **5.6.1: Psionic Races, Classes, Skills, Feats, Powers, Items, and Monsters.**
+
+*   `[ ]` **Task 5.7: Epic Level Content**
+    *   `[ ]` **5.7.1: Epic Classes, Feats, Skills, Spells, Magic Items, and Monsters.**
+
 
 ---
 ### Online references for D&D 3.5e and the d20 System : 

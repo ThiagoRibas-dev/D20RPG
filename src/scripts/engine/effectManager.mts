@@ -22,7 +22,7 @@ export class EffectManager {
         eventBus.subscribe(GameEvents.COMBAT_TURN_END, (event) => this.tickDownEffectsFor(event.data.entity));
     }
 
-    public async triggerEffect(effectId: string, actor: Entity, item?: ItemInstance) {
+    public async triggerEffect(effectId: string, actor: Entity, target: Entity | ItemInstance, item?: ItemInstance) {
         const effectData = await globalServiceLocator.contentLoader.loadEffect(effectId);
 
         if (!effectData) {
@@ -30,19 +30,14 @@ export class EffectManager {
             return;
         }
 
-        console.log(`Triggering effect: ${effectData.id} for ${actor.name}`);
-
-        for (const component of effectData.components) {
-            switch (component.type) {
-                case 'heal':
-                    // In the future, this would call a method on the RulesEngine
-                    // e.g., globalServiceLocator.rulesEngine.processHeal(actor, component, item.caster_level);
-                    console.log(`Healing ${actor.name} for ${component.amount.dice}+${component.amount.bonus}`);
-                    break;
-                // Other cases for different effect components would go here
-                default:
-                    console.warn(`Unknown effect component type: ${component.type}`);
+        if (effectData.script) {
+            if (target instanceof Entity) {
+                this.applyScriptedEffect(effectData, actor, target);
+            } else {
+                console.error(`Scripted effects like "${effectData.name}" cannot be applied to items.`);
             }
+        } else {
+            this.applyStaticEffect(effectData, actor, target);
         }
     }
 
@@ -50,6 +45,50 @@ export class EffectManager {
      * Applies a new scripted effect to a target entity. This is the main entry point
      * for spells, items, or abilities that grant temporary or permanent scripted effects.
      */
+    public async applyStaticEffect(effectData: any, caster: Entity, target: Entity | ItemInstance) {
+        const targetName = target instanceof Entity ? target.name : target.itemData.name;
+        console.log(`Applying static effect: ${effectData.name} to ${targetName}`);
+        const id = `effect-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+        const newEffect: ActiveEffect = {
+            id,
+            name: effectData.name,
+            source: effectData.sourceName || 'Unknown',
+            description: effectData.description || '',
+            script: '',
+            context: effectData.context || {},
+            tags: effectData.tags || [],
+            sourceEffect: effectData,
+            target: target as Entity, // This needs to be revisited if items can have effects
+            caster,
+            durationInRounds: effectData.duration || 0,
+            remainingRounds: effectData.duration || 0,
+            scriptInstance: null,
+        };
+
+        this.activeEffects.set(id, newEffect);
+
+        if (target instanceof Entity) {
+            effectData.effects?.forEach((eff: any) => {
+                if (eff.type === 'bonus') {
+                    target.modifiers.add({
+                        value: eff.value,
+                        type: eff.bonus_type,
+                        target: eff.target,
+                        source: newEffect.name,
+                        sourceId: newEffect.id,
+                        duration: newEffect.durationInRounds
+                    });
+                } else if (eff.type === 'add_tag') {
+                    target.tags.add(eff.tag);
+                }
+            });
+        }
+
+
+        globalServiceLocator.eventBus.publish(GameEvents.CHARACTER_EFFECT_APPLIED, { entity: target as Entity, effect: newEffect });
+    }
+
     public async applyScriptedEffect(effectData: any, caster: Entity, target: Entity) {
         if (!effectData || !effectData.script || typeof effectData.script !== 'string') {
             console.error(`Effect "${effectData.name}" has no valid script property.`);
@@ -120,8 +159,15 @@ export class EffectManager {
         // Remove any modifiers associated with this specific effect instance
         effect.target.modifiers.removeBySourceId(effect.id);
 
+        // For static effects, remove any tags that were added.
+        effect.sourceEffect.effects?.forEach((eff: any) => {
+            if (eff.type === 'add_tag') {
+                effect.target.tags.delete(eff.tag);
+            }
+        });
+
         // Instruct the script to perform its own cleanup.
-        if (effect.scriptInstance.onRemove) {
+        if (effect.scriptInstance && effect.scriptInstance.onRemove) {
             effect.scriptInstance.onRemove();
         }
 

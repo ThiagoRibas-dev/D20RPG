@@ -1,0 +1,14 @@
+{
+    "id": "eff_feinted",
+    "name": "Feinted",
+    "source": "Feint Action",
+    "effects": [
+        {
+            "type": "add_tag",
+            "tag": "status:flat_footed"
+        }
+    ],
+    "duration": 1,
+    "max_stacks": 1,
+    "tags": ["single_use_against_attacker"]
+}

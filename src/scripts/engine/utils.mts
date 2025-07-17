@@ -26,8 +26,30 @@ export function rollD20(): number {
  * @param score The ability score (e.g., 14).
  * @returns The modifier (e.g., +2).
  */
+import { Entity } from "./entities/entity.mjs";
+import { globalServiceLocator } from "./serviceLocator.mjs";
+
 export function calculateModifier(score: number): number {
     return Math.floor((score - 10) / 2);
+}
+
+export function getAdjacentEntities(position: EntityPosition): Entity[] {
+    const adjacentEntities: Entity[] = [];
+    const allEntities = [
+        globalServiceLocator.state.player,
+        ...globalServiceLocator.state.npcs
+    ].filter(e => e) as Entity[];
+
+    for (const entity of allEntities) {
+        if (entity) {
+            const dx = Math.abs(entity.position.x - position.x);
+            const dy = Math.abs(entity.position.y - position.y);
+            if ((dx <= 1 && dy <= 1) && !(dx === 0 && dy === 0)) {
+                adjacentEntities.push(entity);
+            }
+        }
+    }
+    return adjacentEntities;
 }
 
 /**

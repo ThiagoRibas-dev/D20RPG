@@ -1,0 +1,18 @@
+{
+    "id": "eff_total_defense",
+    "name": "Total Defense Effect",
+    "source": "Total Defense Action",
+    "effects": [
+        {
+            "type": "bonus",
+            "bonus_type": "dodge",
+            "target": "ac",
+            "value": 4
+        },
+        {
+            "type": "add_tag",
+            "tag": "status:cannot_make_aoo"
+        }
+    ],
+    "duration": 1
+}

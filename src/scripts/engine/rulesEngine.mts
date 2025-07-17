@@ -457,7 +457,7 @@ export class RulesEngine {
                 return;
             }
         } else {
-            const powerAction = new UsePowerAction(actor, power, target);
+            const powerAction = new UsePowerAction(actor, power, castOnDefensive, isTouch);
             if (this.checkForAoO(powerAction, 'cast')) {
                 return; // Stop execution, AoO is being handled.
             }
@@ -609,6 +609,15 @@ export class RulesEngine {
 
     public checkForAoO(provokingAction: Action, triggerType: string) {
         const { actor } = provokingAction;
+
+        // Special case for Withdraw action
+        if (triggerType === 'move' && actor.hasTag('status:withdrawing')) {
+            // This is a simplification. A real implementation would need to check
+            // if the move is from the *starting square* of the withdraw.
+            // For now, we'll just prevent all AoOs during a withdraw.
+            return false;
+        }
+
         const threateningNpcs = globalServiceLocator.state.npcs.filter(npc =>
             npc.isAlive() &&
             npc.disposition === 'hostile' && // Or based on faction
@@ -636,6 +645,72 @@ export class RulesEngine {
         // In the future, check for statuses like stunned, paralyzed, etc.
         // For now, we assume the entity can always make an AoO if they have one available.
         return true;
+    }
+
+    public async resolveFeint(actor: Entity, target: Entity): Promise<boolean> {
+        const actorBluff = await actor.getSkillModifier('bluff');
+        const targetSenseMotive = await target.getSkillModifier('sense_motive') + target.baseAttackBonus;
+
+        return actorBluff > targetSenseMotive;
+    }
+
+    public async resolveTrip(actor: Entity, target: Entity): Promise<boolean> {
+        // This is a simplified check. A real implementation would need to
+        // account for size modifiers and other bonuses.
+        const actorStrength = actor.getAbilityScore('str');
+        const targetStrength = target.getAbilityScore('str');
+        const targetDexterity = target.getAbilityScore('dex');
+
+        const actorCheck = rollD20() + calculateModifier(actorStrength);
+        const targetCheck = rollD20() + Math.max(calculateModifier(targetStrength), calculateModifier(targetDexterity));
+
+        return actorCheck > targetCheck;
+    }
+
+    public async resolveDisarm(actor: Entity, target: Entity): Promise<boolean> {
+        // This is a simplified check. A real implementation would need to
+        // account for weapon sizes, two-handed weapons, etc.
+        const actorAttackRoll = rollD20() + actor.baseAttackBonus + calculateModifier(actor.getAbilityScore('str'));
+        const targetAttackRoll = rollD20() + target.baseAttackBonus + calculateModifier(target.getAbilityScore('str'));
+
+        return actorAttackRoll > targetAttackRoll;
+    }
+
+    public async resolveBullRush(actor: Entity, target: Entity): Promise<boolean> {
+        // This is a simplified check. A real implementation would need to
+        // account for size modifiers and other bonuses.
+        const actorStrength = actor.getAbilityScore('str');
+        const targetStrength = target.getAbilityScore('str');
+
+        const actorCheck = rollD20() + calculateModifier(actorStrength);
+        const targetCheck = rollD20() + calculateModifier(targetStrength);
+
+        return actorCheck > targetCheck;
+    }
+
+    public getGrappleCheckModifier(entity: Entity): number {
+        switch (entity.size) {
+            case 'Fine':
+                return -16;
+            case 'Diminutive':
+                return -12;
+            case 'Tiny':
+                return -8;
+            case 'Small':
+                return -4;
+            case 'Medium':
+                return 0;
+            case 'Large':
+                return 4;
+            case 'Huge':
+                return 8;
+            case 'Gargantuan':
+                return 12;
+            case 'Colossal':
+                return 16;
+            default:
+                return 0;
+        }
     }
 
     public async resolveSkillUse(actor: Entity, skillId: string, useId: string, target: ItemInstance | Entity) {
@@ -699,7 +774,7 @@ export class RulesEngine {
             }
 
             if (skillUseData.on_success.trigger_effect) {
-                const effectTarget = skillUseData.target_type === 'item' ? target as ItemInstance : undefined;
+                const effectTarget = skillUseData.target_type === 'item' ? target as ItemInstance : target as Entity;
                 globalServiceLocator.effectManager.triggerEffect(skillUseData.on_success.trigger_effect, actor, effectTarget);
             }
         } else {

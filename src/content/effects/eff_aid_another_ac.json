@@ -1,0 +1,16 @@
+{
+    "id": "eff_aid_another_ac",
+    "name": "Aid Another (AC)",
+    "source": "Aid Another Action",
+    "effects": [
+        {
+            "type": "bonus",
+            "bonus_type": "circumstance",
+            "target": "ac",
+            "value": 2
+        }
+    ],
+    "duration": 1,
+    "max_stacks": 1,
+    "tags": ["single_use"]
+}

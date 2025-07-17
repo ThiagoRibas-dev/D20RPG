@@ -1,4 +1,5 @@
 import { Entity } from "../entities/entity.mjs";
+import { Point } from "../../utils/point.mjs";
 
 export enum ActionType {
     Standard,
@@ -13,10 +14,16 @@ export abstract class Action {
     public abstract readonly cost: ActionType;
     public provokesAoO: boolean;
 
+    public abstract readonly id: string;
+    public abstract readonly name: string;
+    public abstract readonly description: string;
+
     constructor(actor: Entity) {
         this.actor = actor;
         this.provokesAoO = false;
     }
 
-    public abstract execute(): void;
+    public abstract canExecute(): boolean;
+
+    public abstract execute(target?: Entity | Point): Promise<void>;
 }

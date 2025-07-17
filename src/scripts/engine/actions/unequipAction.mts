@@ -4,6 +4,10 @@ import { Action, ActionType } from './action.mjs';
 
 export class UnequipAction extends Action {
     public readonly cost: ActionType = ActionType.Standard;
+    public readonly id: string = 'unequip';
+    public readonly name: string = 'Unequip';
+    public readonly description: string = 'Unequip an item, freeing the slot.';
+
     private slot: EquipmentSlot;
 
     constructor(actor: Entity, slot: EquipmentSlot) {
@@ -11,12 +15,16 @@ export class UnequipAction extends Action {
         this.slot = slot;
     }
 
-    public execute(): void {
+    canExecute(): boolean {
+        return this.actor.equipment.slots[this.slot] !== null;
+    }
+
+    public async execute(): Promise<void> {
         const itemName = this.actor.equipment.slots[this.slot]?.itemData.name;
         console.log(`${this.actor.name} executes UnequipAction for item in ${this.slot}.`);
         if (itemName) {
             this.actor.equipment.unequip(this.slot);
         }
+        return Promise.resolve();
     }
-
 }

@@ -2,10 +2,11 @@ import { ContentItem } from "./entities/contentItem.mjs";
 import { MapTile } from "./entities/mapTile.mjs";
 
 export class ContentLoader {
-    private contentData: ContentItem = new ContentItem("category");
+    public contentData: ContentItem = new ContentItem("category");
     private campaignData: ContentItem = new ContentItem("category");
     public tileDefinitions: MapTile[] | null = null;
     public modifierTypes: any[] = [];
+    public spells: ContentItem[] = [];
 
     private async loadDirectory(dirPath: string): Promise<ContentItem> {
         const directory: ContentItem = new ContentItem("category");
@@ -85,6 +86,7 @@ export class ContentLoader {
             this.contentData = await this.loadDirectory('./content');
             this.tileDefinitions = await this.loadTileDefinitions();
             this.modifierTypes = await this.loadModifierTypes();
+            this.spells = await this.loadSpells();
             console.log("content loaded successfully from javascript calls:", this.contentData)
         }
         catch (e) {
@@ -148,5 +150,16 @@ export class ContentLoader {
             console.error(`Error loading modifier types: ${filePath}`, error);
             return [];
         }
+    }
+
+    public async loadSpells(): Promise<ContentItem[]> {
+        const spellsDir = await this.loadDirectory('./content/spells');
+        const spellItems: ContentItem[] = [];
+        for (const key in spellsDir) {
+            if (key !== 'get' && key !== 'type' && spellsDir[key] instanceof ContentItem) {
+                spellItems.push(spellsDir[key]);
+            }
+        }
+        return spellItems;
     }
 }
