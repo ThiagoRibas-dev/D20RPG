@@ -117,12 +117,10 @@ export class TurnManager {
         console.log("--- Exploration Tick ---");
         // 1. Give every NPC a turn to perform non-combat actions.
         globalServiceLocator.state.npcs.forEach(npc => {
-            if (npc.aiPackage?.decideAction) {
-                const action = npc.aiPackage.decideAction();
-                if (action) {
-                    // Exploration actions execute immediately. They don't use the turn queue.
-                    action.execute();
-                }
+            const action = globalServiceLocator.aiManager.processTurn(npc);
+            if (action) {
+                // Exploration actions execute immediately. They don't use the turn queue.
+                action.execute();
             }
         });
 
@@ -209,17 +207,17 @@ export class TurnManager {
         // H. Delegate action based on actor type.
         if (currentActor instanceof PlayerCharacter) {
             // Wait for player input via PlayerTurnController.
-        } else if (currentActor instanceof Npc && currentActor.aiPackage) {
+        } else if (currentActor instanceof Npc) {
             // AI decides, TurnManager executes.
             await this.handleNpcTurn(currentActor);
         } else {
-            // Actor is NPC without AI or some other entity, auto-pass turn.
+            // Actor is some other entity, auto-pass turn.
             this.addInterrupt(new PassTurnAction(currentActor));
         }
     }
 
     private async handleNpcTurn(npc: Npc) {
-        const action = npc.aiPackage.decideAction();
+        const action = globalServiceLocator.aiManager.processTurn(npc);
         this.actionStack.push(action);
         this.processActionStack();
     }

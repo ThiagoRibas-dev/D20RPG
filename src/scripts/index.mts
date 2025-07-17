@@ -13,6 +13,9 @@ import { Renderer } from './engine/renderer.mjs';
 import { RulesEngine } from './engine/rulesEngine.mjs';
 import { globalServiceLocator } from './engine/serviceLocator.mjs';
 import { TurnManager } from './engine/turnManager.mjs';
+import { AIManager } from './engine/aiManager.mjs';
+import { AggressiveMeleeBehavior } from './engine/ai/behaviors/aggressiveMelee.mjs';
+import { IdleBehavior } from './engine/ai/behaviors/idle.mjs';
 import { MOVE_DIRECTIONS } from './engine/utils.mjs';
 import { FeedbackManager } from './ui/feedbackManager.mjs';
 import { initUIManager, updateUI } from './ui/uiManager.mjs';
@@ -36,6 +39,11 @@ async function initializeGame(winObj: any) {
   globalServiceLocator.rulesEngine = new RulesEngine();
   globalServiceLocator.turnManager = new TurnManager();
   globalServiceLocator.interruptManager = new InterruptManager();
+  globalServiceLocator.aiManager = new AIManager();
+
+  // Register AI behaviors
+  globalServiceLocator.aiManager.registerBehavior('aggressive_melee', new AggressiveMeleeBehavior());
+  globalServiceLocator.aiManager.registerBehavior('idle', new IdleBehavior());
 
 
   // --- SETUP THE CONTROLLER LOGIC (EVENT SUBSCRIPTIONS) ---

@@ -77,7 +77,7 @@
 
 ---
 #### **Phase 4: Advanced Systems**
-*   `[ ]` **Task 4.1: Implement Modular AI with Behavioral Flags.**
+*   `[x]` **Task 4.1: Implement Modular AI with Behavioral Flags.**
 *   `[ ]` **Task 4.2: Implement Systemic Interactions (The NetHack Factor).**
     *   `[ ]` **Sub-task 4.2.1:** Implement Material Interactions (Hardness & Erosion).
     *   `[ ]` **Sub-task 4.2.2:** Implement Environmental Interactions (Flammable terrain, Water/Lava hazards, Spell combos).

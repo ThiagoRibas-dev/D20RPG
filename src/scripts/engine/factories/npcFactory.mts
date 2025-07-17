@@ -80,10 +80,9 @@ export class NpcFactory {
             npc.renderable = { char: prefab.ascii_char || '?', color: prefab.color || 'magenta', layer: 5 };
         }
 
-        // 7. Instantiate AI package
-        if (prefab.ai_package) {
-            const aiModule = await import(prefab.ai_package);
-            npc.aiPackage = new aiModule.default(npc);
+        // 7. Assign AI flags
+        if (prefab.ai_flags) {
+            npc.ai_flags = prefab.ai_flags;
         }
 
         return npc;

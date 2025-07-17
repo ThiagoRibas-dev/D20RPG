@@ -4,7 +4,6 @@ import { Entity, EntityAbilityScores, EntityHitPoints } from "./entity.mjs";
 
 export class Npc extends Entity {
     prefabId: string;
-    public aiPackage: any | null = null;
     public disposition: 'friendly' | 'neutral' | 'hostile' = 'neutral';
 
     constructor(

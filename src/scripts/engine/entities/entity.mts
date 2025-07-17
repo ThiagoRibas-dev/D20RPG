@@ -92,6 +92,7 @@ export class Entity {
     public equipment: EquipmentComponent;
     public tags: Set<string>;
     public proficiencies: Set<string>;
+    public ai_flags: string[];
 
     // We store the BASE stats, not the final ones.
     public baseStats: EntityAbilityScores;
@@ -176,6 +177,7 @@ export class Entity {
         this.tags = new Set<string>();
         this.powerSystem = null;
         this.powerSystemRules = null;
+        this.ai_flags = [];
         this.updateTags();
     }
 
