@@ -1,42 +1,75 @@
 {
-  "id": "template-half-dragon",
   "name": "Half-Dragon",
-  "type": "template",
-  "description": "A creature with a dragon as one of its parents, granting immense power.",
-  "script": "half-dragon.mjs",
+  "description": "An inherited template that can be added to any living, corporeal creature, granting them draconic features and abilities.",
+  "type_change": "dragon",
+  "hit_dice_increase": {
+    "size": 1,
+    "max": "d12"
+  },
+  "speed_changes": {
+    "add_flight": {
+      "condition": {
+        "requires": "size_is_or_larger",
+        "size": "Large"
+      },
+      "speed": {
+        "base": "land_speed",
+        "multiplier": 2
+      },
+      "maneuverability": "average",
+      "max_speed": 120
+    }
+  },
   "bonuses": [
-    { "target": "stats.str", "value": 8, "type": "racial" },
-    { "target": "stats.con", "value": 2, "type": "racial" },
-    { "target": "stats.int", "value": 2, "type": "racial" },
-    { "target": "stats.cha", "value": 2, "type": "racial" },
-    { "target": "ac", "value": 4, "type": "natural_armor", "source": "Half-Dragon" }
-  ],
-  "tags": [
-    "dragon",
-    "darkvision_60ft",
-    "low_light_vision",
-    "immunity_sleep",
-    "immunity_paralysis"
-  ],
-  "choices": [
     {
-      "id": "dragon_variety",
-      "name": "Dragon Variety",
-      "description": "Select the variety of your draconic parent.",
-      "type": "select",
-      "options": [
-        { "id": "black", "name": "Black Dragon", "description": "Grants Acid immunity and an acid breath weapon." },
-        { "id": "blue", "name": "Blue Dragon", "description": "Grants Electricity immunity and a lightning breath weapon." },
-        { "id": "green", "name": "Green Dragon", "description": "Grants Acid immunity and a corrosive gas breath weapon." },
-        { "id": "red", "name": "Red Dragon", "description": "Grants Fire immunity and a fire breath weapon." },
-        { "id": "white", "name": "White Dragon", "description": "Grants Cold immunity and a cold breath weapon." },
-        { "id": "brass", "name": "Brass Dragon", "description": "Grants Fire immunity and a fire breath weapon." },
-        { "id": "bronze", "name": "Bronze Dragon", "description": "Grants Electricity immunity and a lightning breath weapon." },
-        { "id": "copper", "name": "Copper Dragon", "description": "Grants Acid immunity and an acid breath weapon." },
-        { "id": "gold", "name": "Gold Dragon", "description": "Grants Fire immunity and a fire breath weapon." },
-        { "id": "silver", "name": "Silver Dragon", "description": "Grants Cold immunity and a cold breath weapon." }
-      ]
+      "applies_to": "ac",
+      "type": "natural_armor",
+      "value": 4,
+      "description": "Natural armor improves by +4."
     }
   ],
+  "special_abilities": [
+    {
+      "name": "Natural Attacks",
+      "description": "Gains two claw attacks and a bite attack.",
+      "effect": {
+        "add_natural_attacks": [
+          { "type": "claw", "count": 2, "is_primary": true },
+          { "type": "bite", "count": 1, "is_secondary": true }
+        ]
+      }
+    },
+    {
+      "name": "Breath Weapon",
+      "description": "Gains a breath weapon based on dragon variety, usable once per day.",
+      "uses_per_day": 1,
+      "script": "/content/templates/half_dragon_breath_weapon.mjs"
+    },
+    {
+      "name": "Draconic Immunities",
+      "description": "Immunity to sleep and paralysis effects, plus an additional immunity based on dragon variety.",
+      "effect": {
+        "add_immunities": [
+          "sleep",
+          "paralysis"
+        ],
+        "add_conditional_immunity_from_variety": true
+      }
+    }
+  ],
+  "ability_score_adjustments": {
+    "str": 8,
+    "con": 2,
+    "int": 2,
+    "cha": 2
+  },
+  "skill_points_as_type": "dragon",
+  "special_qualities": {
+    "add": [
+      { "name": "darkvision", "value": 60 },
+      { "name": "low_light_vision" }
+    ]
+  },
+  "challenge_rating_modifier": 2,
   "level_adjustment": 3
 }

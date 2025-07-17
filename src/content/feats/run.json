@@ -1,17 +1,47 @@
 {
   "name": "Run",
   "description": "You are a fast runner.",
-  "type": [
-    "General"
+  "tags": [
+    "general"
   ],
   "prerequisites": [],
-  "benefit": "When running, you move five times your normal speed (if wearing medium, light, or no armor and carrying no more than a medium load) or four times your speed (if wearing heavy armor or carrying a heavy load). If you make a jump after a running start, you gain a +4 bonus on your Jump check. While running, you retain your Dexterity bonus to AC.",
   "bonuses": [
     {
-      "type": "skill",
-      "skill": "Jump",
+      "applies_to": "skill_check",
+      "type": "untyped",
       "value": 4,
-      "condition": "after a running start"
+      "target": {
+        "category": "skill",
+        "value": "Jump"
+      },
+      "condition": {
+        "requires": "after_running_start"
+      },
+      "description": "+4 bonus on Jump checks after a running start."
+    },
+    {
+      "applies_to": "run_speed_multiplier",
+      "type": "untyped",
+      "value": 5,
+      "condition": {
+        "requires": "armor_is_not_heavy"
+      },
+      "description": "Run at 5x your normal speed in light, medium, or no armor."
+    },
+    {
+      "applies_to": "run_speed_multiplier",
+      "type": "untyped",
+      "value": 4,
+      "condition": {
+        "requires": "armor_is_heavy"
+      },
+      "description": "Run at 4x your normal speed in heavy armor."
+    },
+    {
+      "applies_to": "retain_dex_bonus_while_running",
+      "type": "untyped",
+      "value": true,
+      "description": "Retain your Dexterity bonus to AC while running."
     }
   ],
   "script": "/content/feats/run.mjs"

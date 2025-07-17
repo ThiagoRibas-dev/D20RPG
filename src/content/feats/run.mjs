@@ -34,11 +34,31 @@ export default class RunEffectLogic {
      * @param {object} context - The context object for the run action.
      */
     modifyRunAction(context) {
-        if (context.actor === this.effect.target) {
-            console.log("Run feat: Modifying run action.");
-            // The engine will need to check for heavy armor or heavy load.
-            // This script just signals that the feat is active.
-            context.runFeatActive = true;
+        if (context.actor !== this.effect.target) return;
+
+        console.log("Run feat: Modifying run action.");
+
+        const actor = context.actor;
+        const isHeavyArmor = actor.armor?.hasTag('heavy'); // Assuming armor has tags
+
+        // Find the correct speed multiplier from the feat's bonuses
+        const multiplierBonus = this.effect.bonuses.find(b => {
+            if (b.applies_to !== 'run_speed_multiplier') return false;
+            if (isHeavyArmor) {
+                return b.condition.requires === 'armor_is_heavy';
+            } else {
+                return b.condition.requires === 'armor_is_not_heavy';
+            }
+        });
+
+        if (multiplierBonus) {
+            context.speed_multiplier = multiplierBonus.value;
+        }
+
+        // Check for retaining dex bonus
+        const retainDexBonus = this.effect.bonuses.find(b => b.applies_to === 'retain_dex_bonus_while_running');
+        if (retainDexBonus) {
+            context.retain_dex_bonus = retainDexBonus.value;
         }
     }
 }

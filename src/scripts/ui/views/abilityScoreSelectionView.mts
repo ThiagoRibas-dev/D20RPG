@@ -105,15 +105,9 @@ export class AbilityScoreSelectionView {
             player.baseStats[ability] = parseInt(this.scoreInputs[key].value, 10);
         }
 
-        // 2. Calculate final stats by applying racial modifiers
-        for (const key in player.baseStats) {
-            const ability = key as keyof EntityAbilityScores;
-            const racialMod = player.selectedRace?.ability_score_adjustments?.[ability] || 0;
-            player.stats[ability] = player.baseStats[ability] + racialMod;
-        }
-
-        // Now that stats are set, recalculate everything.
-        player.recalculateDerivedStats();
+        // 2. Recalculate all stats using the centralized engine method.
+        // This will correctly apply racial modifiers and all other effects.
+        globalServiceLocator.rulesEngine.calculateStats(player);
     }
 
     public show(): void { this.container.style.display = ''; }

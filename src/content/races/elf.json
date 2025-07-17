@@ -16,48 +16,69 @@
   "size": "Medium",
   "base_speed": 30,
   "low_light_vision": true,
-  "darkvision": 0,
   "immunities": [
-    "sleep"
+    "magical_sleep"
   ],
-  "resistances": {},
   "bonuses": [
     {
-      "type": "save",
-      "target": "enchantment",
+      "applies_to": "saving_throw",
+      "type": "racial",
       "value": 2,
+      "target": {
+        "category": "spell_school",
+        "value": "enchantment"
+      },
       "description": "+2 racial saving throw bonus against enchantment spells or effects."
     },
     {
-      "type": "skill",
-      "skill": "Listen",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "racial",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Listen"
+      },
+      "description": "+2 racial bonus on Listen checks."
     },
     {
-      "type": "skill",
-      "skill": "Search",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "racial",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Search"
+      },
+      "description": "+2 racial bonus on Search checks."
     },
     {
-      "type": "skill",
-      "skill": "Spot",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "racial",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Spot"
+      },
+      "description": "+2 racial bonus on Spot checks."
     }
   ],
   "special_abilities": [
     {
-      "name": "Secret Door Search",
-      "description": "An elf who merely passes within 5 feet of a secret or concealed door is entitled to a Search check to notice it as if she were actively looking for it.",
+      "name": "Automatic Search",
+      "description": "An elf who passes within 5 feet of a secret or concealed door is entitled to a Search check to notice it as if actively looking.",
       "script": "/content/races/elf_secret_door_search.mjs"
+    },
+    {
+      "name": "Bonus Weapon Proficiencies",
+      "description": "Receives proficiency with longsword, rapier, longbow (including composite), and shortbow (including composite) as bonus feats.",
+      "effect": {
+        "add_weapon_proficiency": [
+          "longsword",
+          "rapier",
+          "longbow",
+          "shortbow"
+        ]
+      }
     }
-  ],
-  "weapon_proficiencies": [
-    "longsword",
-    "rapier",
-    "longbow",
-    "composite longbow",
-    "shortbow",
-    "composite shortbow"
   ],
   "automatic_languages": [
     "Common",

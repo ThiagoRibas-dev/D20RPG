@@ -40,6 +40,19 @@ export function initUIManager(): void {
   inventoryView = new InventoryView();
   interruptPromptView = new InterruptPromptView();
 
+  // --- Make views globally accessible ---
+  globalServiceLocator.ui.views = {
+    campaignSelection: campaignSelectionView,
+    raceSelection: raceSelectionView,
+    classSelection: classSelectionView,
+    abilityScoreSelection: abilityScoreSelectionView,
+    featSelection: featSelectionView,
+    skillSelection: skillSelectionView,
+    characterSummary: characterSummaryView,
+    inventory: inventoryView,
+    interruptPrompt: interruptPromptView
+  };
+
   // --- Wire up events controlled by the UI Manager ---
   const state = globalServiceLocator.state;
   if (!state) {
@@ -65,12 +78,7 @@ export function initUIManager(): void {
     updateUI();
   });
   setBtnOnCLick('back-btn', () => eventBus.publish('ui:creation:prev_step'));
-  setBtnOnCLick('next-btn', () => {
-    if (state.creationSteps[state.creationStep] === 'abilityScoreSelection') {
-      abilityScoreSelectionView.saveAbilities();
-    }
-    eventBus.publish('ui:creation:next_step');
-  });
+  setBtnOnCLick('next-btn', () => eventBus.publish('ui:creation:next_step'));
 
   eventBus.subscribe(GameEvents.PLAYER_INTERRUPT_PROMPT, (event) => {
     interruptPromptView.render(event.data);

@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Skill",
+  "description": "Schema for character skills.",
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "description": { "type": "string" },
+    "ability": { "type": "string", "enum": ["str", "dex", "con", "int", "wis", "cha"] },
+    "untrained": { "type": "boolean" },
+    "armor_check_penalty": { "type": "boolean" },
+    "active_uses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "use_id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "target_type": { "type": "string", "enum": ["item", "entity", "self"] },
+          "dc": {
+            "type": "object",
+            "properties": {
+              "base": { "type": "integer" },
+              "add": { "type": "string" }
+            }
+          },
+          "on_success": {
+            "type": "object",
+            "properties": {
+              "trigger_effect": { "type": "string" }
+            }
+          }
+        },
+        "required": ["use_id", "name"]
+      }
+    }
+  },
+  "required": ["name", "description", "ability"]
+}

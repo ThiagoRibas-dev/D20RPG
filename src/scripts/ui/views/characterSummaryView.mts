@@ -1,3 +1,4 @@
+import { GameEvents } from '../../engine/events.mjs';
 import { globalServiceLocator } from '../../engine/serviceLocator.mjs';
 import { calculateModifier } from '../../engine/utils.mjs';
 
@@ -19,9 +20,10 @@ export class CharacterSummaryView {
 
         this.addSection("Race", player.selectedRace.name);
         this.addSection("Class", player.classes.map(c => `${c.class.name} ${c.level}`).join(', '));
-        this.addSection("Abilities", Object.entries(player.stats).map(([key, value]) =>
-            `${key.toUpperCase()}: ${value} (Mod: ${calculateModifier(value)})`
-        ));
+        this.addSection("Abilities", Object.keys(player.baseStats).map(key => {
+            const finalValue = player.getAbilityScore(key as keyof import('../../engine/entities/entity.mjs').EntityAbilityScores);
+            return `${key.toUpperCase()}: ${finalValue} (Mod: ${calculateModifier(finalValue)})`;
+        }));
         this.addSection("Feats", player.feats.map(f => f.name));
         // Add more sections for Skills, HP, etc. as needed
 
@@ -31,7 +33,7 @@ export class CharacterSummaryView {
             // Finalize stats one last time
             globalServiceLocator.rulesEngine.calculateStats(player);
             // Announce completion
-            globalServiceLocator.eventBus.publish('ui:creation:confirmed');
+            globalServiceLocator.eventBus.publish(GameEvents.UI_CREATION_CONFIRMED);
         };
         this.container.appendChild(confirmButton);
     }

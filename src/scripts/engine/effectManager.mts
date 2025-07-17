@@ -47,27 +47,17 @@ export class EffectManager {
     }
 
     /**
-     * Applies a new effect to a target entity. This is the main entry point
-     * for spells, items, or abilities that grant temporary effects.
+     * Applies a new scripted effect to a target entity. This is the main entry point
+     * for spells, items, or abilities that grant temporary or permanent scripted effects.
      */
-    public async applyEffect(effectDefinition: ContentItem, caster: Entity, target: Entity) {
-        if (!effectDefinition) {
-            console.error(`effectDefinition is null!`);
-            return;
-        }
-        if (!effectDefinition.get) {
-            console.error(`effectDefinition.get is null!`);
-            return;
-        }
-        const effectData = await effectDefinition.get();
-        if (!effectData.script || typeof effectData.script !== 'string') {
+    public async applyScriptedEffect(effectData: any, caster: Entity, target: Entity) {
+        if (!effectData || !effectData.script || typeof effectData.script !== 'string') {
             console.error(`Effect "${effectData.name}" has no valid script property.`);
             return;
         }
 
         const eventBus: EventBus = globalServiceLocator.eventBus;
         try {
-            // Dynamically import the logic script associated with the effect.
             const effectScriptModule = await import(effectData.script);
             const EffectLogicClass = effectScriptModule.default;
             if (!EffectLogicClass) {
@@ -80,12 +70,12 @@ export class EffectManager {
             const newEffect: ActiveEffect = {
                 id,
                 name: effectData.name,
-                source: effectData.source || 'Unknown',
+                source: effectData.sourceName || 'Unknown',
                 description: effectData.description || '',
                 script: effectData.script,
                 context: effectData.context || {},
                 tags: effectData.tags || [],
-                sourceEffect: effectDefinition,
+                sourceEffect: effectData, // The raw effect data
                 target,
                 caster,
                 durationInRounds: effectData.duration || 0,
@@ -93,10 +83,20 @@ export class EffectManager {
                 scriptInstance: null,
             };
 
-            // Instantiate the dynamically imported class.
             newEffect.scriptInstance = new EffectLogicClass(newEffect, eventBus);
-
             this.activeEffects.set(id, newEffect);
+
+            // If the effect grants a bonus, add it to the modifier manager
+            if (effectData.type === 'bonus' && newEffect.durationInRounds > 0) {
+                target.modifiers.add({
+                    value: effectData.value,
+                    type: effectData.bonus_type,
+                    target: effectData.target,
+                    source: newEffect.name,
+                    sourceId: newEffect.id, // Link modifier to the active effect instance
+                    duration: newEffect.durationInRounds
+                });
+            }
 
             if (newEffect.scriptInstance.onApply) {
                 newEffect.scriptInstance.onApply();
@@ -116,6 +116,9 @@ export class EffectManager {
     public removeEffect(effectId: string) {
         const effect = this.activeEffects.get(effectId);
         if (!effect) return;
+
+        // Remove any modifiers associated with this specific effect instance
+        effect.target.modifiers.removeBySourceId(effect.id);
 
         // Instruct the script to perform its own cleanup.
         if (effect.scriptInstance.onRemove) {

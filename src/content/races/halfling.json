@@ -15,64 +15,99 @@
   },
   "size": "Small",
   "base_speed": 20,
-  "low_light_vision": false,
-  "darkvision": 0,
-  "immunities": [],
-  "resistances": {},
   "bonuses": [
     {
-      "type": "size_ac",
-      "value": 1
+      "applies_to": "ac",
+      "type": "size",
+      "value": 1,
+      "description": "+1 size bonus to Armor Class."
     },
     {
-      "type": "size_attack",
-      "value": 1
+      "applies_to": "attack_roll",
+      "type": "size",
+      "value": 1,
+      "description": "+1 size bonus on attack rolls."
     },
     {
-      "type": "skill",
-      "skill": "Hide",
-      "value": 4
+      "applies_to": "skill_check",
+      "type": "size",
+      "value": 4,
+      "target": {
+        "category": "skill",
+        "value": "Hide"
+      },
+      "description": "+4 size bonus on Hide checks."
     },
     {
-      "type": "skill",
-      "skill": "Climb",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "racial",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Climb"
+      },
+      "description": "+2 racial bonus on Climb checks."
     },
     {
-      "type": "skill",
-      "skill": "Jump",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "racial",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Jump"
+      },
+      "description": "+2 racial bonus on Jump checks."
     },
     {
-      "type": "skill",
-      "skill": "Listen",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "racial",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Listen"
+      },
+      "description": "+2 racial bonus on Listen checks."
     },
     {
-      "type": "skill",
-      "skill": "Move Silently",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "racial",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Move Silently"
+      },
+      "description": "+2 racial bonus on Move Silently checks."
     },
     {
-      "type": "save",
-      "target": "all",
+      "applies_to": "saving_throw",
+      "type": "racial",
       "value": 1,
       "description": "+1 racial bonus on all saving throws."
     },
     {
-      "type": "morale_save",
-      "target": "fear",
+      "applies_to": "saving_throw",
+      "type": "morale",
       "value": 2,
+      "target": {
+        "category": "effect_descriptor",
+        "value": "fear"
+      },
       "description": "+2 morale bonus on saving throws against fear."
     },
     {
-      "type": "attack",
-      "target": ["thrown", "sling"],
+      "applies_to": "attack_roll",
+      "type": "racial",
       "value": 1,
+      "condition": {
+        "requires": "weapon_is_type",
+        "types": [
+          "thrown_weapon",
+          "sling"
+        ]
+      },
       "description": "+1 racial bonus on attack rolls with thrown weapons and slings."
     }
   ],
-  "special_abilities": [],
   "automatic_languages": [
     "Common",
     "Halfling"

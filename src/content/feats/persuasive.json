@@ -1,21 +1,30 @@
 {
   "name": "Persuasive",
   "description": "You are skilled at influencing others.",
-  "type": [
-    "General"
+  "tags": [
+    "general"
   ],
   "prerequisites": [],
-  "benefit": "You get a +2 bonus on all Bluff checks and Intimidate checks.",
   "bonuses": [
     {
-      "type": "skill",
-      "skill": "Bluff",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Bluff"
+      },
+      "description": "+2 bonus on all Bluff checks."
     },
     {
-      "type": "skill",
-      "skill": "Intimidate",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Intimidate"
+      },
+      "description": "+2 bonus on all Intimidate checks."
     }
   ]
 }

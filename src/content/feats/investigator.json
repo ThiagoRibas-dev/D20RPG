@@ -1,21 +1,30 @@
 {
   "name": "Investigator",
   "description": "You are skilled at finding information.",
-  "type": [
-    "General"
+  "tags": [
+    "general"
   ],
   "prerequisites": [],
-  "benefit": "You get a +2 bonus on all Gather Information checks and Search checks.",
   "bonuses": [
     {
-      "type": "skill",
-      "skill": "Gather Information",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Gather Information"
+      },
+      "description": "+2 bonus on all Gather Information checks."
     },
     {
-      "type": "skill",
-      "skill": "Search",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Search"
+      },
+      "description": "+2 bonus on all Search checks."
     }
   ]
 }

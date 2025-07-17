@@ -1,4 +1,5 @@
 {
+  "$schema": "./../schemas/race.schema.json",
   "name": "Human",
   "description": "Humans are the most common race in the world, known for their adaptability and ambition.",
   "tags": [
@@ -15,47 +16,38 @@
   },
   "size": "Medium",
   "base_speed": 30,
-  "low_light_vision": false,
-  "darkvision": 0,
-  "immunities": [],
-  "resistances": {
-    "acid": 0,
-    "cold": 0,
-    "electricity": 0,
-    "fire": 0
-  },
-  "bonuses": [
+  "effects": [
     {
-      "type": "skill_points",
-      "value": 4,
-      "description": "4 extra skill points at 1st level.",
-      "level": 1
-    },
-    {
-      "type": "skill_points_per_level",
-      "value": 1,
-      "description": "1 extra skill point at each additional level."
-    },
-    {
-      "type": "feat",
-      "value": 1,
+      "type": "add_feat_slot",
+      "name": "Bonus Feat",
       "description": "1 extra feat at 1st level.",
-      "level": 1
+      "tags": []
+    },
+    {
+      "type": "bonus",
+      "name": "Bonus Skill Points",
+      "description": "4 extra skill points at 1st level.",
+      "target": "skill_points",
+      "value": 4,
+      "condition": {
+        "requires": "level_is",
+        "level": 1
+      }
+    },
+    {
+      "type": "bonus",
+      "name": "Bonus Skill Points Per Level",
+      "description": "1 extra skill point at each additional level.",
+      "target": "skill_points_per_level",
+      "value": 1
     }
   ],
-  "special_abilities": [],
-  "weapon_proficiencies": [],
-  "weapon_familiarity": [],
   "automatic_languages": [
     "Common"
   ],
   "bonus_languages": [
-    "Any"
+    "any_non_secret"
   ],
-  "stability": false,
-  "elven_blood": false,
-  "orc_blood": false,
-  "burrowing_mammal_affinity": false,
-  "favored_class": "Any",
+  "favored_class": "any",
   "level_adjustment": 0
 }

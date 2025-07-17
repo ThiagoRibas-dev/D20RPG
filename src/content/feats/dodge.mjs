@@ -59,11 +59,14 @@ export default class DodgeEffectLogic {
             console.log(`Dodge: Applying +1 dodge bonus to AC against ${context.attacker.name}.`);
             // The ModifierManager should handle adding this to the AC calculation.
             // For now, we'll add it directly to the context for the RulesEngine to process.
-            context.ac.bonuses.push({
-                type: 'dodge',
-                value: 1,
-                source: 'Dodge Feat'
-            });
+            const dodgeBonus = this.effect.bonuses.find(b => b.condition.requires === 'attacker_is_designated_opponent');
+            if (dodgeBonus) {
+                context.ac.bonuses.push({
+                    type: dodgeBonus.type,
+                    value: dodgeBonus.value,
+                    source: 'Dodge Feat'
+                });
+            }
         }
     }
 }

@@ -1,17 +1,28 @@
 {
   "name": "Combat Casting",
   "description": "You are adept at casting spells in combat.",
-  "type": [
-    "General"
+  "tags": [
+    "general"
   ],
   "prerequisites": [],
-  "benefit": "You get a +4 bonus on Concentration checks made to cast a spell or use a spell-like ability while on the defensive or while you are grappling or pinned.",
   "bonuses": [
     {
-      "type": "skill",
-      "skill": "Concentration",
+      "applies_to": "skill_check",
+      "type": "circumstance",
       "value": 4,
-      "condition": "casting on defensive or while grappling or pinned"
+      "target": {
+        "category": "skill",
+        "value": "Concentration"
+      },
+      "condition": {
+        "requires": "action_is_any",
+        "actions": [
+          "cast_defensively",
+          "cast_while_grappled",
+          "cast_while_pinned"
+        ]
+      },
+      "description": "You get a +4 bonus on Concentration checks made to cast a spell or use a spell-like ability while on the defensive or while you are grappling or pinned."
     }
   ]
 }

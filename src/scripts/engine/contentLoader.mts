@@ -5,6 +5,7 @@ export class ContentLoader {
     private contentData: ContentItem = new ContentItem("category");
     private campaignData: ContentItem = new ContentItem("category");
     public tileDefinitions: MapTile[] | null = null;
+    public modifierTypes: any[] = [];
 
     private async loadDirectory(dirPath: string): Promise<ContentItem> {
         const directory: ContentItem = new ContentItem("category");
@@ -21,7 +22,7 @@ export class ContentLoader {
                 } else {
                     if (file.name.endsWith('.json')) {
                         const itemName = file.name.slice(0, -5);
-                        directory[itemName] = this.createContentItem(fullPath);
+                        directory[itemName] = this.createContentItem(fullPath, itemName);
                     }
                 }
             }
@@ -32,7 +33,7 @@ export class ContentLoader {
         return directory;
     }
 
-    private createContentItem(filePath: string): ContentItem {
+    private createContentItem(filePath: string, itemId: string): ContentItem {
         // Using a closure to encapsulate data and isLoaded, also changed it to 'let' instead of 'var'.
         const getLazyLoadFn = () => {
             let data: any = null;
@@ -46,7 +47,8 @@ export class ContentLoader {
                         if (!response.ok) {
                             throw new Error(`HTTP error: ${response.status}`);
                         }
-                        data = await response.json()
+                        data = await response.json();
+                        data.id = itemId;
                         isLoaded = true;
                     }
                     catch (error) {
@@ -82,6 +84,7 @@ export class ContentLoader {
         try {
             this.contentData = await this.loadDirectory('./content');
             this.tileDefinitions = await this.loadTileDefinitions();
+            this.modifierTypes = await this.loadModifierTypes();
             console.log("content loaded successfully from javascript calls:", this.contentData)
         }
         catch (e) {

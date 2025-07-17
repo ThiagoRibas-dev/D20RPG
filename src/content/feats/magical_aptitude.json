@@ -1,21 +1,30 @@
 {
   "name": "Magical Aptitude",
   "description": "You are skilled at the art of magic.",
-  "type": [
-    "General"
+  "tags": [
+    "general"
   ],
   "prerequisites": [],
-  "benefit": "You get a +2 bonus on all Spellcraft checks and Use Magic Device checks.",
   "bonuses": [
     {
-      "type": "skill",
-      "skill": "Spellcraft",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Spellcraft"
+      },
+      "description": "+2 bonus on all Spellcraft checks."
     },
     {
-      "type": "skill",
-      "skill": "Use Magic Device",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Use Magic Device"
+      },
+      "description": "+2 bonus on all Use Magic Device checks."
     }
   ]
 }

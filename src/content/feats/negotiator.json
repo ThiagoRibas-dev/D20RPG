@@ -1,21 +1,30 @@
 {
   "name": "Negotiator",
   "description": "You are a skilled negotiator.",
-  "type": [
-    "General"
+  "tags": [
+    "general"
   ],
   "prerequisites": [],
-  "benefit": "You get a +2 bonus on all Diplomacy checks and Sense Motive checks.",
   "bonuses": [
     {
-      "type": "skill",
-      "skill": "Diplomacy",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Diplomacy"
+      },
+      "description": "+2 bonus on all Diplomacy checks."
     },
     {
-      "type": "skill",
-      "skill": "Sense Motive",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Sense Motive"
+      },
+      "description": "+2 bonus on all Sense Motive checks."
     }
   ]
 }

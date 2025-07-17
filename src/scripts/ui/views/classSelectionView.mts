@@ -80,7 +80,7 @@ export class ClassSelectionView {
                         player.powerSystemRules = classData.powerSystemRules || null;
 
                         // Recalculate stats to apply class bonuses/penalties
-                        player.recalculateDerivedStats();
+                        globalServiceLocator.rulesEngine.calculateStats(player);
 
                         updateSelectionInfo(classData);
                     }

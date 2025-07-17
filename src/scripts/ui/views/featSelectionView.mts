@@ -43,31 +43,40 @@ export class FeatSelectionView {
                         return;
                     }
 
-                    const alreadySelectedIndex = player.feats.findIndex(f => f.name === featData.name);
+                    const filledSlotIndex = player.featSlots.findIndex(s => s.feat?.id === featData.id);
 
-                    if (alreadySelectedIndex !== -1) {
+                    if (filledSlotIndex !== -1) {
                         // Deselect the feat
-                        player.feats.splice(alreadySelectedIndex, 1);
+                        const slot = player.featSlots[filledSlotIndex];
+                        slot.feat = null;
                         featButton.classList.remove('selected');
                         this.updateFeatMessage(`Feat '${featData.name}' deselected.`);
-                        updateSelectionInfo({ name: "", description: "" }); // Clear description
+                        updateSelectionInfo({ name: "", description: "" });
                     } else {
-                        // Select the feat
-                        const maxFeats = 1 + player.modifiers.getValue('feats.max', 0);
-                        if (player.feats.length >= maxFeats) {
-                            this.updateFeatMessage(`Cannot select more feats. Maximum reached (${maxFeats}).`);
+                        // Find an empty slot
+                        const emptySlot = player.featSlots.find(s => !s.feat);
+                        if (!emptySlot) {
+                            this.updateFeatMessage(`Cannot select more feats. All slots are full.`);
+                            return;
+                        }
+
+                        // Check for tag restrictions
+                        if (emptySlot.tags.length > 0 && !emptySlot.tags.every(tag => featData.tags.includes(tag))) {
+                            this.updateFeatMessage(`This feat does not meet the requirements for the available slot (${emptySlot.tags.join(', ')}).`);
                             return;
                         }
 
                         if (globalServiceLocator.rulesEngine.validateFeatPrerequisites(player, featData)) {
-                            player.feats.push(featData);
+                            emptySlot.feat = featData;
                             featButton.classList.add('selected');
-                            this.updateFeatMessage(`Feat '${featData.name}' selected.`);
+                            this.updateFeatMessage(`Feat '${featData.name}' selected for slot: ${emptySlot.source}.`);
                             updateSelectionInfo(featData);
                         } else {
                             this.updateFeatMessage(`Prerequisites not met for feat: ${featData.name}.`);
                         }
                     }
+                    // Update the main feats array
+                    player.feats = player.featSlots.map(s => s.feat).filter(f => f) as ContentItem[];
                 };
 
                 this.container.appendChild(featButton);

@@ -1,21 +1,30 @@
 {
   "name": "Stealthy",
   "description": "You are good at hiding and moving silently.",
-  "type": [
-    "General"
+  "tags": [
+    "general"
   ],
   "prerequisites": [],
-  "benefit": "You get a +2 bonus on all Hide checks and Move Silently checks.",
   "bonuses": [
     {
-      "type": "skill",
-      "skill": "Hide",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Hide"
+      },
+      "description": "+2 bonus on all Hide checks."
     },
     {
-      "type": "skill",
-      "skill": "Move Silently",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Move Silently"
+      },
+      "description": "+2 bonus on all Move Silently checks."
     }
   ]
 }

@@ -1,54 +1,75 @@
 {
   "name": "Endurance",
   "description": "You are able to push your body beyond its normal limits.",
-  "type": [
-    "General"
+  "tags": [
+    "general"
   ],
   "prerequisites": [],
-  "benefit": "You gain a +4 bonus on several checks and saves related to resisting nonlethal damage and fatigue. You may also sleep in light or medium armor without becoming fatigued.",
   "bonuses": [
     {
-      "type": "check",
-      "target": "Swim",
-      "condition": "resist nonlethal damage",
-      "value": 4
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 4,
+      "target": { "category": "skill", "value": "Swim" },
+      "condition": { "requires": "resisting_nonlethal_damage" },
+      "description": "+4 bonus on Swim checks made to resist nonlethal damage."
     },
     {
-      "type": "check",
-      "target": "Constitution",
-      "condition": "continue running",
-      "value": 4
+      "applies_to": "ability_check",
+      "type": "untyped",
+      "value": 4,
+      "target": { "category": "ability", "value": "con" },
+      "condition": { "requires": "continue_running" },
+      "description": "+4 bonus on Constitution checks made to continue running."
     },
     {
-      "type": "check",
-      "target": "Constitution",
-      "condition": "avoid nonlethal damage from a forced march",
-      "value": 4
+      "applies_to": "ability_check",
+      "type": "untyped",
+      "value": 4,
+      "target": { "category": "ability", "value": "con" },
+      "condition": { "requires": "forced_march" },
+      "description": "+4 bonus on Constitution checks made to avoid nonlethal damage from a forced march."
     },
     {
-      "type": "check",
-      "target": "Constitution",
-      "condition": "hold your breath",
-      "value": 4
+      "applies_to": "ability_check",
+      "type": "untyped",
+      "value": 4,
+      "target": { "category": "ability", "value": "con" },
+      "condition": { "requires": "holding_breath" },
+      "description": "+4 bonus on Constitution checks made to hold your breath."
     },
     {
-      "type": "check",
-      "target": "Constitution",
-      "condition": "avoid nonlethal damage from starvation or thirst",
-      "value": 4
+      "applies_to": "ability_check",
+      "type": "untyped",
+      "value": 4,
+      "target": { "category": "ability", "value": "con" },
+      "condition": { "requires": "starvation_or_thirst" },
+      "description": "+4 bonus on Constitution checks made to avoid nonlethal damage from starvation or thirst."
     },
     {
-      "type": "save",
-      "target": "Fortitude",
-      "condition": "avoid nonlethal damage from hot or cold environments",
-      "value": 4
+      "applies_to": "saving_throw",
+      "type": "untyped",
+      "value": 4,
+      "target": { "category": "saving_throw_type", "value": "fortitude" },
+      "condition": { "requires": "resisting_environmental_damage", "environment": ["hot", "cold"] },
+      "description": "+4 bonus on Fortitude saves made to avoid nonlethal damage from hot or cold environments."
     },
     {
-      "type": "save",
-      "target": "Fortitude",
-      "condition": "resist damage from suffocation",
-      "value": 4
+      "applies_to": "saving_throw",
+      "type": "untyped",
+      "value": 4,
+      "target": { "category": "saving_throw_type", "value": "fortitude" },
+      "condition": { "requires": "resisting_suffocation" },
+      "description": "+4 bonus on Fortitude saves made to resist damage from suffocation."
     }
   ],
-  "special": "You may sleep in light or medium armor without becoming fatigued. A ranger automatically gains Endurance as a bonus feat at 3rd level."
+  "special_abilities": [
+    {
+      "name": "Sleep in Armor",
+      "description": "You may sleep in light or medium armor without becoming fatigued.",
+      "effect": {
+        "ignore_fatigue_from_sleeping_in_armor": [ "light", "medium" ]
+      }
+    }
+  ]
 }

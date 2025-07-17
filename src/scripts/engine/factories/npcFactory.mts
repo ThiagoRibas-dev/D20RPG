@@ -21,8 +21,8 @@ export class NpcFactory {
         const race: ContentItem = await content.races[prefab.race]?.get();
         const cls: ContentItem = await content.classes[prefab.class]?.get();
 
-        // 1. Create the basic NPC instance
-        const npc: Npc = new Npc(prefab.name, prefabId, race, position);
+        // 1. Create the basic NPC instance, passing stats to the constructor
+        const npc: Npc = new Npc(prefab.name, prefabId, race, position, prefab.stats);
         npc.position = position;
         npc.disposition = prefab.disposition || 'neutral';
 
@@ -34,9 +34,6 @@ export class NpcFactory {
         });
         npc.totalLevel = prefab.level;
 
-        // 3. Set base stats
-        npc.stats = prefab.stats;
-
         console.log('NpcFactory prefab', prefab);
         console.log('NpcFactory npc', npc);
 
@@ -47,7 +44,7 @@ export class NpcFactory {
         for (const featId of prefab.feats) {
             const featData = await content.feats[featId]?.get();
             if (featData.script) {
-                await globalServiceLocator.effectManager.applyEffect(content.feats[featId], npc, npc);
+                await globalServiceLocator.effectManager.applyScriptedEffect(featData, npc, npc);
             }
         }
         // Recalculate stats AFTER applying feats to include declarative feat bonuses

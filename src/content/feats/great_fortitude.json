@@ -1,16 +1,20 @@
 {
   "name": "Great Fortitude",
   "description": "You are tougher than normal.",
-  "type": [
-    "General"
+  "tags": [
+    "general"
   ],
   "prerequisites": [],
-  "benefit": "You get a +2 bonus on all Fortitude saving throws.",
   "bonuses": [
     {
-      "type": "save",
-      "target": "Fortitude",
-      "value": 2
+      "applies_to": "saving_throw",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "saving_throw_type",
+        "value": "fortitude"
+      },
+      "description": "+2 bonus on all Fortitude saving throws."
     }
   ]
 }

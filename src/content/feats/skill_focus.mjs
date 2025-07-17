@@ -43,8 +43,11 @@ export default class SkillFocusEffectLogic {
      */
     modifySkillCheck(context) {
         if (context.actor === this.effect.target && context.skill === this.chosenSkill) {
-            console.log(`Skill Focus (${this.chosenSkill}): Applying +3 bonus.`);
-            context.roll.modifier += 3;
+            const skillFocusBonus = this.effect.bonuses.find(b => b.target.value === 'CHOICE');
+            if (skillFocusBonus) {
+                console.log(`Skill Focus (${this.chosenSkill}): Applying +${skillFocusBonus.value} bonus.`);
+                context.roll.modifier += skillFocusBonus.value;
+            }
         }
     }
 }

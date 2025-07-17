@@ -1,4 +1,5 @@
 {
+  "$schema": "./../schemas/race.schema.json",
   "name": "Dwarf",
   "description": "Dwarves are known for their skill in warfare, their ability to withstand physical and magical punishment, their knowledge of the earth's secrets, their hard work, and their love of fine craftsmanship.",
   "tags": [
@@ -15,59 +16,118 @@
   },
   "size": "Medium",
   "base_speed": 20,
-  "special_movement": "Dwarves can move at their base speed even when wearing medium or heavy armor or when carrying a medium or heavy load.",
-  "low_light_vision": false,
   "darkvision": 60,
-  "immunities": [],
-  "resistances": {},
-  "bonuses": [
+  "effects": [
     {
-      "type": "save",
-      "target": "poison",
+      "type": "bonus",
+      "name": "Poison Resistance",
+      "description": "+2 racial bonus on saving throws against poison.",
+      "target": "saving_throw",
+      "bonus_type": "racial",
       "value": 2,
-      "description": "+2 racial bonus on saving throws against poison."
+      "condition": {
+        "requires": "saving_throw_type",
+        "value": "poison"
+      }
     },
     {
-      "type": "save",
-      "target": "spells",
+      "type": "bonus",
+      "name": "Magic Resistance",
+      "description": "+2 racial bonus on saving throws against spells and spell-like effects.",
+      "target": "saving_throw",
+      "bonus_type": "racial",
       "value": 2,
-      "description": "+2 racial bonus on saving throws against spells and spell-like effects."
+      "condition": {
+        "requires": "source_is",
+        "value": ["spell", "spell_like_effect"]
+      }
     },
     {
-      "type": "attack",
-      "target": ["orc", "goblinoid"],
+      "type": "bonus",
+      "name": "Giant Hunter",
+      "description": "+1 racial bonus on attack rolls against orcs and goblinoids.",
+      "target": "attack_roll",
+      "bonus_type": "racial",
       "value": 1,
-      "description": "+1 racial bonus on attack rolls against orcs and goblinoids."
+      "condition": {
+        "requires": "target_has_tags",
+        "tags": ["orc", "goblinoid"]
+      }
     },
     {
-      "type": "dodge_ac",
-      "target": "giant",
+      "type": "bonus",
+      "name": "Giant Dodger",
+      "description": "+4 dodge bonus to AC against monsters of the giant type.",
+      "target": "ac",
+      "bonus_type": "dodge",
       "value": 4,
-      "description": "+4 dodge bonus to Armor Class against monsters of the giant type."
+      "condition": {
+        "requires": "attacker_has_tags",
+        "tags": ["giant"]
+      }
     },
     {
-      "type": "skill",
-      "skill": "Appraise",
-      "condition": "related to stone or metal items",
-      "value": 2
+      "type": "bonus",
+      "name": "Stone Appraiser",
+      "description": "+2 racial bonus on Appraise checks for stone/metal items.",
+      "target": "skill_check",
+      "bonus_type": "racial",
+      "value": 2,
+      "condition": {
+        "requires": "item_has_tags",
+        "tags": ["stone", "metal"]
+      }
     },
     {
-      "type": "skill",
-      "skill": "Craft",
-      "condition": "related to stone or metal items",
-      "value": 2
-    }
-  ],
-  "special_abilities": [
+      "type": "bonus",
+      "name": "Stone Crafter",
+      "description": "+2 racial bonus on Craft checks for stone/metal items.",
+      "target": "skill_check",
+      "bonus_type": "racial",
+      "value": 2,
+      "condition": {
+        "requires": "item_has_tags",
+        "tags": ["stone", "metal"]
+      }
+    },
     {
+      "type": "bonus",
+      "name": "Keen Eyed",
+      "description": "+2 racial bonus on Search checks to notice unusual stonework.",
+      "target": "skill_check",
+      "bonus_type": "racial",
+      "value": 2,
+      "condition": {
+        "requires": "subject_is",
+        "value": "unusual_stonework"
+      }
+    },
+    {
+      "type": "bonus",
+      "name": "Stable",
+      "description": "+4 bonus on checks to resist being bull rushed or tripped.",
+      "target": "ability_check",
+      "bonus_type": "racial",
+      "value": 4,
+      "condition": {
+        "requires": "resisting_action",
+        "actions": ["bull_rush", "trip"]
+      }
+    },
+    {
+      "type": "script",
       "name": "Stonecunning",
-      "description": "Grants a +2 racial bonus on Search checks to notice unusual stonework. A dwarf who merely comes within 10 feet of unusual stonework can make a Search check as if actively searching. Can use Search to find stonework traps as a rogue. Can also intuit depth underground.",
+      "description": "Can make a Search check for unusual stonework when passing within 10 feet. Can use Search to find stonework traps. Can intuit depth underground.",
       "script": "/content/races/dwarf_stonecunning.mjs"
+    },
+    {
+      "type": "proficiency",
+      "name": "Weapon Familiarity",
+      "description": "Treat dwarven waraxes and dwarven urgrothes as martial weapons instead of exotic.",
+      "value": {
+        "treat_as_martial": ["dwarven_waraxe", "dwarven_urgrosh"]
+      }
     }
-  ],
-  "weapon_familiarity": [
-    "dwarven waraxe",
-    "dwarven urgrosh"
   ],
   "automatic_languages": [
     "Common",
@@ -81,10 +141,6 @@
     "Terran",
     "Undercommon"
   ],
-  "stability": {
-    "value": 4,
-    "condition": "resisting bull rush or trip when standing on the ground"
-  },
   "favored_class": "Fighter",
   "level_adjustment": 0
 }

@@ -1,16 +1,17 @@
 {
   "name": "Improved Initiative",
   "description": "You can react more quickly than normal in a fight.",
-  "type": [
-    "General",
-    "Fighter Bonus Feat"
+  "tags": [
+    "general",
+    "fighter_bonus_feat"
   ],
   "prerequisites": [],
-  "benefit": "You get a +4 bonus on initiative checks.",
   "bonuses": [
     {
-      "type": "initiative",
-      "value": 4
+      "applies_to": "initiative",
+      "type": "untyped",
+      "value": 4,
+      "description": "+4 bonus on initiative checks."
     }
   ]
 }

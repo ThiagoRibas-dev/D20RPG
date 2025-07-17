@@ -1,21 +1,30 @@
 {
   "name": "Deceitful",
   "description": "You are skilled at deception.",
-  "type": [
-    "General"
+  "tags": [
+    "general"
   ],
   "prerequisites": [],
-  "benefit": "You get a +2 bonus on all Disguise checks and Forgery checks.",
   "bonuses": [
     {
-      "type": "skill",
-      "skill": "Disguise",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Disguise"
+      },
+      "description": "+2 bonus on all Disguise checks."
     },
     {
-      "type": "skill",
-      "skill": "Forgery",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Forgery"
+      },
+      "description": "+2 bonus on all Forgery checks."
     }
   ]
 }

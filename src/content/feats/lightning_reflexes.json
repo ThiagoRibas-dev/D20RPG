@@ -1,16 +1,20 @@
 {
   "name": "Lightning Reflexes",
   "description": "You have faster-than-normal reflexes.",
-  "type": [
-    "General"
+  "tags": [
+    "general"
   ],
   "prerequisites": [],
-  "benefit": "You get a +2 bonus on all Reflex saving throws.",
   "bonuses": [
     {
-      "type": "save",
-      "target": "Reflex",
-      "value": 2
+      "applies_to": "saving_throw",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "saving_throw_type",
+        "value": "reflex"
+      },
+      "description": "+2 bonus on all Reflex saving throws."
     }
   ]
 }

@@ -65,7 +65,7 @@ export class RaceSelectionView {
                     }
 
                     // Recalculate stats to apply racial bonuses/penalties
-                    player.recalculateDerivedStats();
+                    globalServiceLocator.rulesEngine.calculateStats(player);
                 };
 
                 // Add an icon if it exists

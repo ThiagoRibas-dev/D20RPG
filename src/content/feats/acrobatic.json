@@ -1,21 +1,23 @@
 {
+  "$schema": "./../schemas/feat.schema.json",
   "name": "Acrobatic",
   "description": "You are skilled at jumping and tumbling.",
-  "type": [
-    "General"
+  "tags": [
+    "general"
   ],
   "prerequisites": [],
-  "benefit": "You get a +2 bonus on all Jump checks and Tumble checks.",
-  "bonuses": [
+  "effects": [
     {
-      "type": "skill",
-      "skill": "Jump",
-      "value": 2
-    },
-    {
-      "type": "skill",
-      "skill": "Tumble",
-      "value": 2
+      "type": "bonus",
+      "name": "Acrobatic",
+      "description": "+2 bonus on all Jump and Tumble checks.",
+      "target": "skill_check",
+      "bonus_type": "untyped",
+      "value": 2,
+      "condition": {
+        "requires": "skill_is",
+        "skills": ["Jump", "Tumble"]
+      }
     }
   ]
 }

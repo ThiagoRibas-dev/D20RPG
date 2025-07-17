@@ -1,21 +1,30 @@
 {
   "name": "Diligent",
   "description": "You are a skilled appraiser and cryptographer.",
-  "type": [
-    "General"
+  "tags": [
+    "general"
   ],
   "prerequisites": [],
-  "benefit": "You get a +2 bonus on all Appraise checks and Decipher Script checks.",
   "bonuses": [
     {
-      "type": "skill",
-      "skill": "Appraise",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Appraise"
+      },
+      "description": "+2 bonus on all Appraise checks."
     },
     {
-      "type": "skill",
-      "skill": "Decipher Script",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Decipher Script"
+      },
+      "description": "+2 bonus on all Decipher Script checks."
     }
   ]
 }

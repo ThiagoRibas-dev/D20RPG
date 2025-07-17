@@ -19,6 +19,12 @@ export type EntitySkills = {
     allocations: Map<string, number>;
 }
 
+export type FeatSlot = {
+    source: string;
+    tags: string[];
+    feat: ContentItem | null;
+}
+
 export type EntityAbilityScores = {
     [key: string]: number;
     str: number;
@@ -66,8 +72,8 @@ export class Entity {
     totalLevel: number;
     skills: EntitySkills;
     feats: ContentItem[];
+    featSlots: FeatSlot[];
     position: EntityPosition;
-    stats: EntityAbilityScores;
     hitPoints: EntityHitPoints;
     baseAttackBonus: number;
     savingThrows: SavingThrows;
@@ -79,6 +85,7 @@ export class Entity {
     public inventory: InventoryComponent;
     public equipment: EquipmentComponent;
     public tags: Set<string>;
+    public proficiencies: Set<string>;
 
     // We store the BASE stats, not the final ones.
     public baseStats: EntityAbilityScores;
@@ -97,6 +104,7 @@ export class Entity {
         totalLevel: number = 0,
         skills: EntitySkills = { remaining: 0, allocations: new Map() },
         feats: ContentItem[] = [],
+        featSlots: FeatSlot[] = [],
         position: EntityPosition = { x: 1, y: 1 },
         stats: EntityAbilityScores = {
             str: 10,
@@ -117,8 +125,8 @@ export class Entity {
         this.totalLevel = totalLevel;
         this.skills = skills;
         this.feats = feats;
+        this.featSlots = featSlots;
         this.position = position;
-        this.stats = stats;
         this.hitPoints = hitPoints;
         this.baseAttackBonus = baseAttackBonus;
         this.activeEffects = []; this.savingThrows = {
@@ -129,8 +137,8 @@ export class Entity {
         this.renderable = null;
 
         this.baseStats = { ...stats };
-        this.stats = { ...stats };
-        this.modifiers = new ModifierManager();
+        this.modifiers = new ModifierManager(globalServiceLocator.contentLoader.modifierTypes);
+        this.proficiencies = new Set<string>();
         this.actionBudget = {
             standard: 1,
             move: 1,
@@ -155,14 +163,17 @@ export class Entity {
         * @param skillId The ID of the skill (e.g., "spot").
         * @returns The final skill modifier.
         */
-    public getSkillModifier(skillId: string): number {
-        // In a real implementation, you would look up the skill's key ability (e.g., WIS for Spot)
-        const keyAbilityScore = this.stats.wis; // Placeholder
-        const abilityMod = calculateModifier(keyAbilityScore);
+    public async getSkillModifier(skillId: string): Promise<number> {
+        const skillData = await globalServiceLocator.contentLoader.loadSkill(skillId);
+        if (!skillData) {
+            console.error(`Could not load skill data for ${skillId}`);
+            return 0;
+        }
 
+        const keyAbility = skillData.ability as keyof EntityAbilityScores;
+        const abilityMod = calculateModifier(this.getAbilityScore(keyAbility));
         const ranks = this.getSkillRank(skillId);
-
-        const otherBonuses = this.modifiers.getValue(`skills.${skillId}`, 0);
+        const otherBonuses = this.modifiers.getValue(`skills.${skillId}`, 0, this);
 
         return ranks + abilityMod + otherBonuses;
     }
@@ -211,52 +222,22 @@ export class Entity {
         return this.tags.has(tag);
     }
 
-    /**
-     * Recalculates all stats that are derived from race, class, or ability scores.
-     * This should be called whenever a character's race or class is chosen or changed.
-     */
-    public recalculateDerivedStats(): void {
-        if (!this.selectedRace || this.classes.length === 0) {
-            return;
-        }
+    // --- STAT GETTERS ---
 
-        // Reset modifiers that are recalculated here. We use the source as an ID.
-        this.modifiers.removeBySourceId('Racial Bonus');
+    public getAbilityScore(ability: keyof EntityAbilityScores): number {
+        return this.modifiers.getValue(`stats.${ability}`, this.baseStats[ability], this);
+    }
 
-        // 1. Apply Bonuses (including declarative feats)
-        this.selectedRace.bonuses?.forEach((bonus: any) => {
-            if (bonus.type === "feat" && bonus.level === 1) {
-                this.modifiers.add({
-                    value: bonus.value,
-                    type: 'racial',
-                    source: 'Racial Bonus',
-                    target: 'feats.max',
-                    sourceId: 'Racial Bonus' // Use a consistent sourceId
-                });
-            }
-        });
+    public getFortitudeSave(): number {
+        return this.modifiers.getValue('saves.fortitude', 0, this);
+    }
 
-        // 2. Calculate Skill Points
-        this.skills.remaining = 0;
-        const intModifier = calculateModifier(this.stats.int);
-        const firstClass = this.classes[0].class;
-        const classSkillPoints = firstClass.skill_points_per_level?.base || 0;
+    public getReflexSave(): number {
+        return this.modifiers.getValue('saves.reflex', 0, this);
+    }
 
-        let skillPoints = (classSkillPoints + intModifier) * 4;
-
-        // Add racial skill point bonuses
-        this.selectedRace.bonuses?.forEach((bonus: any) => {
-            if (bonus.type === "skill_points" && bonus.level === 1) {
-                skillPoints += bonus.value;
-            }
-        });
-
-        this.skills.remaining = skillPoints;
-        console.log(`Recalculated skill points for ${this.name}: ${this.skills.remaining}`);
-
-        // 3. Update other derived stats
-        this.updateTags();
-        globalServiceLocator.eventBus.publish('character:stats_recalculated', { entity: this });
+    public getWillSave(): number {
+        return this.modifiers.getValue('saves.will', 0, this);
     }
 
     takeDamage(amount: number, source: Entity | null = null) {
@@ -273,7 +254,7 @@ export class Entity {
 
     rollInitiative(): number {
         const d20Roll = rollD20(); // Roll d20 using utility function
-        const dexMod = calculateModifier(this.stats.dex); // Get DEX modifier
+        const dexMod = calculateModifier(this.getAbilityScore('dex')); // Get DEX modifier
 
         let initiativeRoll = d20Roll + dexMod; // Calculate total initiative
         // Add other initiative bonuses here later (feats, items, etc.)
@@ -295,19 +276,9 @@ export class Entity {
 
     /**
      * Calculates the entity's Armor Class.
-     * MVP: Returns a simple 10 + DEX modifier.
-     * TODO: This should use the ModifierList system to account for armor, shields, etc.
+     * This now fully uses the modifier system.
      */
     public getArmorClass(): number {
-        const baseAC = 10;
-        const dexMod = calculateModifier(this.stats.dex);
-
-        // Cap DEX bonus based on equipped armor
-        const maxDex = this.modifiers.getValue('ac.max_dex', 99); // Get lowest value (most restrictive)
-        const cappedDexMod = Math.min(dexMod, maxDex);
-
-        const armorBonuses = this.modifiers.getValue('ac', 0);
-
-        return baseAC + cappedDexMod + armorBonuses;
+        return this.modifiers.getValue('ac', 10, this);
     }
 }

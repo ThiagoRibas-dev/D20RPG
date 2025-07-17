@@ -1,21 +1,30 @@
 {
   "name": "Athletic",
   "description": "You are a skilled climber and swimmer.",
-  "type": [
-    "General"
+  "tags": [
+    "general"
   ],
   "prerequisites": [],
-  "benefit": "You get a +2 bonus on all Climb checks and Swim checks.",
   "bonuses": [
     {
-      "type": "skill",
-      "skill": "Climb",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Climb"
+      },
+      "description": "+2 bonus on all Climb checks."
     },
     {
-      "type": "skill",
-      "skill": "Swim",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Swim"
+      },
+      "description": "+2 bonus on all Swim checks."
     }
   ]
 }

@@ -55,92 +55,96 @@ export class RulesEngine {
             // We let the attack resolve
         }
 
-        // 1. CREATE CONTEXT
-        // This object will hold all data for this single attack.
-        const attackContext = {
-            attacker,
-            target,
-            weapon,
-            attackRoll: {
-                d20: 0,
-                base: attacker.baseAttackBonus,
-                abilityMod: calculateModifier(attacker.stats.str), // Assuming melee for now
-                misc: new ModifierList(globalServiceLocator.modifierManager.modifierTypes), // For Power Attack, Bless, etc.
-                final: 0,
-            },
-            outcome: 'pending' as 'pending' | 'miss' | 'hit' | 'critical_threat' | 'critical_hit',
-        };
+        const baseAttackBonuses = this.getAttackBonuses(attacker.baseAttackBonus);
 
-        // 2. FIRE "BEFORE_ROLL" EVENT
-        // This gives other systems (feats, spells) a chance to modify the attack.
-        globalServiceLocator.eventBus.publish(GameEvents.ACTION_ATTACK_BEFORE_ROLL, attackContext);
-
-        // 3. ROLL THE DIE
-        attackContext.attackRoll.d20 = rollD20(); // From utils.mts
-
-        // 4. CALCULATE FINAL ATTACK ROLL
-        attackContext.attackRoll.final =
-            attackContext.attackRoll.d20 +
-            attackContext.attackRoll.base +
-            attackContext.attackRoll.abilityMod +
-            attackContext.attackRoll.misc.getTotal(); // Get total from all stacking bonuses/penalties
-
-        // 5. COMPARE TO TARGET'S AC
-        const targetAC = target.getArmorClass();
-
-        // 6. DETERMINE OUTCOME
-        if (attackContext.attackRoll.d20 === 1) {
-            attackContext.outcome = 'miss'; // Natural 1 is always a miss
-        } else if (attackContext.attackRoll.d20 === 20) {
-            attackContext.outcome = 'critical_threat'; // Natural 20 is always a threat
-        } else if (attackContext.attackRoll.d20 >= this.parseThreatRange(weapon.critical?.threatRange || "20")) {
-            attackContext.outcome = 'hit';
-        } else {
-            attackContext.outcome = 'miss';
-        }
-
-        if (attackContext.outcome === 'hit' || attackContext.outcome === 'critical_threat') {
-            const damageContext = {
-                attacker: attacker,
-                target: target,
-                weapon: weapon,
-                damageRoll: {
-                    dice: weapon.damage || '1d4', // e.g., "2d4" from falchion.json
-                    bonus: 0, // For STR mod, Power Attack, etc.
-                    total: 0
+        for (const base of baseAttackBonuses) {
+            // 1. CREATE CONTEXT
+            // This object will hold all data for this single attack.
+            const attackContext = {
+                attacker,
+                target,
+                weapon,
+                attackRoll: {
+                    d20: 0,
+                    base: base,
+                    abilityMod: calculateModifier(attacker.getAbilityScore('str')), // Assuming melee for now
+                    misc: new ModifierList(globalServiceLocator.modifierManager.modifierTypes), // For Power Attack, Bless, etc.
+                    final: 0,
                 },
-                damageType: weapon.damage_type || 'bludgeoning',
-                isCritical: false
+                outcome: 'pending' as 'pending' | 'miss' | 'hit' | 'critical_threat' | 'critical_hit',
             };
 
-            // --- HANDLE CRITICAL THREAT ---
-            if (attackContext.outcome === 'critical_threat') {
-                console.log("Critical Threat! Rolling for confirmation...");
-                // Make a second attack roll (the confirmation roll)
-                const confirmationRoll = rollD20() + attackContext.attackRoll.base + attackContext.attackRoll.abilityMod + attackContext.attackRoll.misc.getTotal();
+            // 2. FIRE "BEFORE_ROLL" EVENT
+            // This gives other systems (feats, spells) a chance to modify the attack.
+            globalServiceLocator.eventBus.publish(GameEvents.ACTION_ATTACK_BEFORE_ROLL, attackContext);
 
-                if (confirmationRoll >= targetAC) {
-                    console.log(`Confirmation Succeeded! (Roll: ${confirmationRoll})`);
-                    attackContext.outcome = 'critical_hit'; // Officially a crit
-                    damageContext.isCritical = true;
-                } else {
-                    console.log(`Confirmation Failed. (Roll: ${confirmationRoll}) Treating as a normal hit.`);
-                    attackContext.outcome = 'hit'; // Downgrade to a normal hit
-                }
+            // 3. ROLL THE DIE
+            attackContext.attackRoll.d20 = rollD20(); // From utils.mts
+
+            // 4. CALCULATE FINAL ATTACK ROLL
+            attackContext.attackRoll.final =
+                attackContext.attackRoll.d20 +
+                attackContext.attackRoll.base +
+                attackContext.attackRoll.abilityMod +
+                attackContext.attackRoll.misc.getTotal(); // Get total from all stacking bonuses/penalties
+
+            // 5. COMPARE TO TARGET'S AC
+            const targetAC = target.getArmorClass();
+
+            // 6. DETERMINE OUTCOME
+            if (attackContext.attackRoll.d20 === 1) {
+                attackContext.outcome = 'miss'; // Natural 1 is always a miss
+            } else if (attackContext.attackRoll.d20 === 20) {
+                attackContext.outcome = 'critical_threat'; // Natural 20 is always a threat
+            } else if (attackContext.attackRoll.final >= targetAC) {
+                attackContext.outcome = 'hit';
+            } else {
+                attackContext.outcome = 'miss';
             }
 
-            // This is the hook for PowerAttackEffectLogic.modifyDamage
-            globalServiceLocator.eventBus.publish(GameEvents.ACTION_DAMAGE_BEFORE_ROLL, damageContext);
+            if (attackContext.outcome === 'hit' || attackContext.outcome === 'critical_threat') {
+                const damageContext = {
+                    attacker: attacker,
+                    target: target,
+                    weapon: weapon,
+                    damageRoll: {
+                        dice: weapon.damage || '1d4', // e.g., "2d4" from falchion.json
+                        bonus: 0, // For STR mod, Power Attack, etc.
+                        total: 0
+                    },
+                    damageType: weapon.damage_type || 'bludgeoning',
+                    isCritical: false
+                };
 
-            // Resolve the damage
-            this.resolveDamage(damageContext);
+                // --- HANDLE CRITICAL THREAT ---
+                if (attackContext.outcome === 'critical_threat') {
+                    console.log("Critical Threat! Rolling for confirmation...");
+                    // Make a second attack roll (the confirmation roll)
+                    const confirmationRoll = rollD20() + attackContext.attackRoll.base + attackContext.attackRoll.abilityMod + attackContext.attackRoll.misc.getTotal();
+
+                    if (confirmationRoll >= targetAC) {
+                        console.log(`Confirmation Succeeded! (Roll: ${confirmationRoll})`);
+                        attackContext.outcome = 'critical_hit'; // Officially a crit
+                        damageContext.isCritical = true;
+                    } else {
+                        console.log(`Confirmation Failed. (Roll: ${confirmationRoll}) Treating as a normal hit.`);
+                        attackContext.outcome = 'hit'; // Downgrade to a normal hit
+                    }
+                }
+
+                // This is the hook for PowerAttackEffectLogic.modifyDamage
+                globalServiceLocator.eventBus.publish(GameEvents.ACTION_DAMAGE_BEFORE_ROLL, damageContext);
+
+                // Resolve the damage
+                this.resolveDamage(damageContext);
+            }
+
+            console.log(`Attack Roll: ${attackContext.attackRoll.final} vs AC ${targetAC} -> ${attackContext.outcome.toUpperCase()}`);
+
+            // 7. FIRE "RESOLVED" EVENT
+            // Announce the final result of the attack roll.
+            globalServiceLocator.eventBus.publish(GameEvents.ACTION_ATTACK_RESOLVED, attackContext);
         }
-
-        console.log(`Attack Roll: ${attackContext.attackRoll.final} vs AC ${targetAC} -> ${attackContext.outcome.toUpperCase()}`);
-
-        // 7. FIRE "RESOLVED" EVENT
-        // Announce the final result of the attack roll.
-        globalServiceLocator.eventBus.publish(GameEvents.ACTION_ATTACK_RESOLVED, attackContext);
     }
 
     /**
@@ -150,35 +154,77 @@ export class RulesEngine {
      */
     public calculateStats(entity: Entity): void {
         console.log(`Calculating stats for ${entity.name}...`);
-        entity.modifiers = new ModifierManager(); // Start fresh
+        entity.modifiers = new ModifierManager(globalServiceLocator.contentLoader.modifierTypes);
+        entity.proficiencies.clear();
 
-        // --- 1. GATHER SOURCES ---
-        const sources: ContentItem[] = [];
-        if (entity.selectedRace) sources.push(entity.selectedRace);
-        entity.feats.forEach(feat => sources.push(feat));
+        // --- 1. GATHER ALL EFFECTS ---
+        const allEffects: any[] = [];
+        const sources: { source: ContentItem, name: string }[] = [];
+
+        if (entity.selectedRace) {
+            sources.push({ source: entity.selectedRace, name: entity.selectedRace.name });
+        }
+        entity.feats.forEach(feat => sources.push({ source: feat, name: feat.name }));
         entity.classes.forEach(cls => {
+            // Add effects from the class itself
+            sources.push({ source: cls.class, name: cls.class.name });
+            // Add effects from level progression
             for (let i = 0; i < cls.level; i++) {
                 const levelData = cls.class.level_progression[i];
-                levelData?.special?.forEach((ability: any) => sources.push(ability));
+                levelData?.special?.forEach((ability: any) => {
+                    // This is a bit of a hack; ideally, 'special' would be a ContentItem
+                    allEffects.push({ ...ability, sourceName: cls.class.name });
+                });
             }
         });
 
-        // --- 2. APPLY DECLARATIVE BONUSES ---
-        sources.forEach(source => {
-            source.bonuses?.forEach((bonus: any) => {
-                if (bonus.target) {
-                    this.addModifier(entity, bonus.target, bonus.value, bonus.type || 'untyped', source.name);
-                }
+        sources.forEach(({ source, name }) => {
+            source.effects?.forEach((effect: any) => {
+                allEffects.push({ ...effect, sourceName: name });
             });
         });
 
-        // --- 3. CALCULATE BASE VALUES FROM CLASS AND STATS ---
+
+        // --- 2. PROCESS ALL EFFECTS ---
+        entity.featSlots = []; // Reset feat slots
+        allEffects.forEach(effect => {
+            switch (effect.type) {
+                case 'add_feat_slot':
+                    entity.featSlots.push({
+                        source: effect.sourceName,
+                        tags: effect.tags || [],
+                        feat: null
+                    });
+                    break;
+                case 'bonus':
+                    entity.modifiers.add({
+                        value: effect.value,
+                        type: effect.bonus_type,
+                        target: effect.target,
+                        source: effect.sourceName,
+                        sourceId: effect.sourceName // Simple source tracking for now
+                    });
+                    break;
+                case 'proficiency':
+                    if (effect.proficiencies) {
+                        effect.proficiencies.forEach((prof: string) => entity.proficiencies.add(prof));
+                    }
+                    break;
+                case 'script':
+                    // Permanent scripts are applied here
+                    globalServiceLocator.effectManager.applyScriptedEffect(effect, entity, entity);
+                    break;
+            }
+        });
+
+        // --- 3. CALCULATE BASE VALUES FROM CLASS ---
         let baseAttackBonus = 0;
         let baseFort = 0, baseRef = 0, baseWill = 0;
         entity.classes.forEach((cls: EntityClass) => {
             const classData = cls.class;
-            const levelData = classData.level_progression[cls.level - 1];
-            if (levelData) {
+            const levelIndex = cls.level - 1;
+            if (classData.level_progression && classData.level_progression[levelIndex]) {
+                const levelData = classData.level_progression[levelIndex];
                 baseAttackBonus += levelData.base_attack_bonus;
                 baseFort += levelData.fortitude_save;
                 baseRef += levelData.reflex_save;
@@ -186,48 +232,107 @@ export class RulesEngine {
             }
         });
         entity.baseAttackBonus = baseAttackBonus;
-        this.addModifier(entity, 'saves.fortitude', baseFort, 'base', 'Class Level');
-        this.addModifier(entity, 'saves.reflex', baseRef, 'base', 'Class Level');
-        this.addModifier(entity, 'saves.will', baseWill, 'base', 'Class Level');
+        entity.modifiers.add({ value: baseFort, type: 'base', target: 'saves.fortitude', source: 'Class Level' });
+        entity.modifiers.add({ value: baseRef, type: 'base', target: 'saves.reflex', source: 'Class Level' });
+        entity.modifiers.add({ value: baseWill, type: 'base', target: 'saves.will', source: 'Class Level' });
 
+        // --- 4. CALCULATE FINAL DERIVED STATS ---
         // Add ability score modifiers to saves
-        this.addModifier(entity, 'saves.fortitude', calculateModifier(entity.stats.con), 'ability', 'Constitution');
-        this.addModifier(entity, 'saves.reflex', calculateModifier(entity.stats.dex), 'ability', 'Dexterity');
-        this.addModifier(entity, 'saves.will', calculateModifier(entity.stats.wis), 'ability', 'Wisdom');
+        // Note: We add these as permanent modifiers during the initial calculation.
+        // The 'ability' type ensures they don't stack with themselves if recalculated.
+        entity.modifiers.add({ value: calculateModifier(entity.baseStats.con), type: 'ability', target: 'saves.fortitude', source: 'Constitution' });
+        entity.modifiers.add({ value: calculateModifier(entity.baseStats.dex), type: 'ability', target: 'saves.reflex', source: 'Dexterity' });
+        entity.modifiers.add({ value: calculateModifier(entity.baseStats.wis), type: 'ability', target: 'saves.will', source: 'Wisdom' });
 
-        // --- 4. CALCULATE FINAL HIT POINTS ---
+        // Calculate Final Hit Points
         let totalHP = 0;
-        const conMod = calculateModifier(entity.stats.con);
+        const conMod = calculateModifier(entity.getAbilityScore('con'));
+
         entity.classes.forEach(cls => {
             const hitDie = parseInt(cls.class.hit_die.replace('d', ''), 10);
-            const avgHP = (hitDie / 2) + 1;
-            totalHP += Math.max(1, (avgHP + conMod)) * cls.level;
+            // First level is max HP
+            totalHP += hitDie + conMod;
+            // Subsequent levels are average + con mod
+            if (cls.level > 1) {
+                const avgHP = (hitDie / 2) + 1;
+                totalHP += (Math.max(1, avgHP + conMod)) * (cls.level - 1);
+            }
         });
 
-        // Add HP bonuses from feats like Toughness
-        totalHP += entity.modifiers.getValue('hit_points', 0);
+        // Add HP bonuses from other sources like Feats (Toughness)
+        totalHP += entity.modifiers.getValue('hit_points', 0, entity);
 
         entity.hitPoints.max = totalHP;
-        entity.hitPoints.current = totalHP;
+        entity.hitPoints.current = totalHP; // Fully heal on level up/creation
 
-        console.log(`${entity.name} stats calculated.`, entity);
+        // --- 5. CALCULATE SKILL POINTS ---
+        let totalSkillPoints = 0;
+        const intMod = calculateModifier(entity.getAbilityScore('int'));
 
-        // Announce that the calculation for this entity is complete.
-        // Any system that needs to react to the final stats can listen for this.
+        entity.classes.forEach(cls => {
+            const classData = cls.class;
+            const basePoints = classData.skill_points_per_level.base || 0;
+            const isHuman = entity.selectedRace?.name === 'Human';
+
+            // Level 1 calculation
+            let firstLevelPoints = (basePoints + intMod) * 4;
+            if (isHuman) {
+                firstLevelPoints += 4; // Human bonus at 1st level
+            }
+            totalSkillPoints += Math.max(4, firstLevelPoints); // Minimum 4 points at 1st level
+
+            // Subsequent levels
+            if (cls.level > 1) {
+                let perLevelPoints = basePoints + intMod;
+                if (isHuman) {
+                    perLevelPoints += 1; // Human bonus per level
+                }
+                totalSkillPoints += Math.max(1, perLevelPoints) * (cls.level - 1); // Minimum 1 point per level
+            }
+        });
+
+        entity.skills.remaining = totalSkillPoints;
+
+        // --- 6. CALCULATE FEAT SLOTS ---
+        // Base feats from level progression
+        entity.featSlots.push({ source: 'level_1', tags: [], feat: null });
+        if (entity.totalLevel >= 3) entity.featSlots.push({ source: 'level_3', tags: [], feat: null });
+        if (entity.totalLevel >= 6) entity.featSlots.push({ source: 'level_6', tags: [], feat: null });
+        if (entity.totalLevel >= 9) entity.featSlots.push({ source: 'level_9', tags: [], feat: null });
+        if (entity.totalLevel >= 12) entity.featSlots.push({ source: 'level_12', tags: [], feat: null });
+        if (entity.totalLevel >= 15) entity.featSlots.push({ source: 'level_15', tags: [], feat: null });
+        if (entity.totalLevel >= 18) entity.featSlots.push({ source: 'level_18', tags: [], feat: null });
+
+        // Specific class bonuses (e.g., Fighter bonus feats)
+        entity.classes.forEach(cls => {
+            const classData = cls.class;
+            for (let i = 0; i < cls.level; i++) {
+                const levelData = classData.level_progression[i];
+                if (levelData?.bonus_feat) {
+                    entity.featSlots.push({
+                        source: `${classData.id}_${i + 1}`,
+                        tags: levelData.bonus_feat.tags || [],
+                        feat: null
+                    });
+                }
+            }
+        });
+
+        console.log(`${entity.name} stats calculated.`, {
+            modifiers: entity.modifiers,
+            proficiencies: [...entity.proficiencies],
+            skillPoints: entity.skills.remaining,
+            featSlots: entity.featSlots
+        });
+
         globalServiceLocator.eventBus.publish(GameEvents.ENTITY_STATS_CALCULATED, { entity });
-    }
-
-    private addModifier(entity: Entity, target: string, value: number, type: string, source: string) {
-        // The ModifierManager handles the creation of the list if it doesn't exist.
-        // We just create the modifier object and add it.
-        entity.modifiers.add({ value, type, source, target });
     }
 
     private resolveDamage(context: any): void {
         const { attacker, target, weapon, damageRoll, isCritical } = context;
 
         // 1. Add ability modifier to bonus
-        const strMod = calculateModifier(attacker.stats.str);
+        const strMod = calculateModifier(attacker.getAbilityScore('str'));
         damageRoll.bonus += strMod;
 
         const [numDice, diceType] = damageRoll.dice.split('d').map(Number);
@@ -282,7 +387,7 @@ export class RulesEngine {
 
         for (const preq of feat.prerequisites) {
             if (preq.type === 'ability') {
-                if (entity.stats[preq.ability] < preq.value) {
+                if (entity.getAbilityScore(preq.ability as keyof import("./entities/entity.mjs").EntityAbilityScores) < preq.value) {
                     return false;
                 }
             } else if (preq.type === 'feat') {
@@ -300,11 +405,11 @@ export class RulesEngine {
         return true;
     }
 
-    public resolveConcentrationCheck(data: { entity: Entity, amount: number, source: Entity | null }): void {
+    public async resolveConcentrationCheck(data: { entity: Entity, amount: number, source: Entity | null }): Promise<void> {
         const { entity, amount } = data;
         if (entity.hasTag('casting')) {
             const dc = 10 + amount;
-            const concentrationRoll = rollD20() + entity.getSkillModifier('concentration');
+            const concentrationRoll = rollD20() + await entity.getSkillModifier('concentration');
             if (concentrationRoll < dc) {
                 entity.tags.delete('casting');
                 globalServiceLocator.feedback.addMessageToLog(`${entity.name} loses concentration!`, 'red');
@@ -314,7 +419,7 @@ export class RulesEngine {
         }
     }
 
-    public resolvePowerUse(data: { actor: Entity, power: ContentItem, target: any, castOnDefensive?: boolean, isTouch?: boolean }): void {
+    public async resolvePowerUse(data: { actor: Entity, power: ContentItem, target: any, castOnDefensive?: boolean, isTouch?: boolean }): Promise<void> {
         const { actor, power, target, castOnDefensive, isTouch } = data;
         console.log(`${actor.name} is using power: ${power.name}`);
 
@@ -346,7 +451,7 @@ export class RulesEngine {
 
         if (castOnDefensive) {
             const dc = 15 + (power.level * 2);
-            const concentrationRoll = rollD20() + actor.getSkillModifier('concentration');
+            const concentrationRoll = rollD20() + await actor.getSkillModifier('concentration');
             if (concentrationRoll < dc) {
                 globalServiceLocator.feedback.addMessageToLog(`${actor.name} fails to cast defensively and loses the power!`, 'red');
                 return;
@@ -492,6 +597,16 @@ export class RulesEngine {
         return parseInt(rangeStr, 10);
     }
 
+    private getAttackBonuses(bab: number): number[] {
+        const bonuses: number[] = [bab];
+        let currentBab = bab;
+        while (currentBab > 5) {
+            currentBab -= 5;
+            bonuses.push(currentBab);
+        }
+        return bonuses;
+    }
+
     public checkForAoO(provokingAction: Action, triggerType: string) {
         const { actor } = provokingAction;
         const threateningNpcs = globalServiceLocator.state.npcs.filter(npc =>
@@ -562,7 +677,7 @@ export class RulesEngine {
         }
 
         // Roll skill check
-        const skillRoll = rollD20() + actor.getSkillModifier(skillId);
+        const skillRoll = rollD20() + await actor.getSkillModifier(skillId);
 
         console.log(`${actor.name} attempts to ${skillUseData.name} on ${targetName}. Roll: ${skillRoll} vs DC: ${dc}`);
 

@@ -1,21 +1,30 @@
 {
   "name": "Deft Hands",
   "description": "You have nimble fingers.",
-  "type": [
-    "General"
+  "tags": [
+    "general"
   ],
   "prerequisites": [],
-  "benefit": "You get a +2 bonus on all Sleight of Hand checks and Use Rope checks.",
   "bonuses": [
     {
-      "type": "skill",
-      "skill": "Sleight of Hand",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Sleight of Hand"
+      },
+      "description": "+2 bonus on all Sleight of Hand checks."
     },
     {
-      "type": "skill",
-      "skill": "Use Rope",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Use Rope"
+      },
+      "description": "+2 bonus on all Use Rope checks."
     }
   ]
 }

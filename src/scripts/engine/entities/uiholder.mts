@@ -60,4 +60,5 @@ export type UIHolder = {
         'endTurnButton': HTMLButtonElement;
         'startCombatButton': HTMLButtonElement;
     };
+    views?: any;
 }

@@ -1,10 +1,21 @@
 {
   "name": "Skill Focus",
   "description": "You are particularly adept at a specific skill.",
-  "type": [
-    "General"
+  "tags": [
+    "general"
   ],
   "prerequisites": [],
-  "benefit": "You get a +3 bonus on all checks involving the chosen skill.",
+  "bonuses": [
+    {
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 3,
+      "target": {
+        "category": "skill",
+        "value": "CHOICE"
+      },
+      "description": "You get a +3 bonus on all checks involving the chosen skill."
+    }
+  ],
   "script": "/content/feats/skill_focus.mjs"
 }

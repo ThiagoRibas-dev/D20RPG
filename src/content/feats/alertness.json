@@ -1,22 +1,39 @@
 {
   "name": "Alertness",
   "description": "You have keen senses.",
-  "type": [
-    "General"
+  "tags": [
+    "general"
   ],
   "prerequisites": [],
-  "benefit": "You get a +2 bonus on all Listen checks and Spot checks.",
   "bonuses": [
     {
-      "type": "skill",
-      "skill": "Listen",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Listen"
+      },
+      "description": "+2 bonus on all Listen checks."
     },
     {
-      "type": "skill",
-      "skill": "Spot",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Spot"
+      },
+      "description": "+2 bonus on all Spot checks."
     }
   ],
-  "special": "The master of a familiar gains the benefit of the Alertness feat whenever the familiar is within arm’s reach."
+  "special_abilities": [
+    {
+      "name": "Familiar",
+      "description": "The master of a familiar gains the benefit of the Alertness feat whenever the familiar is within arm’s reach.",
+      "effect": {
+        "share_with_familiar_master": true
+      }
+    }
+  ]
 }

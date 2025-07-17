@@ -1,16 +1,20 @@
 {
   "name": "Iron Will",
   "description": "You are more resistant to mental effects.",
-  "type": [
-    "General"
+  "tags": [
+    "general"
   ],
   "prerequisites": [],
-  "benefit": "You get a +2 bonus on all Will saving throws.",
   "bonuses": [
     {
-      "type": "save",
-      "target": "Will",
-      "value": 2
+      "applies_to": "saving_throw",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "saving_throw_type",
+        "value": "will"
+      },
+      "description": "+2 bonus on all Will saving throws."
     }
   ]
 }

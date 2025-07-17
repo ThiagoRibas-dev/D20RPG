@@ -1,64 +1,69 @@
 import { Modifier, ModifierList } from "./entities/modifier.mjs";
 import { globalServiceLocator } from "./serviceLocator.mjs";
+import { calculateModifier } from "./utils.mjs";
 
 /**
  * Manages all modifiers for a single entity, applying layering and stacking rules.
  */
 export class ModifierManager {
-    public modifierTypes: Map<string, any> = new Map(); // Initialize to an empty Map
+    public modifierTypes: Map<string, any>;
 
-    constructor() {
-        this.loadModifierTypes();
+    constructor(modifierTypes: any[]) {
+        this.modifierTypes = new Map(modifierTypes.map((type: any) => [type.id, type]));
     }
 
-    private async loadModifierTypes(): Promise<void> {
-        try {
-            const data = await globalServiceLocator.contentLoader.loadModifierTypes();
-            this.modifierTypes = new Map(data.map((type: any) => [type.id, type]));
-        } catch (error) {
-            console.error("Failed to load modifier types:", error);
-            this.modifierTypes = new Map(); // Initialize as empty map on error
-        }
-    }
-
-    // Layer 1: Persistent modifiers from equipment, feats, etc.
-    private persistentModifiers: Modifier[] = [];
-    
-    // Layer 2: Temporary modifiers from spells, conditions, etc.
-    private temporaryModifiers: Modifier[] = [];
+    // A cache that groups all modifiers by their target for faster lookups.
+    private _modifiersByTarget: Map<string, Modifier[]> = new Map();
 
     /**
-     * Adds a modifier to the appropriate layer.
+     * Adds a modifier and updates the cache.
      * @param modifier The modifier to add.
      */
     public add(modifier: Modifier): void {
-        if (modifier.duration === undefined) {
-            this.persistentModifiers.push(modifier);
-        } else {
-            this.temporaryModifiers.push(modifier);
+        const target = modifier.target;
+        if (!this._modifiersByTarget.has(target)) {
+            this._modifiersByTarget.set(target, []);
         }
+        this._modifiersByTarget.get(target)!.push(modifier);
     }
 
     /**
-     * Removes all modifiers from a specific source.
+     * Removes all modifiers from a specific source and rebuilds the cache.
      * @param sourceId The unique ID of the source to remove modifiers from.
      */
     public removeBySourceId(sourceId: string): void {
-        this.persistentModifiers = this.persistentModifiers.filter(mod => mod.sourceId !== sourceId);
-        this.temporaryModifiers = this.temporaryModifiers.filter(mod => mod.sourceId !== sourceId);
+        for (const [target, mods] of this._modifiersByTarget.entries()) {
+            const filteredMods = mods.filter(mod => mod.sourceId !== sourceId);
+            if (filteredMods.length === 0) {
+                this._modifiersByTarget.delete(target);
+            } else {
+                this._modifiersByTarget.set(target, filteredMods);
+            }
+        }
     }
 
     /**
      * Advances the game turn, ticking down the duration of temporary modifiers.
      */
     public tick(): void {
-        this.temporaryModifiers = this.temporaryModifiers.filter(mod => {
-            if (mod.duration !== undefined) {
-                mod.duration--;
-                return mod.duration > 0;
+        for (const [target, mods] of this._modifiersByTarget.entries()) {
+            const updatedMods = mods.filter(mod => {
+                if (mod.duration !== undefined && mod.duration > 0) {
+                    mod.duration--;
+                    return mod.duration > 0;
+                }
+                // Keep permanent mods or mods that haven't expired
+                return mod.duration === undefined || mod.duration > 0;
+            });
+
+            if (updatedMods.length < mods.length) {
+                 if (updatedMods.length === 0) {
+                    this._modifiersByTarget.delete(target);
+                } else {
+                    this._modifiersByTarget.set(target, updatedMods);
+                }
             }
-            return true;
-        });
+        }
     }
 
     /**
@@ -67,29 +72,32 @@ export class ModifierManager {
      * @param baseValue The inherent, base value of the target.
      * @returns The final calculated value.
      */
-    public getValue(target: string, baseValue: number): number {
-        // Ensure modifierTypes is loaded before creating ModifierList
-        if (!this.modifierTypes) {
-            console.warn("Modifier types not loaded yet. Returning base value.");
-            return baseValue;
-        }
+    public getValue(target: string, baseValue: number, entity: any): number {
         const list = new ModifierList(this.modifierTypes);
+        const mods = this._modifiersByTarget.get(target);
 
-        // In a more complete implementation, we would apply base stats first.
-        // For now, we'll just add all modifiers to one list.
-        // The layering logic will be fully implemented when we integrate this
-        // with the character and game state.
-
-        for (const mod of this.persistentModifiers) {
-            if (mod.target === target) {
+        if (mods) {
+            for (const mod of mods) {
                 list.add(mod);
             }
         }
 
-        for (const mod of this.temporaryModifiers) {
-            if (mod.target === target) {
-                list.add(mod);
+        // Special case for Armor Class, which has complex dependencies.
+        if (target === 'ac') {
+            const dexMod = calculateModifier(entity.getAbilityScore('dex'));
+            
+            // Get max dex bonus from armor, which is a modifier on 'ac.max_dex'
+            const maxDexList = new ModifierList(this.modifierTypes);
+            const maxDexMods = this._modifiersByTarget.get('ac.max_dex');
+            if (maxDexMods) {
+                for (const mod of maxDexMods) {
+                    maxDexList.add(mod);
+                }
             }
+            const maxDex = maxDexList.getLowest();
+            const cappedDexMod = Math.min(dexMod, maxDex);
+
+            return baseValue + cappedDexMod + list.getTotal();
         }
 
         return baseValue + list.getTotal();

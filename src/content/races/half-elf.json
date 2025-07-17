@@ -17,57 +17,86 @@
   "size": "Medium",
   "base_speed": 30,
   "low_light_vision": true,
-  "darkvision": 0,
   "immunities": [
-    "sleep"
+    "magical_sleep"
   ],
-  "resistances": {},
   "bonuses": [
     {
-      "type": "save",
-      "target": "enchantment",
+      "applies_to": "saving_throw",
+      "type": "racial",
       "value": 2,
+      "target": {
+        "category": "spell_school",
+        "value": "enchantment"
+      },
       "description": "+2 racial bonus on saving throws against enchantment spells or effects."
     },
     {
-      "type": "skill",
-      "skill": "Listen",
-      "value": 1
+      "applies_to": "skill_check",
+      "type": "racial",
+      "value": 1,
+      "target": {
+        "category": "skill",
+        "value": "Listen"
+      },
+      "description": "+1 racial bonus on Listen checks."
     },
     {
-      "type": "skill",
-      "skill": "Search",
-      "value": 1
+      "applies_to": "skill_check",
+      "type": "racial",
+      "value": 1,
+      "target": {
+        "category": "skill",
+        "value": "Search"
+      },
+      "description": "+1 racial bonus on Search checks."
     },
     {
-      "type": "skill",
-      "skill": "Spot",
-      "value": 1
+      "applies_to": "skill_check",
+      "type": "racial",
+      "value": 1,
+      "target": {
+        "category": "skill",
+        "value": "Spot"
+      },
+      "description": "+1 racial bonus on Spot checks."
     },
     {
-      "type": "skill",
-      "skill": "Diplomacy",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "racial",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Diplomacy"
+      },
+      "description": "+2 racial bonus on Diplomacy checks."
     },
     {
-      "type": "skill",
-      "skill": "Gather Information",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "racial",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Gather Information"
+      },
+      "description": "+2 racial bonus on Gather Information checks."
     }
   ],
   "special_abilities": [
     {
-      "name": "Elven Blood",
-      "description": "For all effects related to race, a half-elf is considered an elf."
+      "name": "Adaptability",
+      "description": "Favored class is 'Any', and can choose any non-secret language as a bonus language.",
+      "effect": {
+        "favored_class": "any",
+        "bonus_languages": "any_non_secret"
+      }
     }
   ],
   "automatic_languages": [
     "Common",
     "Elven"
   ],
-  "bonus_languages": [
-    "Any"
-  ],
-  "favored_class": "Any",
+  "bonus_languages": [],
+  "favored_class": null,
   "level_adjustment": 0
 }

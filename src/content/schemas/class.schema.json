@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Class",
+  "description": "Schema for player character classes.",
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "description": { "type": "string" },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "alignment_restrictions": { "type": "object" },
+    "hit_die": { "type": "string", "pattern": "^d(4|6|8|10|12)$" },
+    "class_skills": { "type": "array", "items": { "type": "string" } },
+    "skill_points_per_level": {
+      "type": "object",
+      "properties": {
+        "base": { "type": "integer" },
+        "int_mod": { "type": "boolean" }
+      },
+      "required": ["base", "int_mod"]
+    },
+    "level_progression": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "level": { "type": "integer" },
+          "base_attack_bonus": { "type": "integer" },
+          "fortitude_save": { "type": "integer" },
+          "reflex_save": { "type": "integer" },
+          "will_save": { "type": "integer" },
+          "bonus_feat": {
+            "type": "object",
+            "properties": {
+              "tags": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "required": ["level", "base_attack_bonus", "fortitude_save", "reflex_save", "will_save"]
+      }
+    },
+    "spell_progression": {
+      "type": "object",
+      "properties": {
+        "spell_list": { "type": "string" },
+        "casting_ability": { "type": "string", "enum": ["int", "wis", "cha"] },
+        "spells_per_day": { "type": "object" }
+      }
+    },
+    "effects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string", "enum": ["bonus", "script", "proficiency"] },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "value": "any",
+          "target": "any",
+          "condition": "any",
+          "script": { "type": "string", "format": "uri-relative" },
+          "proficiencies": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": ["type", "name"],
+        "if": {
+          "properties": { "type": { "const": "proficiency" } }
+        },
+        "then": {
+          "required": ["proficiencies"]
+        }
+      }
+    },
+    "armor_proficiencies": { "type": "array", "items": { "type": "string" } },
+    "weapon_proficiencies": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": [
+    "name",
+    "description",
+    "hit_die",
+    "class_skills",
+    "skill_points_per_level",
+    "level_progression"
+  ]
+}

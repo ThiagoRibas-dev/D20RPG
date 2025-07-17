@@ -1,21 +1,30 @@
 {
   "name": "Animal Affinity",
   "description": "You are good with animals.",
-  "type": [
-    "General"
+  "tags": [
+    "general"
   ],
   "prerequisites": [],
-  "benefit": "You get a +2 bonus on all Handle Animal checks and Ride checks.",
   "bonuses": [
     {
-      "type": "skill",
-      "skill": "Handle Animal",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Handle Animal"
+      },
+      "description": "+2 bonus on all Handle Animal checks."
     },
     {
-      "type": "skill",
-      "skill": "Ride",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Ride"
+      },
+      "description": "+2 bonus on all Ride checks."
     }
   ]
 }

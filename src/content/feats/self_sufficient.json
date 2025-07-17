@@ -1,21 +1,30 @@
 {
   "name": "Self-Sufficient",
   "description": "You are skilled at surviving in the wild.",
-  "type": [
-    "General"
+  "tags": [
+    "general"
   ],
   "prerequisites": [],
-  "benefit": "You get a +2 bonus on all Heal checks and Survival checks.",
   "bonuses": [
     {
-      "type": "skill",
-      "skill": "Heal",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Heal"
+      },
+      "description": "+2 bonus on all Heal checks."
     },
     {
-      "type": "skill",
-      "skill": "Survival",
-      "value": 2
+      "applies_to": "skill_check",
+      "type": "untyped",
+      "value": 2,
+      "target": {
+        "category": "skill",
+        "value": "Survival"
+      },
+      "description": "+2 bonus on all Survival checks."
     }
   ]
 }

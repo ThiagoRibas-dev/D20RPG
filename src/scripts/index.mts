@@ -41,6 +41,16 @@ async function initializeGame(winObj: any) {
   // --- SETUP THE CONTROLLER LOGIC (EVENT SUBSCRIPTIONS) ---
   globalServiceLocator.eventBus.subscribe('ui:creation:next_step', () => {
     const state = globalServiceLocator.state;
+    const currentStepId = state.creationSteps[state.creationStep];
+
+    // --- FIX: Save data from the current step BEFORE advancing ---
+    if (currentStepId === 'abilityScoreSelection') {
+      globalServiceLocator.ui.views.abilityScoreSelection.saveAbilities();
+    } else if (currentStepId === 'classSelection' && globalServiceLocator.state.player) {
+      // Recalculate stats after selecting a class to ensure skill points are correct
+      globalServiceLocator.rulesEngine.calculateStats(globalServiceLocator.state.player);
+    }
+
     state.creationStep++;
     if (state.creationStep >= state.creationSteps.length) {
       state.creationStep = state.creationSteps.length - 1;
