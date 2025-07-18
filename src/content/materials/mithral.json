@@ -1,0 +1,7 @@
+{
+  "id": "mithral",
+  "name": "Mithral",
+  "hardness": 15,
+  "hit_points_per_inch": 30,
+  "effects": []
+}

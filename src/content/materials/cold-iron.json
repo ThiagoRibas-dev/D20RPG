@@ -1,0 +1,7 @@
+{
+  "id": "cold-iron",
+  "name": "Cold Iron",
+  "hardness": 10,
+  "hit_points_per_inch": 30,
+  "effects": []
+}

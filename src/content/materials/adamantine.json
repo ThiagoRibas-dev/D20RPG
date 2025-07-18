@@ -1,0 +1,13 @@
+{
+  "id": "adamantine",
+  "name": "Adamantine",
+  "hardness": 20,
+  "hit_points_per_inch": 40,
+  "effects": [
+    {
+      "id": "bypass_hardness_lt_20",
+      "name": "Bypass Hardness < 20",
+      "description": "Weapons fashioned from adamantine have a natural ability to bypass hardness when sundering weapons or attacking objects, ignoring hardness less than 20."
+    }
+  ]
+}

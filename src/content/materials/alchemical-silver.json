@@ -1,0 +1,7 @@
+{
+  "id": "alchemical-silver",
+  "name": "Alchemical Silver",
+  "hardness": 8,
+  "hit_points_per_inch": 10,
+  "effects": []
+}

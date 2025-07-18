@@ -1,0 +1,7 @@
+{
+  "id": "dragonhide",
+  "name": "Dragonhide",
+  "hardness": 10,
+  "hit_points_per_inch": 10,
+  "effects": []
+}

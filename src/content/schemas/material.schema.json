@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Material",
+  "description": "Schema for defining material properties.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the material."
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name of the material."
+    },
+    "hardness": {
+      "type": "number",
+      "description": "The hardness value of the material."
+    },
+    "hit_points_per_inch": {
+      "type": "number",
+      "description": "Hit points per inch of thickness."
+    },
+    "effects": {
+      "type": "array",
+      "description": "Special effects associated with the material.",
+      "items": {
+        "$ref": "./effect.schema.json"
+      }
+    }
+  },
+  "required": ["id", "name", "hardness", "hit_points_per_inch"]
+}

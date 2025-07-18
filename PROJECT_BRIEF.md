@@ -79,7 +79,8 @@
 #### **Phase 4: Advanced Systems**
 *   `[x]` **Task 4.1: Implement Modular AI with Behavioral Flags.**
 *   `[ ]` **Task 4.2: Implement Systemic Interactions (The NetHack Factor).**
-    *   `[ ]` **Sub-task 4.2.1:** Implement Material Interactions (Hardness & Erosion).
+    *   `[x]` **Sub-task 4.2.1:** Implement Material Interactions (Hardness & Erosion).
+        *   **Status:** Done. Created `material.schema.json` and data files for Adamantine, Mithral, Cold Iron, Dragonhide, Alchemical Silver, and Darkwood. The engine can now read these files to drive rules for object damage and material-specific effects.
     *   `[ ]` **Sub-task 4.2.2:** Implement Environmental Interactions (Flammable terrain, Water/Lava hazards, Spell combos).
     *   `[ ]` **Sub-task 4.2.3:** Implement Item-on-Item Interactions (Dipping).
 *   `[ ]` **Task 4.3: Implement Flexible Map Generation.**
@@ -107,7 +108,8 @@
     *   `[ ]` **5.1.3: Feats:** Implement all feats from the SRD.
     *   `[ ]` **5.1.4: Skills:** Ensure all skills and their uses are defined.
     *   `[ ]` **5.1.5: Equipment:** All weapons, armor, shields, and adventuring gear.
-    *   `[ ]` **5.1.6: Special Materials:** Adamantine, Mithral, etc.
+    *   `[x]` **5.1.6: Special Materials:** Adamantine, Mithral, etc.
+        *   **Status:** Done. Created data files for all core special materials.
     *   `[ ]` **5.1.7: Special Abilities & Conditions:** Gaze Attacks, Incorporeal, Energy Drain, etc.
 
 *   `[ ]` **Task 5.2: Spells & Magic**
