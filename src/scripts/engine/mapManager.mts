@@ -3,7 +3,7 @@ import { PositionComponent, TerrainComponent } from "./ecs/components/index.mjs"
 
 export class MapManager {
 
-    public async loadMap(mapId: string) {
+    public async loadMap(mapId: string, targetLocation?: { x: number, y: number }) {
         const state = globalServiceLocator.state;
         const world = globalServiceLocator.world;
 
@@ -36,11 +36,18 @@ export class MapManager {
         });
 
         // Position the player
-        if (state.playerId !== null && mapData.playerStart) {
+        if (state.playerId !== null) {
             const playerPosition = world.getComponent(state.playerId, PositionComponent);
             if (playerPosition) {
-                playerPosition.x = mapData.playerStart.x;
-                playerPosition.y = mapData.playerStart.y;
+                if (targetLocation) {
+                    // Use target location if provided (for triggers)
+                    playerPosition.x = targetLocation.x;
+                    playerPosition.y = targetLocation.y;
+                } else if (mapData.playerStart) {
+                    // Otherwise, use the map's default start (for initial load)
+                    playerPosition.x = mapData.playerStart.x;
+                    playerPosition.y = mapData.playerStart.y;
+                }
             }
         }
     }

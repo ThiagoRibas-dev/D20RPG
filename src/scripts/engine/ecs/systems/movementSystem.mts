@@ -28,9 +28,19 @@ export class MovementSystem {
             const newY = position.y + intent.y;
 
             const mapData = globalServiceLocator.state.currentMapData;
-            if (mapData && mapData.tiles[newY][newX] !== '#') {
+            if (mapData && mapData.tiles[newY] && mapData.tiles[newY][newX] !== '#') {
                 position.x = newX;
                 position.y = newY;
+
+                const tileSymbol = mapData.tiles[newY][newX];
+                const trigger = mapData.triggers?.find((t: any) => t.symbol === tileSymbol);
+
+                if (trigger) {
+                    console.log(`Trigger activated! Transitioning to ${trigger.targetMap}`);
+                    globalServiceLocator.mapManager.loadMap(trigger.targetMap, trigger.targetLocation);
+                    this.world.removeComponent(entityId, MoveIntentComponent);
+                    continue;
+                }
             }
 
             // This is a placeholder for threat detection.
