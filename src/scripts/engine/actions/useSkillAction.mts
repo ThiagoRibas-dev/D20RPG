@@ -1,7 +1,9 @@
-import { Entity } from "../entities/entity.mjs";
 import { Action, ActionType } from "./action.mjs";
-import { ItemInstance } from "../components/itemInstance.mjs";
 import { globalServiceLocator } from "../serviceLocator.mjs";
+import { EntityID, World } from "../ecs/world.mjs";
+import { IdentityComponent, SkillsComponent } from "../ecs/components/index.mjs";
+import { ModifierManager } from "../modifierManager.mjs";
+import { rollD20 } from "../utils.mjs";
 
 export class UseSkillAction extends Action {
     public readonly cost: ActionType = ActionType.Standard;
@@ -9,11 +11,11 @@ export class UseSkillAction extends Action {
     public readonly name: string;
     public readonly description: string;
 
-    private readonly skillId: string;
-    private readonly useId: string;
-    private readonly target: ItemInstance | Entity;
+    public readonly skillId: string;
+    public readonly useId: string;
+    public readonly target: EntityID;
 
-    constructor(actor: Entity, skillId: string, useId: string, target: ItemInstance | Entity) {
+    constructor(actor: EntityID, skillId: string, useId: string, target: EntityID) {
         super(actor);
         this.skillId = skillId;
         this.useId = useId;
@@ -23,15 +25,19 @@ export class UseSkillAction extends Action {
         this.description = `Use the ${skillId} skill.`;
     }
 
-    canExecute(): boolean {
-        // Basic check: does the actor have any ranks in the skill?
-        return (this.actor.skills.allocations.get(this.skillId) || 0) > 0;
+    canExecute(world: World): boolean {
+        const skills = world.getComponent(this.actor, SkillsComponent) as SkillsComponent;
+        return skills ? (skills.skills.get(this.skillId) || 0) > 0 : false;
     }
 
-    public async execute(): Promise<void> {
-        const targetName = this.target instanceof ItemInstance ? this.target.itemData.name : this.target.name;
-        console.log(`${this.actor.name} uses skill ${this.skillId} (${this.useId}) on ${targetName}`);
-        await globalServiceLocator.rulesEngine.resolveSkillUse(this.actor, this.skillId, this.useId, this.target);
+    public async execute(world: World): Promise<void> {
+        const actorIdentity = world.getComponent(this.actor, IdentityComponent);
+        const targetIdentity = world.getComponent(this.target, IdentityComponent);
+        console.log(`${actorIdentity?.name} uses skill ${this.skillId} (${this.useId}) on ${targetIdentity?.name}`);
+        
+        // TODO: Implement skill resolution
+        // await globalServiceLocator.rulesEngine.resolveSkillUse(this.actor, this.skillId, this.useId, this.target);
+        
         globalServiceLocator.eventBus.publish("action:use-skill", { action: this });
         return Promise.resolve();
     }

@@ -1,24 +1,26 @@
 import { globalServiceLocator } from "../serviceLocator.mjs";
-import { Entity } from "../entities/entity.mjs";
 import { OpposedCheckAction } from "./opposedCheckAction.mjs";
-import { calculateModifier, rollD20 } from "../utils.mjs";
+import { rollD20 } from "../utils.mjs";
+import { EntityID, World } from "../ecs/world.mjs";
+import { IdentityComponent, TagsComponent } from "../ecs/components/index.mjs";
 
 export class PinAction extends OpposedCheckAction {
     public readonly id = 'pin_opponent';
     public readonly name = 'Pin Opponent';
     public readonly description = 'Hold an opponent immobile for 1 round.';
 
-    constructor(actor: Entity) {
+    constructor(actor: EntityID) {
         super(actor);
     }
 
-    public canExecute(): boolean {
-        return this.actor.hasTag('status:grappling') && !this.actor.hasTag('status:pinning') && super.canExecute();
+    public canExecute(world: World): boolean {
+        const tags = world.getComponent(this.actor, TagsComponent);
+        return tags ? tags.tags.has('status:grappling') && !tags.tags.has('status:pinning') && super.canExecute(world) : false;
     }
 
-    protected async resolveOpposedCheck(actor: Entity, target: Entity): Promise<boolean> {
-        const actorGrappleBonus = actor.baseAttackBonus + calculateModifier(actor.getAbilityScore('str')) + globalServiceLocator.rulesEngine.getGrappleCheckModifier(actor);
-        const targetGrappleBonus = target.baseAttackBonus + calculateModifier(target.getAbilityScore('str')) + globalServiceLocator.rulesEngine.getGrappleCheckModifier(target);
+    protected async resolveOpposedCheck(world: World, actor: EntityID, target: EntityID): Promise<boolean> {
+        const actorGrappleBonus = await globalServiceLocator.modifierManager.queryStat(actor, 'grapple');
+        const targetGrappleBonus = await globalServiceLocator.modifierManager.queryStat(target, 'grapple');
 
         const actorRoll = rollD20() + actorGrappleBonus;
         const targetRoll = rollD20() + targetGrappleBonus;
@@ -26,13 +28,25 @@ export class PinAction extends OpposedCheckAction {
         return actorRoll >= targetRoll;
     }
 
-    protected onSuccess(target: Entity): void {
-        globalServiceLocator.feedback.addMessageToLog(`${this.actor.name} pins ${target.name}!`, 'green');
-        this.actor.tags.add('status:pinning');
-        target.tags.add('status:pinned');
+    protected onSuccess(world: World, target: EntityID): void {
+        const actorIdentity = world.getComponent(this.actor, IdentityComponent);
+        const targetIdentity = world.getComponent(target, IdentityComponent);
+        globalServiceLocator.feedback.addMessageToLog(`${actorIdentity?.name} pins ${targetIdentity?.name}!`, 'green');
+        
+        const actorTags = world.getComponent(this.actor, TagsComponent);
+        if (actorTags) {
+            actorTags.tags.add('status:pinning');
+        }
+
+        const targetTags = world.getComponent(target, TagsComponent);
+        if (targetTags) {
+            targetTags.tags.add('status:pinned');
+        }
     }
 
-    protected onFailure(target: Entity): void {
-        globalServiceLocator.feedback.addMessageToLog(`${this.actor.name} fails to pin ${target.name}.`, 'orange');
+    protected onFailure(world: World, target: EntityID): void {
+        const actorIdentity = world.getComponent(this.actor, IdentityComponent);
+        const targetIdentity = world.getComponent(target, IdentityComponent);
+        globalServiceLocator.feedback.addMessageToLog(`${actorIdentity?.name} fails to pin ${targetIdentity?.name}.`, 'orange');
     }
 }

@@ -1,9 +1,8 @@
 import { ContentItem } from '../../engine/entities/contentItem.mjs';
 import { globalServiceLocator } from '../../engine/serviceLocator.mjs';
+import { ClassComponent, SkillsComponent, StatsComponent } from '../../engine/ecs/components/index.mjs';
+import { ClassInstance } from '../../engine/ecs/components/classComponent.mjs';
 
-/**
- * Manages the UI and logic for the skill selection step of character creation.
- */
 export class SkillSelectionView {
     private container: HTMLElement;
     private skillPointDisplay: HTMLElement;
@@ -13,29 +12,34 @@ export class SkillSelectionView {
         this.skillPointDisplay = globalServiceLocator.ui.els['skill-points-remaining'];
     }
 
-    /**
-     * Renders the interactive list of skills for point allocation.
-     * @param contentData The main content data object.
-     */
     public async render(contentData: ContentItem): Promise<void> {
         this.container.innerHTML = ""; // Clear previous content
-        const player = globalServiceLocator.state.player;
+        const playerId = globalServiceLocator.state.playerId;
+        if (!playerId) return;
 
-        if (!player || player.classes.length === 0) {
+        const world = globalServiceLocator.world;
+        const classComponent = world.getComponent(playerId, ClassComponent);
+        const skillsComponent = world.getComponent(playerId, SkillsComponent);
+
+        if (!classComponent || !skillsComponent || classComponent.classes.length === 0) {
             this.container.innerText = "Error: A class must be selected before assigning skill points.";
             return;
         }
 
-        this.updateSkillPointDisplay(player.skills.remaining);
+        const statsComponent = world.getComponent(playerId, StatsComponent);
+        const totalSkillPoints = statsComponent?.skill_points || 0;
+        console.log(`%cSkillSelectionView: Reading totalSkillPoints from StatsComponent: ${totalSkillPoints}`, 'color: #ff99ff');
+        skillsComponent.remaining = totalSkillPoints;
 
-        // --- Render Each Skill ---
+        this.updateSkillPointDisplay(totalSkillPoints);
+
         const skillsCategory = contentData.skills;
         for (const skillId in skillsCategory) {
             if (skillId !== 'type' && skillId !== 'get') {
                 const loadedSkill = await skillsCategory[skillId].get();
                 if (!loadedSkill) continue;
 
-                this.createSkillInputRow(loadedSkill, skillId);
+                await this.createSkillInputRow(loadedSkill, skillId);
             }
         }
 
@@ -43,22 +47,24 @@ export class SkillSelectionView {
         this.skillPointDisplay.style.display = "";
     }
 
-    /**
-     * Creates a single row in the skill list.
-     */
-    private createSkillInputRow(skillData: any, skillId: string): void {
-        const player = globalServiceLocator.state.player!; // We know player exists from the check in render()
+    private async createSkillInputRow(skillData: any, skillId: string): Promise<void> {
+        const playerId = globalServiceLocator.state.playerId!;
+        const world = globalServiceLocator.world;
+        const classComponent = world.getComponent(playerId, ClassComponent)!;
+        const skillsComponent = world.getComponent(playerId, SkillsComponent)!;
+        
         const skillItem = this.container.ownerDocument.createElement('li');
 
-        const isClassSkill = player.classes.some(cls => cls.classSkills.includes(skillData.name));
-        const maxRanks = player.totalLevel + 3;
+        const classSkills = await this.getClassSkills(classComponent);
+        const isClassSkill = classSkills.includes(skillData.name);
+        
+        const totalLevel = classComponent.classes.reduce((acc: number, c: ClassInstance) => acc + c.level, 0);
+        const maxRanks = totalLevel + 3;
         const displayMax = isClassSkill ? maxRanks : Math.floor(maxRanks / 2);
 
-        const pointsSpent = player.skills.allocations.get(skillId) || 0;
+        const pointsSpent = skillsComponent.allocations.get(skillId) || 0;
         const currentRanks = isClassSkill ? pointsSpent : pointsSpent / 2;
-        const skillPointTotal = player.skills.remaining;//The remaining skill points before spending any skill ranks is the maximum number of skill ranks player can spend
 
-        // Create and configure the input element
         const input = skillItem.ownerDocument.createElement("input");
         input.type = 'number';
         input.min = '0';
@@ -66,32 +72,25 @@ export class SkillSelectionView {
         input.value = currentRanks.toFixed(isClassSkill ? 0 : 1);
         input.id = `${skillId}-skill-input`;
 
-        // --- The Core Logic: The onchange handler ---
         input.onchange = () => {
-            const previousPointsSpent = player.skills.allocations.get(skillId) || 0;
+            const previousPointsSpent = skillsComponent.allocations.get(skillId) || 0;
             const desiredRanks = Math.min(parseFloat(input.value) || 0, displayMax);
 
-            // Calculate how many POINTS the desired ranks would cost
             const newPointsToSpend = isClassSkill ? Math.round(desiredRanks) : Math.ceil(desiredRanks) * 2;
             const pointsDifference = newPointsToSpend - previousPointsSpent;
 
-            // Check if we can afford this change
-            if (player.skills.remaining - pointsDifference < 0) {
-                // Revert to the old value if we can't afford it
+            if (skillsComponent.remaining - pointsDifference < 0) {
                 input.value = (isClassSkill ? previousPointsSpent : previousPointsSpent / 2).toFixed(isClassSkill ? 0 : 1);
                 return;
             }
 
-            // Commit the change
-            player.skills.allocations.set(skillId, newPointsToSpend);
-            player.skills.remaining -= pointsDifference;
+            skillsComponent.allocations.set(skillId, newPointsToSpend);
+            skillsComponent.remaining -= pointsDifference;
 
-            // Update UI
             input.value = (isClassSkill ? newPointsToSpend : newPointsToSpend / 2).toFixed(isClassSkill ? 0 : 1);
-            this.updateSkillPointDisplay(skillPointTotal);
+            this.updateSkillPointDisplay(skillsComponent.total);
         };
 
-        // Create labels and other display elements
         const label = skillItem.ownerDocument.createElement("label");
         label.htmlFor = input.id;
         label.textContent = `${skillData.name} (${skillData.key_ability})`;
@@ -112,8 +111,25 @@ export class SkillSelectionView {
         this.container.appendChild(skillItem);
     }
 
+    private async getClassSkills(classComponent: ClassComponent): Promise<string[]> {
+        const classSkills: string[] = [];
+        for (const c of classComponent.classes) {
+            const classDataItem = globalServiceLocator.contentLoader.getContentItemById('classes', c.classId);
+            if (classDataItem && classDataItem.get) {
+                const classData = await classDataItem.get();
+                if (classData && classData.class_skills) {
+                    classSkills.push(...classData.class_skills);
+                }
+            }
+        }
+        return classSkills;
+    }
+
     private updateSkillPointDisplay(total: number): void {
-        this.skillPointDisplay.innerText = `Remaining skill points: ${globalServiceLocator.state.player!.skills.remaining}/${total}`;
+        const world = globalServiceLocator.world;
+        const skillsComponent = world.getComponent(globalServiceLocator.state.playerId!, SkillsComponent)!;
+        skillsComponent.total = total;
+        this.skillPointDisplay.innerText = `Remaining skill points: ${skillsComponent.remaining}/${total}`;
     }
 
     public show(): void { globalServiceLocator.ui.els['skills-selector'].style.display = ''; }

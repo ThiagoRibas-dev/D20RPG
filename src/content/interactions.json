@@ -1,0 +1,24 @@
+[
+    {
+        "interaction_type": "ENVIRONMENT",
+        "trigger_event": "action:use_power:declared",
+        "conditions": {
+            "spell_tags": ["fire"],
+            "target_tile_tags": ["flammable"]
+        },
+        "effects": [
+            { "action": "add_tile_state", "tag": "burning", "duration": "3" }
+        ]
+    },
+    {
+        "interaction_type": "DIP",
+        "conditions": {
+            "source_tags": ["potion", "poison"],
+            "target_tags": ["weapon", "piercing"]
+        },
+        "effects": [
+            { "action": "apply_effect_to_target", "effect_id": "eff_add_poison" },
+            { "action": "consume_source", "source_becomes": "empty_bottle" }
+        ]
+    }
+]

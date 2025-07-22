@@ -1,4 +1,4 @@
-import { Entity } from "../entities/entity.mjs";
+import { EntityID, World } from "../ecs/world.mjs";
 import { Point } from "../../utils/point.mjs";
 
 export enum ActionType {
@@ -10,7 +10,8 @@ export enum ActionType {
 }
 
 export abstract class Action {
-    public readonly actor: Entity;
+    public readonly actor: EntityID;
+    public target?: EntityID | EntityID[] | Point;
     public abstract readonly cost: ActionType;
     public provokesAoO: boolean;
 
@@ -18,12 +19,12 @@ export abstract class Action {
     public abstract readonly name: string;
     public abstract readonly description: string;
 
-    constructor(actor: Entity) {
+    constructor(actor: EntityID) {
         this.actor = actor;
         this.provokesAoO = false;
     }
 
-    public abstract canExecute(): boolean;
+    public abstract canExecute(world: World): boolean;
 
-    public abstract execute(target?: Entity | Point): Promise<void>;
+    public abstract execute(world: World, target?: EntityID | Point): Promise<void>;
 }

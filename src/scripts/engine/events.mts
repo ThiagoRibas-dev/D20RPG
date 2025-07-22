@@ -17,6 +17,7 @@ export const GameEvents = {
   ACTION_DAMAGE_BEFORE_ROLL: 'action:damage:before_roll',
   ACTION_PROVOKES_AOO: 'action:provokes_aoo',
   ACTION_USE_POWER_DECLARED: 'action:use_power:declared',
+  ACTION_DIP: 'action:dip',
 
   // Combat Events
   COMBAT_START: 'combat:start',

@@ -1,0 +1,60 @@
+{
+  "notes": "This file defines the source for the base value of all character statistics.",
+
+  "str": { "source": "attribute" },
+  "dex": { "source": "attribute" },
+  "con": { "source": "attribute" },
+  "int": { "source": "attribute" },
+  "wis": { "source": "attribute" },
+  "cha": { "source": "attribute" },
+
+  "str_mod": { "source": "derived", "dependencies": [{ "stat": "str", "formula": "(stat - 10) / 2" }] },
+  "dex_mod": { "source": "derived", "dependencies": [{ "stat": "dex", "formula": "(stat - 10) / 2" }] },
+  "con_mod": { "source": "derived", "dependencies": [{ "stat": "con", "formula": "(stat - 10) / 2" }] },
+  "int_mod": { "source": "derived", "dependencies": [{ "stat": "int", "formula": "(stat - 10) / 2" }] },
+  "wis_mod": { "source": "derived", "dependencies": [{ "stat": "wis", "formula": "(stat - 10) / 2" }] },
+  "cha_mod": { "source": "derived", "dependencies": [{ "stat": "cha", "formula": "(stat - 10) / 2" }] },
+
+  "ac": {
+    "source": "base",
+    "baseValue": 10
+  },
+
+  "bab": {
+    "source": "lookup",
+    "lookupTable": "class_progression",
+    "lookupKey": "bab"
+  },
+
+  "fort_save": {
+    "source": "lookup",
+    "lookupTable": "class_progression",
+    "lookupKey": "fort"
+  },
+  "ref_save": {
+    "source": "lookup",
+    "lookupTable": "class_progression",
+    "lookupKey": "ref"
+  },
+  "will_save": {
+    "source": "lookup",
+    "lookupTable": "class_progression",
+    "lookupKey": "will"
+  },
+
+  "initiative": {
+    "source": "derived",
+    "dependencies": [{ "stat": "dex_mod" }]
+  },
+
+  "damage_bonus": {
+    "source": "derived",
+    "dependencies": [{ "stat": "str_mod" }]
+  },
+
+  "skill_points": {
+    "source": "lookup",
+    "lookupTable": "class_progression",
+    "lookupKey": "skill_points"
+  }
+}

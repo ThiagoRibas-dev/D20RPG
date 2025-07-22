@@ -1,90 +1,107 @@
-import { EquipmentSlot } from "../components/equipmentComponent.mjs";
-import { ContentItem } from "../entities/contentItem.mjs";
-import { Npc } from "../entities/npc.mjs";
-import { globalServiceLocator } from "../serviceLocator.mjs";
-import { EntityPosition } from "../utils.mjs";
+import {
+    ActionBudgetComponent,
+    AIComponent,
+    AttributesComponent,
+    ClassComponent,
+    EquipmentComponent,
+    FeatsComponent,
+    IdentityComponent,
+    InventoryComponent,
+    ModifiersComponent,
+    PositionComponent,
+    RenderableComponent,
+    SkillsComponent,
+    StateComponent,
+    TagsComponent,
+    TemplateComponent,
+} from '../ecs/components/index.mjs';
+import { EntityID } from '../ecs/world.mjs';
+import { globalServiceLocator } from '../serviceLocator.mjs';
+import { EntityPosition, calculateModifier } from '../utils.mjs';
 
 export class NpcFactory {
-    public async create(prefabId: string, prefabType: 'monsters' | 'npcs', position: EntityPosition): Promise<Npc | null> {
+    public async create(prefabId: string, prefabType: 'monsters' | 'npcs', position: EntityPosition): Promise<EntityID | null> {
         const content = await globalServiceLocator.contentLoader.getContent();
         if (!content) {
             console.error(`Could not access content loader`);
             return null;
         }
-        
+
         const prefab = await content.prefabs[prefabType][prefabId].get();
         if (!prefab) {
             console.error(`Could not find NPC prefab: ${prefabId}`);
             return null;
         }
 
-        const race: ContentItem = await content.races[prefab.race]?.get();
-        const cls: ContentItem = await content.classes[prefab.class]?.get();
+        const world = globalServiceLocator.world;
+        const entityId = world.createEntity();
 
-        // 1. Create the basic NPC instance, passing stats to the constructor
-        const npc: Npc = new Npc(prefab.name, prefabId, race, position, prefab.stats);
-        npc.position = position;
-        npc.disposition = prefab.disposition || 'neutral';
+        // 1. Base Components
+        world.addComponent(entityId, new IdentityComponent(prefab.name, prefabId));
+        world.addComponent(entityId, new TagsComponent(prefab.tags || []));
+        world.addComponent(entityId, new PositionComponent(position.x, position.y));
+        const renderable = prefab.renderable || { char: prefab.ascii_char || '?', color: prefab.color || 'magenta', layer: 5 };
+        world.addComponent(entityId, new RenderableComponent(renderable.char, renderable.color, renderable.layer));
+        world.addComponent(entityId, new AIComponent(prefab.ai_flags || []));
+        world.addComponent(entityId, new StateComponent(new Map()));
+        world.addComponent(entityId, new ActionBudgetComponent());
 
-        // 2. Add class and level
-        npc.classes.push({
-            class: cls, level: prefab.level,
-            classSkills: [],
-            hitDice: 1,
-        });
-        npc.totalLevel = prefab.level;
+        // 2. Attributes & Modifiers
+        const attributes = new AttributesComponent(new Map(Object.entries(prefab.stats)));
+        world.addComponent(entityId, attributes);
+        world.addComponent(entityId, new ModifiersComponent()); // Start with empty modifiers
+        world.addComponent(entityId, new FeatsComponent(prefab.feats || []));
+        world.addComponent(entityId, new SkillsComponent(new Map(Object.entries(prefab.skills || {}))));
+        world.addComponent(entityId, new InventoryComponent());
+        world.addComponent(entityId, new TemplateComponent(null));
 
-        console.log('NpcFactory prefab', prefab);
-        console.log('NpcFactory npc', npc);
-
-        // 4. Calculate final stats using the RulesEngine
-        globalServiceLocator.rulesEngine.calculateStats(npc);
-
-        // 5. Apply feats (both declarative and scripted)
-        for (const featId of prefab.feats) {
-            const featData = await content.feats[featId]?.get();
-            if (featData.script) {
-                await globalServiceLocator.effectManager.applyScriptedEffect(featData, npc, npc);
+        // 3. Class & Race Effects
+        world.addComponent(entityId, new ClassComponent(prefab.classes || []));
+        
+        const effectManager = globalServiceLocator.effectManager;
+        await effectManager.applyRaceEffects(entityId, prefab.race);
+        if (prefab.classes) {
+            for (const classInstance of prefab.classes) {
+                await effectManager.applyClassEffects(entityId, classInstance.id, classInstance.level);
             }
         }
-        // Recalculate stats AFTER applying feats to include declarative feat bonuses
-        globalServiceLocator.rulesEngine.calculateStats(npc);
+        if (prefab.feats) {
+            await effectManager.applyFeatEffects(entityId, prefab.feats);
+        }
 
-        // 6. CREATE AND EQUIP ITEMS from the new `equipment` prefab format
+        // 4. Equipment
+        const equipmentComponent = new EquipmentComponent();
         if (prefab.equipment) {
             const lootFactory = globalServiceLocator.lootFactory;
             for (const slot in prefab.equipment) {
                 const itemDef = prefab.equipment[slot];
                 if (itemDef && itemDef.base_item) {
-                    const itemInstance = await lootFactory.createItem(
-                        itemDef.base_item,
-                        itemDef.properties || [],
-                        itemDef.material
-                    );
-
-                    if (itemInstance) {
-                        npc.equipment.equip(itemInstance, slot as EquipmentSlot);
-                    }
+                    // TODO: LootFactory will be refactored to return an EntityID.
+                    // const itemEntityId = await lootFactory.createItem(itemDef.base_item, itemDef.properties, itemDef.material);
+                    // if (itemEntityId) {
+                    //     equipmentComponent.slots.set(slot as keyof typeof prefab.equipment, itemEntityId);
+                    //     // TODO: EffectManager will apply modifiers from the equipped item.
+                    //     // await globalServiceLocator.effectManager.applyEquipmentEffects(entityId, itemEntityId);
+                    // }
                 }
             }
         }
+        world.addComponent(entityId, equipmentComponent);
 
-        // 7. RE-CALCULATE STATS *AFTER* EQUIPPING
-        // This is crucial to apply bonuses from the new gear.
-        globalServiceLocator.rulesEngine.calculateStats(npc);
+        // 5. Final HP Calculation
+        const con = await globalServiceLocator.modifierManager.queryStat(entityId, 'con');
+        const conMod = calculateModifier(con);
+        
+        // TODO: This needs to be a proper lookup from class data.
+        const totalLevel = prefab.classes ? prefab.classes.reduce((acc: number, c: { level: number }) => acc + c.level, 0) : 1;
+        const hitDice = 8; // Placeholder for average hit dice
+        
+        const maxHp = (hitDice * totalLevel) + (conMod * totalLevel);
+        attributes.attributes.set('hp_max', maxHp);
+        attributes.attributes.set('hp_current', maxHp);
 
-        // 8. Set renderable from prefab data
-        if (prefab.renderable) {
-            npc.renderable = prefab.renderable;
-        } else { // Fallback for older monster prefabs
-            npc.renderable = { char: prefab.ascii_char || '?', color: prefab.color || 'magenta', layer: 5 };
-        }
+        console.log(`Created ECS entity ${entityId} for prefab ${prefabId}`);
 
-        // 7. Assign AI flags
-        if (prefab.ai_flags) {
-            npc.ai_flags = prefab.ai_flags;
-        }
-
-        return npc;
+        return entityId;
     }
 }

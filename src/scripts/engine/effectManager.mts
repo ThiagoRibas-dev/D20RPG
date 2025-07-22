@@ -1,196 +1,204 @@
-// src/scripts/engine/effectManager.mts
-
-import { ActiveEffect } from './activeEffect.mjs';
-import { ItemInstance } from './components/itemInstance.mjs';
-import { ContentItem } from './entities/contentItem.mjs';
-import { Entity } from './entities/entity.mjs';
-import { EventBus } from './eventBus.mjs';
-import { GameEvents } from './events.mjs';
+import { EffectsComponent, FeatsComponent, ModifiersComponent } from './ecs/components/index.mjs';
+import { FeatSlot } from './entities/featSlot.mjs';
+import { EntityID } from './ecs/world.mjs';
 import { globalServiceLocator } from './serviceLocator.mjs';
+import { Modifier } from './entities/modifier.mjs';
+
+export interface ActiveEffect {
+    sourceId: string; // Unique ID of the spell or item effect that created this
+    name: string;
+    duration: number; // Remaining rounds. Infinity for permanent.
+    modifiers: Modifier[];
+}
 
 /**
- * Manages the lifecycle of all temporary effects in the game.
- * It applies, ticks down, and removes effects like buffs and debuffs.
+ * A stateless service for applying and removing effects to and from entities.
+ * It acts as the bridge between content data and the ECS components.
  */
 export class EffectManager {
-    // Stores all active effects, using their unique ID as the key.
-    private activeEffects: Map<string, ActiveEffect> = new Map();
 
-    constructor() {
-        const eventBus: EventBus = globalServiceLocator.eventBus;
-        // Subscribe to the end of a character's turn to tick down durations.
-        eventBus.subscribe(GameEvents.COMBAT_TURN_END, (event) => this.tickDownEffectsFor(event.data.entity));
-    }
+    public async applyEffect(effectId: string, targetId: EntityID, sourceId: string = 'unknown', contextualTags: string[] = []): Promise<void> {
+        console.log(`applyEffect : ${effectId} ${targetId} ${sourceId}`);
 
-    public async triggerEffect(effectId: string, actor: Entity, target: Entity | ItemInstance, item?: ItemInstance) {
+        if(!effectId){
+            console.error(`Effect for target : ${targetId} doesn't have an ID, ignoring.`);
+            return;
+        }
+
         const effectData = await globalServiceLocator.contentLoader.loadEffect(effectId);
-
         if (!effectData) {
             console.error(`Could not load effect data for ID: ${effectId}`);
             return;
         }
 
-        if (effectData.script) {
-            if (target instanceof Entity) {
-                this.applyScriptedEffect(effectData, actor, target);
-            } else {
-                console.error(`Scripted effects like "${effectData.name}" cannot be applied to items.`);
-            }
-        } else {
-            this.applyStaticEffect(effectData, actor, target);
-        }
-    }
+        const world = globalServiceLocator.world;
+        const effectsComponent = world.getComponent(targetId, EffectsComponent);
+        const modifiersComponent = world.getComponent(targetId, ModifiersComponent);
 
-    /**
-     * Applies a new scripted effect to a target entity. This is the main entry point
-     * for spells, items, or abilities that grant temporary or permanent scripted effects.
-     */
-    public async applyStaticEffect(effectData: any, caster: Entity, target: Entity | ItemInstance) {
-        const targetName = target instanceof Entity ? target.name : target.itemData.name;
-        console.log(`Applying static effect: ${effectData.name} to ${targetName}`);
-        const id = `effect-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-
-        const newEffect: ActiveEffect = {
-            id,
-            name: effectData.name,
-            source: effectData.sourceName || 'Unknown',
-            description: effectData.description || '',
-            script: '',
-            context: effectData.context || {},
-            tags: effectData.tags || [],
-            sourceEffect: effectData,
-            target: target as Entity, // This needs to be revisited if items can have effects
-            caster,
-            durationInRounds: effectData.duration || 0,
-            remainingRounds: effectData.duration || 0,
-            scriptInstance: null,
-        };
-
-        this.activeEffects.set(id, newEffect);
-
-        if (target instanceof Entity) {
-            effectData.effects?.forEach((eff: any) => {
-                if (eff.type === 'bonus') {
-                    target.modifiers.add({
-                        value: eff.value,
-                        type: eff.bonus_type,
-                        target: eff.target,
-                        source: newEffect.name,
-                        sourceId: newEffect.id,
-                        duration: newEffect.durationInRounds
-                    });
-                } else if (eff.type === 'add_tag') {
-                    target.tags.add(eff.tag);
-                }
-            });
-        }
-
-
-        globalServiceLocator.eventBus.publish(GameEvents.CHARACTER_EFFECT_APPLIED, { entity: target as Entity, effect: newEffect });
-    }
-
-    public async applyScriptedEffect(effectData: any, caster: Entity, target: Entity) {
-        if (!effectData || !effectData.script || typeof effectData.script !== 'string') {
-            console.error(`Effect "${effectData.name}" has no valid script property.`);
+        if (!effectsComponent || !modifiersComponent) {
+            console.error(`Cannot apply effect: Entity ${targetId} is missing EffectsComponent or ModifiersComponent.`);
             return;
         }
 
-        const eventBus: EventBus = globalServiceLocator.eventBus;
-        try {
-            const effectScriptModule = await import(effectData.script);
-            const EffectLogicClass = effectScriptModule.default;
-            if (!EffectLogicClass) {
-                console.error(`Script at "${effectData.script}" does not have a default export.`);
-                return;
-            }
+        const newEffect: ActiveEffect = {
+            sourceId: `${effectId}-${sourceId}`,
+            name: effectData.name,
+            duration: effectData.duration || Infinity,
+            modifiers: [],
+        };
 
-            const id = `effect-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-
-            const newEffect: ActiveEffect = {
-                id,
-                name: effectData.name,
-                source: effectData.sourceName || 'Unknown',
-                description: effectData.description || '',
-                script: effectData.script,
-                context: effectData.context || {},
-                tags: effectData.tags || [],
-                sourceEffect: effectData, // The raw effect data
-                target,
-                caster,
-                durationInRounds: effectData.duration || 0,
-                remainingRounds: effectData.duration || 0,
-                scriptInstance: null,
-            };
-
-            newEffect.scriptInstance = new EffectLogicClass(newEffect, eventBus);
-            this.activeEffects.set(id, newEffect);
-
-            // If the effect grants a bonus, add it to the modifier manager
-            if (effectData.type === 'bonus' && newEffect.durationInRounds > 0) {
-                target.modifiers.add({
-                    value: effectData.value,
-                    type: effectData.bonus_type,
-                    target: effectData.target,
-                    source: newEffect.name,
-                    sourceId: newEffect.id, // Link modifier to the active effect instance
-                    duration: newEffect.durationInRounds
-                });
-            }
-
-            if (newEffect.scriptInstance.onApply) {
-                newEffect.scriptInstance.onApply();
-            }
-
-            eventBus.publish(GameEvents.CHARACTER_EFFECT_APPLIED, { entity: target, effect: newEffect });
-            console.log(`Applied effect "${newEffect.name}" to ${target.name}.`);
-
-        } catch (error) {
-            console.error(`Failed to load or instantiate script for "${effectData.name}" from "${effectData.script}":`, error);
-        }
-    }
-
-    /**
-     * Removes an effect from an entity and cleans up its listeners.
-     */
-    public removeEffect(effectId: string) {
-        const effect = this.activeEffects.get(effectId);
-        if (!effect) return;
-
-        // Remove any modifiers associated with this specific effect instance
-        effect.target.modifiers.removeBySourceId(effect.id);
-
-        // For static effects, remove any tags that were added.
-        effect.sourceEffect.effects?.forEach((eff: any) => {
-            if (eff.type === 'add_tag') {
-                effect.target.tags.delete(eff.tag);
-            }
-        });
-
-        // Instruct the script to perform its own cleanup.
-        if (effect.scriptInstance && effect.scriptInstance.onRemove) {
-            effect.scriptInstance.onRemove();
-        }
-
-        this.activeEffects.delete(effectId);
-        globalServiceLocator.eventBus.publish(GameEvents.CHARACTER_EFFECT_REMOVED, { entity: effect.target, effect: effect });
-        console.log(`Removed effect "${effect.name}" from ${effect.target.name}.`);
-    }
-
-    /**
-     * The clockwork mechanism. Ticks down the duration of all effects on a given entity.
-     * This is triggered by the 'combat:turn:end' event.
-     */
-    private tickDownEffectsFor(entity: Entity) {
-        // Iterate over a copy of the values, as removeEffect can modify the map during iteration.
-        for (const effect of [...this.activeEffects.values()]) {
-            if (effect.target.id === entity.id) { // Assuming entities have a unique 'id' property
-                if (effect.durationInRounds > 0) { // Don't tick down permanent effects
-                    effect.remainingRounds--;
-
-                    if (effect.remainingRounds <= 0) {
-                        this.removeEffect(effect.id);
+        // Create modifier objects from the effect data
+        if (effectData.effects) {
+            for (const modData of effectData.effects) {
+                if (modData.type === 'bonus') {
+                    const modifier: Modifier = {
+                        value: modData.value,
+                        type: modData.bonus_type,
+                        target: modData.target,
+                        source: newEffect.name,
+                        sourceId: newEffect.sourceId,
+                        duration: newEffect.duration,
+                        tags: modData.tags || []
+                    };
+                    newEffect.modifiers.push(modifier);
+                    modifiersComponent.modifiers.push(modifier);
+                } else if (modData.type === 'add_feat_slot') {
+                    const featsComponent = world.getComponent(targetId, FeatsComponent);
+                    if (featsComponent) {
+                        const combinedTags = [...(modData.tags || []), ...contextualTags];
+                        const newSlot = new FeatSlot(combinedTags, newEffect.sourceId);
+                        featsComponent.featSlots.push(newSlot);
                     }
                 }
+                // TODO: Handle other effect types like 'add_tag'
+            }
+        }
+
+        effectsComponent.activeEffects.push(newEffect);
+        console.log(`Applied effect "${newEffect.name}" to entity ${targetId}.`);
+    }
+
+    public removeEffect(effectSourceId: string, targetId: EntityID): void {
+        const world = globalServiceLocator.world;
+        const effectsComponent = world.getComponent(targetId, EffectsComponent);
+        const modifiersComponent = world.getComponent(targetId, ModifiersComponent);
+
+        if (!effectsComponent || !modifiersComponent) {
+            return;
+        }
+
+        // Remove the active effect
+        const effectIndex = effectsComponent.activeEffects.findIndex(e => e.sourceId === effectSourceId);
+        if (effectIndex > -1) {
+            const effectName = effectsComponent.activeEffects[effectIndex].name;
+            effectsComponent.activeEffects.splice(effectIndex, 1);
+            console.log(`Removed effect "${effectName}" from entity ${targetId}.`);
+        }
+
+        // Remove all modifiers originating from that effect
+        modifiersComponent.modifiers = modifiersComponent.modifiers.filter(
+            m => m.sourceId !== effectSourceId
+        );
+
+        // Also remove any feat slots granted by this effect
+        const featsComponent = world.getComponent(targetId, FeatsComponent);
+        if (featsComponent) {
+            featsComponent.featSlots = featsComponent.featSlots.filter(
+                slot => slot.source !== effectSourceId
+            );
+        }
+    }
+
+    // Convenience methods for NpcFactory
+    public async applyRaceEffects(targetId: EntityID, raceId: string) {
+        const raceData = await globalServiceLocator.contentLoader.loadRace(raceId);
+        if (raceData && raceData.effects) {
+            for (const effect of raceData.effects) {
+                await this.applyEffect(effect.id, targetId, `race:${raceId}`, effect.tags);
+            }
+        }
+    }
+
+    public async removeRaceEffects(targetId: EntityID, raceId: string) {
+        const raceData = await globalServiceLocator.contentLoader.loadRace(raceId);
+        if (raceData && raceData.effects) {
+            for (const effect of raceData.effects) {
+                this.removeEffect(`${effect.id}-race:${raceId}`, targetId);
+            }
+        }
+    }
+    
+    public async applyClassEffects(targetId: EntityID, classId: string, level: number) {
+        const classData = await globalServiceLocator.contentLoader.loadClass(classId);
+        if (classData && classData.progression) {
+            for (let i = 1; i <= level; i++) {
+                const levelData = classData.progression.find((p: { level: number; }) => p.level === i);
+                if (levelData && levelData.effects) {
+                    for (const effect of levelData.effects) {
+                        const uniqueSourceId = `class:${classId}:level:${i}`;
+                        await this.applyEffect(effect.id, targetId, uniqueSourceId, effect.tags);
+                    }
+                }
+            }
+        }
+    }
+
+    public async removeClassEffects(targetId: EntityID, classId: string, level: number) {
+        const classData = await globalServiceLocator.contentLoader.loadClass(classId);
+        if (classData && classData.progression) {
+            for (let i = 1; i <= level; i++) {
+                const levelData = classData.progression.find((p: { level: number; }) => p.level === i);
+                if (levelData && levelData.effects) {
+                    for (const effect of levelData.effects) {
+                        const uniqueSourceId = `class:${classId}:level:${i}`;
+                        this.removeEffect(`${effect.id}-${uniqueSourceId}`, targetId);
+                    }
+                }
+            }
+        }
+    }
+    
+    public async applyFeatEffects(targetId: EntityID, featIds: string[]) {
+        for (const featId of featIds) {
+            const featData = await globalServiceLocator.contentLoader.loadFeat(featId);
+            if (featData && featData.effects) {
+                for (const effect of featData.effects) {
+                    await this.applyEffect(effect.id, targetId, `feat:${featId}`);
+                }
+            }
+        }
+    }
+    public async applyEquipmentEffects(targetId: EntityID, itemId: EntityID) {
+        // TODO: Load item data and apply its effects
+    }
+
+    public async applyTemplateEffects(targetId: EntityID, templateId: string | null, choices: any) {
+        if (!templateId) return;
+        const templateData = await globalServiceLocator.contentLoader.loadTemplate(templateId);
+        if (!templateData) {
+            console.error(`Could not load template data for ID: ${templateId}`);
+            return;
+        }
+
+        if (templateData.effects) {
+            for (const effect of templateData.effects) {
+                // TODO: Handle choices
+                await this.applyEffect(effect.id, targetId, `template:${templateId}`);
+            }
+        }
+    }
+
+    public async removeTemplateEffects(targetId: EntityID, templateId: string | null) {
+        if (!templateId) return;
+        const templateData = await globalServiceLocator.contentLoader.loadTemplate(templateId);
+        if (!templateData) {
+            console.error(`Could not load template data for ID: ${templateId}`);
+            return;
+        }
+
+        if (templateData.effects) {
+            for (const effect of templateData.effects) {
+                this.removeEffect(`${effect.id}-template:${templateId}`, targetId);
             }
         }
     }

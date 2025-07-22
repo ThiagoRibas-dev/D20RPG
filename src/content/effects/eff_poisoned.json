@@ -1,0 +1,14 @@
+{
+    "id": "eff_poisoned",
+    "name": "Poisoned",
+    "type": "effect",
+    "description": "Deals 1d4 poison damage per turn.",
+    "effects": [
+        {
+            "type": "damage",
+            "damage_type": "poison",
+            "amount": "1d4",
+            "trigger": "turn_start"
+        }
+    ]
+}

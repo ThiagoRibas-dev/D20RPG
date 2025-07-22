@@ -1,20 +1,38 @@
 import { ContentItem } from '../../engine/entities/contentItem.mjs';
 import { globalServiceLocator } from '../../engine/serviceLocator.mjs';
 import { updateSelectionInfo } from '../uiHelpers.mjs';
+import { TemplateComponent } from '../../engine/ecs/components/index.mjs';
+import { EntityID } from '../../engine/ecs/world.mjs';
 
 export class TemplateSelectionView {
-    private container: HTMLElement;
+    private container: HTMLElement | null;
 
     constructor() {
         this.container = globalServiceLocator.ui.els['templates-selector'];
     }
 
     public async render(content: ContentItem): Promise<void> {
+        if (!this.container) {
+            return;
+        }
         this.container.innerHTML = ""; // Clear previous content
         const templates = content.templates;
 
         if (!templates) {
             this.container.innerText = "Error: Template content not found.";
+            return;
+        }
+
+        const player = globalServiceLocator.state.playerId;
+        if (!player) {
+            console.error("Player not initialized during template rendering.");
+            return;
+        }
+
+        const world = globalServiceLocator.world;
+        const templateComponent = world.getComponent(player, TemplateComponent);
+        if (!templateComponent) {
+            console.error("Player entity does not have a TemplateComponent.");
             return;
         }
 
@@ -25,48 +43,41 @@ export class TemplateSelectionView {
 
                 const templateButton = this.container.ownerDocument.createElement('button');
                 templateButton.textContent = templateData.name;
+                templateButton.dataset.templateId = templateKey;
 
-                templateButton.onclick = () => {
-                    const player = globalServiceLocator.state.player;
-                    if (!player) {
-                        console.error("Player not initialized during template selection.");
-                        return;
-                    }
+                if (templateComponent.templateId === templateKey) {
+                    templateButton.classList.add('selected');
+                }
 
+                templateButton.onclick = async () => {
                     const isSelected = templateButton.classList.contains('selected');
+                    const currentTemplateId = templateButton.dataset.templateId;
 
-                    // Deselect all other buttons
-                    this.container.querySelectorAll('button').forEach(btn => {
+                    // Deselect all buttons
+                    this.container?.querySelectorAll('button').forEach(btn => {
                         btn.classList.remove('selected');
                     });
 
+                    const effectManager = globalServiceLocator.effectManager;
+
+                    // Un-apply the old template if one was selected
+                    if (templateComponent.templateId) {
+                        await effectManager.removeTemplateEffects(player, templateComponent.templateId);
+                    }
+
                     if (isSelected) {
                         // If it was already selected, unselect it
-                        player.template = null;
+                        templateComponent.templateId = null;
                         updateSelectionInfo(null);
-                        // TODO: Add logic to un-apply template effects
                     } else {
+                        // Otherwise, select the new one
                         templateButton.classList.add('selected');
-                        // For now, we only allow one template.
-                        // A more complex system could allow multiple templates.
-                        player.template = templateData;
-
-                        // If the template has choices, we need to present them to the user.
-                        // This is a placeholder for a more complex UI.
-                        if (templateData.choices) {
-                            const choices: { [key: string]: string } = {};
-                            templateData.choices.forEach((choice: any) => {
-                                // For now, just pick the first option automatically.
-                                choices[choice.id] = choice.options[0].id;
-                            });
-
-                            // In a real implementation, you would show a UI to the user
-                            // and get their selections.
-                            this.applyTemplate(player, templateData, choices);
-                        } else {
-                            this.applyTemplate(player, templateData, {});
-                        }
-
+                        templateComponent.templateId = currentTemplateId || null;
+                        
+                        // TODO: Handle template choices properly
+                        const choices = {}; // Placeholder
+                        await effectManager.applyTemplateEffects(player, templateComponent.templateId, choices);
+                        
                         updateSelectionInfo(templateData);
                     }
                 };
@@ -76,23 +87,15 @@ export class TemplateSelectionView {
         }
     }
 
-    private async applyTemplate(player: any, templateData: ContentItem, choices: { [key: string]: string }) {
-        if (templateData.script) {
-            const scriptModule = await import(`../../../content/templates/${templateData.script}`);
-            if (scriptModule.onApply) {
-                scriptModule.onApply(player, choices);
-            }
-        }
-
-        // Recalculate stats after applying the template
-        globalServiceLocator.rulesEngine.calculateStats(player);
-    }
-
     public show(): void {
-        this.container.style.display = '';
+        if (this.container) {
+            this.container.style.display = '';
+        }
     }
 
     public hide(): void {
-        this.container.style.display = 'none';
+        if (this.container) {
+            this.container.style.display = 'none';
+        }
     }
 }

@@ -6,7 +6,8 @@
     "isTrigger": false,
     "tileColor": "brown",
     "tileChar": "#",
-    "moveCost": 10
+    "moveCost": 10,
+    "tags": ["obstacle"]
   },
   {
     "symbol": ".",
@@ -15,7 +16,8 @@
     "isTrigger": false,
     "tileColor": "lightgray",
     "tileChar": ".",
-    "moveCost": 5
+    "moveCost": 5,
+    "tags": ["walkable"]
   },
   {
     "symbol": ">",
@@ -24,7 +26,8 @@
     "isTrigger": true,
     "tileColor": "green",
     "tileChar": ">",
-    "moveCost": 5
+    "moveCost": 5,
+    "tags": ["walkable", "trigger"]
   },
   {
     "symbol": "-",
@@ -33,7 +36,8 @@
     "isTrigger": false,
     "tileColor": "darkgray",
     "tileChar": "-",
-    "moveCost": 5
+    "moveCost": 5,
+    "tags": ["walkable"]
   },
   {
     "symbol": "@",
@@ -42,7 +46,8 @@
     "isTrigger": false,
     "tileColor": "yellow",
     "tileChar": "@",
-    "moveCost": 5
+    "moveCost": 5,
+    "tags": ["walkable"]
   },
   {
     "symbol": "?",
@@ -51,6 +56,37 @@
     "isTrigger": false,
     "tileColor": "black",
     "tileChar": "?",
-    "moveCost": 10
+    "moveCost": 10,
+    "tags": ["obstacle"]
+  },
+  {
+    "symbol": "\"",
+    "name": "Tall Grass",
+    "isBlocking": false,
+    "isTrigger": false,
+    "tileColor": "green",
+    "tileChar": "\"",
+    "moveCost": 6,
+    "tags": ["walkable", "flammable", "organic", "concealing", "difficult_terrain"]
+  },
+  {
+    "symbol": "~",
+    "name": "Shallow Water",
+    "isBlocking": false,
+    "isTrigger": false,
+    "tileColor": "blue",
+    "tileChar": "~",
+    "moveCost": 8,
+    "tags": ["walkable", "water", "wet", "difficult_terrain"]
+  },
+  {
+    "symbol": "L",
+    "name": "Lava",
+    "isBlocking": false,
+    "isTrigger": false,
+    "tileColor": "red",
+    "tileChar": "L",
+    "moveCost": 10,
+    "tags": ["walkable", "liquid", "fire", "extreme_heat_aura", "damaging", "difficult_terrain"]
   }
 ]

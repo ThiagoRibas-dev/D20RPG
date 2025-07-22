@@ -1,15 +1,16 @@
-import { ItemInstance } from '../components/itemInstance.mjs';
-import { ContentItem } from '../entities/contentItem.mjs';
 import { globalServiceLocator } from '../serviceLocator.mjs';
 import { deepMerge } from '../utils.mjs';
+import { EntityID } from '../ecs/world.mjs';
+import { IdentityComponent, ItemComponent } from '../ecs/components/index.mjs';
+import { ContentItem } from '../entities/contentItem.mjs';
 
 export class LootFactory {
-    public async createItem(baseItemId: string, propertyIds: string[] = [], materialId?: string): Promise<ItemInstance | null> {
+    public async createItem(baseItemId: string, propertyIds: string[] = [], materialId?: string): Promise<EntityID | null> {
         const contentLoader = globalServiceLocator.contentLoader;
         const content = await contentLoader.getContent();
 
         // 1. Get the base item data (e.g., longsword.json)
-        const baseItemData = content.items[baseItemId]?.get();
+        const baseItemData = await content.items[baseItemId]?.get();
         if (!baseItemData) {
             console.error(`Base item not found: ${baseItemId}`);
             return null;
@@ -21,7 +22,7 @@ export class LootFactory {
         // 2. Gather all property and material data
         const propertiesToApply = [];
         for (const propId of propertyIds) {
-            const propData = content.magic_properties[propId]?.get();
+            const propData = await content.magic_properties[propId]?.get();
             if (propData) {
                 propertiesToApply.push(propData);
             } else {
@@ -30,7 +31,7 @@ export class LootFactory {
         }
 
         if (materialId) {
-            const materialData = content.materials[materialId]?.get();
+            const materialData = await content.materials[materialId]?.get();
             if (materialData) {
                 propertiesToApply.push(materialData);
             } else {
@@ -52,16 +53,18 @@ export class LootFactory {
         }
 
         // 4. Generate a procedural name
-        const prefix = propertyIds.map(id => content.magic_properties[id]?.get()?.name_prefix).filter(Boolean).join(' ');
-        const suffix = propertyIds.map(id => content.magic_properties[id]?.get()?.name_suffix).filter(Boolean).join(' ');
-        const materialName = materialId ? content.materials[materialId]?.get()?.name_prefix : '';
+        const prefix = (await Promise.all(propertyIds.map(id => content.magic_properties[id]?.get()?.name_prefix))).filter(Boolean).join(' ');
+        const suffix = (await Promise.all(propertyIds.map(id => content.magic_properties[id]?.get()?.name_suffix))).filter(Boolean).join(' ');
+        const materialName = materialId ? (await content.materials[materialId]?.get())?.name_prefix : '';
 
         finalItemData.name = `${prefix} ${materialName} ${baseItemData.name} ${suffix}`.replace(/\s+/g, ' ').trim();
 
-
-        // 5. Create the final instance
-        const itemInstance = new ItemInstance(baseItemId, finalItemData);
-
-        return itemInstance;
+        // 5. Create the final entity
+        const world = globalServiceLocator.world;
+        const entityId = world.createEntity();
+        world.addComponent(entityId, new IdentityComponent(finalItemData.name, finalItemData.description));
+        world.addComponent(entityId, new ItemComponent(finalItemData.type, finalItemData.charges));
+        
+        return entityId;
     }
 }

@@ -1,7 +1,8 @@
 import { Action } from "../../engine/actions/action.mjs";
 import { GameEvents } from "../../engine/events.mjs";
-import { Interrupt } from "../../engine/interruptManager.mjs";
 import { globalServiceLocator } from "../../engine/serviceLocator.mjs";
+import { IdentityComponent } from "../../engine/ecs/components/index.mjs";
+import { Interrupt } from "../../engine/ecs/systems/interruptSystem.mjs";
 
 export class InterruptPromptView {
     private container: HTMLElement;
@@ -25,14 +26,16 @@ export class InterruptPromptView {
     }
 
     public render(interrupt: Interrupt): void {
-        this.title.textContent = `${interrupt.sourceEntity.name} provokes an attack of opportunity!`;
+        const sourceEntityName = globalServiceLocator.world.getComponent(interrupt.sourceEntity, IdentityComponent)?.name || 'Someone';
+        this.title.textContent = `${sourceEntityName} provokes an attack of opportunity!`;
 
         // Add a button for each potential action
         interrupt.potentialActions.forEach(action => {
             const button = document.createElement('button');
-            let buttonText = action.constructor.name.replace('Action', ''); // e.g., "MeleeAttack"
-            if ('target' in action && action.target) {
-                buttonText += ` ${(action.target as any).name}`;
+            let buttonText = action.name;
+            if (action.target && typeof action.target === 'number') {
+                const targetName = globalServiceLocator.world.getComponent(action.target, IdentityComponent)?.name || 'someone';
+                buttonText += ` ${targetName}`;
             }
             button.textContent = buttonText;
             button.onclick = () => {

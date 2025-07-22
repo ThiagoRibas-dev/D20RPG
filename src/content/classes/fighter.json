@@ -20,26 +20,26 @@
     "int_mod": true
   },
   "level_progression": [
-    { "level": 1, "base_attack_bonus": 1, "fortitude_save": 2, "reflex_save": 0, "will_save": 0, "bonus_feat": { "tags": ["fighter_bonus_feat"] } },
-    { "level": 2, "base_attack_bonus": 2, "fortitude_save": 3, "reflex_save": 0, "will_save": 0, "bonus_feat": { "tags": ["fighter_bonus_feat"] } },
+    { "level": 1, "base_attack_bonus": 1, "fortitude_save": 2, "reflex_save": 0, "will_save": 0, "effects": [{ "id": "eff_bonus_feat", "tags": ["fighter_bonus_feat"] }] },
+    { "level": 2, "base_attack_bonus": 2, "fortitude_save": 3, "reflex_save": 0, "will_save": 0, "effects": [{ "id": "eff_bonus_feat", "tags": ["fighter_bonus_feat"] }] },
     { "level": 3, "base_attack_bonus": 3, "fortitude_save": 3, "reflex_save": 1, "will_save": 1 },
-    { "level": 4, "base_attack_bonus": 4, "fortitude_save": 4, "reflex_save": 1, "will_save": 1, "bonus_feat": { "tags": ["fighter_bonus_feat"] } },
+    { "level": 4, "base_attack_bonus": 4, "fortitude_save": 4, "reflex_save": 1, "will_save": 1, "effects": [{ "id": "eff_bonus_feat", "tags": ["fighter_bonus_feat"] }] },
     { "level": 5, "base_attack_bonus": 5, "fortitude_save": 4, "reflex_save": 1, "will_save": 1 },
-    { "level": 6, "base_attack_bonus": 6, "fortitude_save": 5, "reflex_save": 2, "will_save": 2, "bonus_feat": { "tags": ["fighter_bonus_feat"] } },
+    { "level": 6, "base_attack_bonus": 6, "fortitude_save": 5, "reflex_save": 2, "will_save": 2, "effects": [{ "id": "eff_bonus_feat", "tags": ["fighter_bonus_feat"] }] },
     { "level": 7, "base_attack_bonus": 7, "fortitude_save": 5, "reflex_save": 2, "will_save": 2 },
-    { "level": 8, "base_attack_bonus": 8, "fortitude_save": 6, "reflex_save": 2, "will_save": 2, "bonus_feat": { "tags": ["fighter_bonus_feat"] } },
+    { "level": 8, "base_attack_bonus": 8, "fortitude_save": 6, "reflex_save": 2, "will_save": 2, "effects": [{ "id": "eff_bonus_feat", "tags": ["fighter_bonus_feat"] }] },
     { "level": 9, "base_attack_bonus": 9, "fortitude_save": 6, "reflex_save": 3, "will_save": 3 },
-    { "level": 10, "base_attack_bonus": 10, "fortitude_save": 7, "reflex_save": 3, "will_save": 3, "bonus_feat": { "tags": ["fighter_bonus_feat"] } },
+    { "level": 10, "base_attack_bonus": 10, "fortitude_save": 7, "reflex_save": 3, "will_save": 3, "effects": [{ "id": "eff_bonus_feat", "tags": ["fighter_bonus_feat"] }] },
     { "level": 11, "base_attack_bonus": 11, "fortitude_save": 7, "reflex_save": 3, "will_save": 3 },
-    { "level": 12, "base_attack_bonus": 12, "fortitude_save": 8, "reflex_save": 4, "will_save": 4, "bonus_feat": { "tags": ["fighter_bonus_feat"] } },
+    { "level": 12, "base_attack_bonus": 12, "fortitude_save": 8, "reflex_save": 4, "will_save": 4, "effects": [{ "id": "eff_bonus_feat", "tags": ["fighter_bonus_feat"] }] },
     { "level": 13, "base_attack_bonus": 13, "fortitude_save": 8, "reflex_save": 4, "will_save": 4 },
-    { "level": 14, "base_attack_bonus": 14, "fortitude_save": 9, "reflex_save": 4, "will_save": 4, "bonus_feat": { "tags": ["fighter_bonus_feat"] } },
+    { "level": 14, "base_attack_bonus": 14, "fortitude_save": 9, "reflex_save": 4, "will_save": 4, "effects": [{ "id": "eff_bonus_feat", "tags": ["fighter_bonus_feat"] }] },
     { "level": 15, "base_attack_bonus": 15, "fortitude_save": 9, "reflex_save": 5, "will_save": 5 },
-    { "level": 16, "base_attack_bonus": 16, "fortitude_save": 10, "reflex_save": 5, "will_save": 5, "bonus_feat": { "tags": ["fighter_bonus_feat"] } },
+    { "level": 16, "base_attack_bonus": 16, "fortitude_save": 10, "reflex_save": 5, "will_save": 5, "effects": [{ "id": "eff_bonus_feat", "tags": ["fighter_bonus_feat"] }] },
     { "level": 17, "base_attack_bonus": 17, "fortitude_save": 10, "reflex_save": 5, "will_save": 5 },
-    { "level": 18, "base_attack_bonus": 18, "fortitude_save": 11, "reflex_save": 6, "will_save": 6, "bonus_feat": { "tags": ["fighter_bonus_feat"] } },
+    { "level": 18, "base_attack_bonus": 18, "fortitude_save": 11, "reflex_save": 6, "will_save": 6, "effects": [{ "id": "eff_bonus_feat", "tags": ["fighter_bonus_feat"] }] },
     { "level": 19, "base_attack_bonus": 19, "fortitude_save": 11, "reflex_save": 6, "will_save": 6 },
-    { "level": 20, "base_attack_bonus": 20, "fortitude_save": 12, "reflex_save": 6, "will_save": 6, "bonus_feat": { "tags": ["fighter_bonus_feat"] } }
+    { "level": 20, "base_attack_bonus": 20, "fortitude_save": 12, "reflex_save": 6, "will_save": 6, "effects": [{ "id": "eff_bonus_feat", "tags": ["fighter_bonus_feat"] }] }
   ],
   "effects": [
     {

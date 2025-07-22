@@ -18,10 +18,7 @@
   "base_speed": 30,
   "effects": [
     {
-      "type": "add_feat_slot",
-      "name": "Bonus Feat",
-      "description": "1 extra feat at 1st level.",
-      "tags": []
+      "id": "eff_bonus_feat"
     },
     {
       "type": "bonus",

@@ -46,12 +46,24 @@ export type UIHolder = {
         'actionButtonsPanel': HTMLElement;
         'combatLogText': HTMLElement;
         'characterStatusDetails': HTMLElement;
+        'inventoryScreen': HTMLElement;
+        'equippedItemsContainer': HTMLElement;
+        'inventoryItemsContainer': HTMLElement;
+        'featSelectionView': HTMLElement;
+        'featSlots': HTMLElement;
+        'availableFeats': HTMLElement;
     };
     inputs: {
         [key: string]: HTMLInputElement;
     };
     btns: {
-        [key: string]: HTMLButtonElement;
+        [key:string]: HTMLButtonElement;
+        'confirmFeatButton': HTMLButtonElement;
+        'newGameButton': HTMLButtonElement;
+        'continueGameButton': HTMLButtonElement;
+        'exitGameButton': HTMLButtonElement;
+        'inventoryButton': HTMLButtonElement;
+        'closeInventoryButton': HTMLButtonElement;
         'back-btn': HTMLButtonElement;
         'next-btn': HTMLButtonElement;
         'campaignSelectBtn': HTMLButtonElement;

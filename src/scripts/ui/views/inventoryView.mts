@@ -4,14 +4,14 @@ import { UseItemAction } from '../../engine/actions/useItemAction.mjs';
 import { UseSkillAction } from '../../engine/actions/useSkillAction.mjs';
 import { GameEvents } from '../../engine/events.mjs';
 import { globalServiceLocator } from '../../engine/serviceLocator.mjs';
+import { EquipmentComponent, InventoryComponent, IdentityComponent, TagsComponent } from '../../engine/ecs/components/index.mjs';
 
 export class InventoryView {
-    private container: HTMLElement; // You'll need to add a div with id="inventoryScreen" to index.html
+    private container: HTMLElement;
     private equippedContainer: HTMLElement;
     private inventoryContainer: HTMLElement;
 
     constructor() {
-        // Add these elements to your index.html and getUiScreens()
         this.container = globalServiceLocator.ui.els['inventoryScreen'];
         this.equippedContainer = globalServiceLocator.ui.els['equippedItemsContainer'];
         this.inventoryContainer = globalServiceLocator.ui.els['inventoryItemsContainer'];
@@ -19,68 +19,74 @@ export class InventoryView {
         globalServiceLocator.eventBus.subscribe(GameEvents.ITEM_STATE_CHANGED, () => this.render());
     }
 
-    public render(): void {
-        const player = globalServiceLocator.state.player;
-        if (!player) return;
+    public async render(): Promise<void> {
+        const playerId = globalServiceLocator.state.playerId;
+        if (!playerId) return;
+
+        const world = globalServiceLocator.world;
+        const equipment = world.getComponent(playerId, EquipmentComponent);
+        const inventory = world.getComponent(playerId, InventoryComponent);
 
         // Render Equipped Items
         this.equippedContainer.innerHTML = '<h3>Equipped</h3>';
-        for (const [slot, item] of Object.entries(player.equipment.slots)) {
-            const el = document.createElement('div');
-            if (item) {
-                el.textContent = `${slot}: ${item.itemData.name}`;
-                const unequipBtn = document.createElement('button');
-                unequipBtn.textContent = 'Unequip';
-                unequipBtn.onclick = () => {
-                    // This assumes processAction exists on PlayerTurnController
-                    // and can handle these new actions. You will need to add that.
-                    new UnequipAction(player, slot as any).execute();
-                    this.render(); // Re-render after action
-                };
-                el.appendChild(unequipBtn);
-            } else {
-                el.textContent = `${slot}: (empty)`;
+        if (equipment) {
+            for (const [slot, itemId] of Object.entries(equipment.slots)) {
+                const el = document.createElement('div');
+                if (itemId) {
+                    const itemName = world.getComponent(itemId, IdentityComponent)?.name || 'Unknown Item';
+                    el.textContent = `${slot}: ${itemName}`;
+                    const unequipBtn = document.createElement('button');
+                    unequipBtn.textContent = 'Unequip';
+                    unequipBtn.onclick = () => {
+                        new UnequipAction(playerId, slot as any).execute(world);
+                        this.render();
+                    };
+                    el.appendChild(unequipBtn);
+                } else {
+                    el.textContent = `${slot}: (empty)`;
+                }
+                this.equippedContainer.appendChild(el);
             }
-            this.equippedContainer.appendChild(el);
         }
 
         // Render Inventory Items
         this.inventoryContainer.innerHTML = '<h3>Inventory</h3>';
-        player.inventory.items.forEach(item => {
-            const el = document.createElement('div');
-            const isUnidentified = item.itemData.tags?.includes('state:unidentified');
+        if (inventory) {
+            for (const itemId of inventory.items) {
+                const el = document.createElement('div');
+                const itemTags = world.getComponent(itemId, TagsComponent);
+                const isUnidentified = itemTags?.tags.has('state:unidentified');
+                const itemName = world.getComponent(itemId, IdentityComponent)?.name || 'Unknown Item';
 
-            el.textContent = isUnidentified ? `Unidentified ${item.itemData.base_id}` : item.itemData.name;
+                el.textContent = isUnidentified ? `Unidentified Item` : itemName;
 
-            if (isUnidentified) {
-                const useSkillBtn = document.createElement('button');
-                useSkillBtn.textContent = 'Identify';
-                useSkillBtn.onclick = () => {
-                    new UseSkillAction(player, 'spellcraft', 'identify_item', item).execute();
-                    // No need to call render() here, the event listener will do it.
-                };
-                el.appendChild(useSkillBtn);
-            } else {
-                // Only show Equip and Use buttons for identified items
-                const equipBtn = document.createElement('button');
-                equipBtn.textContent = 'Equip';
-                equipBtn.onclick = () => {
-                    new EquipAction(player, item, 'main_hand').execute();
-                };
-                el.appendChild(equipBtn);
+                if (isUnidentified) {
+                    const useSkillBtn = document.createElement('button');
+                    useSkillBtn.textContent = 'Identify';
+                    useSkillBtn.onclick = () => {
+                        new UseSkillAction(playerId, 'spellcraft', 'identify_item', itemId).execute(world);
+                    };
+                    el.appendChild(useSkillBtn);
+                } else {
+                    const equipBtn = document.createElement('button');
+                    equipBtn.textContent = 'Equip';
+                    equipBtn.onclick = () => {
+                        new EquipAction(playerId, itemId, 'main_hand').execute(world);
+                    };
+                    el.appendChild(equipBtn);
 
-                if (item.itemData.use) {
+                    // TODO: Check for 'use' property on item data
                     const useBtn = document.createElement('button');
                     useBtn.textContent = 'Use';
                     useBtn.onclick = () => {
-                        new UseItemAction(player, item).execute();
+                        new UseItemAction(playerId, itemId).execute(world);
                     };
                     el.appendChild(useBtn);
                 }
+                
+                this.inventoryContainer.appendChild(el);
             }
-            
-            this.inventoryContainer.appendChild(el);
-        });
+        }
     }
 
     public show(): void { this.container.style.display = ''; this.render(); }

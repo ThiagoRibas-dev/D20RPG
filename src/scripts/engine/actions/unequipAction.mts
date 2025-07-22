@@ -1,6 +1,7 @@
-import { EquipmentSlot } from '../components/equipmentComponent.mjs';
-import { Entity } from '../entities/entity.mjs';
 import { Action, ActionType } from './action.mjs';
+import { EntityID, World } from '../ecs/world.mjs';
+import { EquipmentComponent, IdentityComponent } from '../ecs/components/index.mjs';
+import { EquipmentSlot } from '../ecs/components/equipmentComponent.mjs';
 
 export class UnequipAction extends Action {
     public readonly cost: ActionType = ActionType.Standard;
@@ -10,20 +11,23 @@ export class UnequipAction extends Action {
 
     private slot: EquipmentSlot;
 
-    constructor(actor: Entity, slot: EquipmentSlot) {
+    constructor(actor: EntityID, slot: EquipmentSlot) {
         super(actor);
         this.slot = slot;
     }
 
-    canExecute(): boolean {
-        return this.actor.equipment.slots[this.slot] !== null;
+    canExecute(world: World): boolean {
+        const equipment = world.getComponent(this.actor, EquipmentComponent);
+        return equipment ? equipment.slots.has(this.slot) : false;
     }
 
-    public async execute(): Promise<void> {
-        const itemName = this.actor.equipment.slots[this.slot]?.itemData.name;
-        console.log(`${this.actor.name} executes UnequipAction for item in ${this.slot}.`);
-        if (itemName) {
-            this.actor.equipment.unequip(this.slot);
+    public async execute(world: World): Promise<void> {
+        const actorIdentity = world.getComponent(this.actor, IdentityComponent);
+        console.log(`${actorIdentity?.name} executes UnequipAction for item in ${this.slot}.`);
+
+        const equipment = world.getComponent(this.actor, EquipmentComponent);
+        if (equipment) {
+            equipment.slots.delete(this.slot);
         }
         return Promise.resolve();
     }

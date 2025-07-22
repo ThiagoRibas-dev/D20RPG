@@ -1,0 +1,12 @@
+{
+    "$schema": "./../schemas/effect.schema.json",
+    "id": "eff_bonus_feat",
+    "name": "Bonus Feat",
+    "description": "Grants an additional feat slot.",
+    "effects": [
+        {
+            "type": "add_feat_slot",
+            "tags": []
+        }
+    ]
+}

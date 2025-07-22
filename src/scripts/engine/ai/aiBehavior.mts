@@ -1,7 +1,7 @@
 import { Action } from "../actions/action.mjs";
-import { Entity } from "../entities/entity.mjs";
+import { EntityID, World } from "../ecs/world.mjs";
 
 export interface AIBehavior {
-    evaluate(entity: Entity, context: any): number;
-    execute(entity: Entity, context: any): Action;
+    evaluate(entityId: EntityID, world: World, context: any): number;
+    execute(entityId: EntityID, world: World, context: any): Action | null;
 }

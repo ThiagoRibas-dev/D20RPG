@@ -6,4 +6,5 @@ export type MapTile = {
     tileColor: string;
     tileChar: string;
     moveCost?: number;
+    tags?: string[];
 };

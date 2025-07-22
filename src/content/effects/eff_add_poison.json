@@ -1,0 +1,13 @@
+{
+    "id": "eff_add_poison",
+    "name": "Add Poison",
+    "type": "effect",
+    "description": "Adds a poison effect to a weapon.",
+    "effects": [
+        {
+            "type": "apply_effect",
+            "effect_id": "eff_poisoned",
+            "duration": "1d4"
+        }
+    ]
+}

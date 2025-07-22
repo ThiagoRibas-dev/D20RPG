@@ -1,7 +1,7 @@
-import { ItemInstance } from '../../engine/components/itemInstance.mjs';
 import { ContentItem } from '../../engine/entities/contentItem.mjs';
 import { globalServiceLocator } from '../../engine/serviceLocator.mjs';
 import { updateSelectionInfo } from '../uiHelpers.mjs';
+import { InventoryComponent } from '../../engine/ecs/components/index.mjs';
 
 export class EquipmentView {
     private container: HTMLElement;
@@ -27,17 +27,24 @@ export class EquipmentView {
                 const itemButton = this.container.ownerDocument.createElement('button');
                 itemButton.textContent = itemData.name;
 
-                itemButton.onclick = () => {
-                    const player = globalServiceLocator.state.player;
-                    if (!player) {
+                itemButton.onclick = async () => {
+                    const playerId = globalServiceLocator.state.playerId;
+                    if (playerId === null) {
                         console.error("Player not initialized during equipment selection.");
                         return;
                     }
 
                     // For now, just add the item to the inventory.
                     // A real implementation would handle starting gold.
-                    const newItem = new ItemInstance(itemData.id, itemData);
-                    player.inventory.add(newItem);
+                    const world = globalServiceLocator.world;
+                    const lootFactory = globalServiceLocator.lootFactory;
+                    const itemEntityId = await lootFactory.createItem(itemData.id);
+                    if (itemEntityId) {
+                        const inventory = world.getComponent(playerId, InventoryComponent) as InventoryComponent;
+                        if (inventory) {
+                            inventory.items.push(itemEntityId);
+                        }
+                    }
 
                     updateSelectionInfo(itemData);
                 };

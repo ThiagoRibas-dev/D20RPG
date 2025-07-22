@@ -1,7 +1,7 @@
-import { Entity } from '../entities/entity.mjs';
 import { Action, ActionType } from './action.mjs';
-import { globalServiceLocator } from '../serviceLocator.mjs';
 import { Point } from '../../utils/point.mjs';
+import { EntityID, World } from '../ecs/world.mjs';
+import { ActionBudgetComponent, IdentityComponent, ReadyActionComponent } from '../ecs/components/index.mjs';
 
 export class ReadyAction extends Action {
     public readonly id = 'ready';
@@ -9,32 +9,32 @@ export class ReadyAction extends Action {
     public readonly description = 'Prepare to take an action later in the round.';
     public readonly cost: ActionType = ActionType.Standard;
 
-    private trigger: string = '';
-    private readiedAction: Action | null = null;
+    public trigger: string = '';
+    public readiedAction: Action;
+    public target?: EntityID;
 
-    constructor(actor: Entity, trigger: string, readiedAction: Action) {
+    constructor(actor: EntityID, trigger: string, readiedAction: Action, target?: EntityID) {
         super(actor);
         this.provokesAoO = false;
         this.trigger = trigger;
         this.readiedAction = readiedAction;
+        this.target = target;
     }
 
-    public canExecute(): boolean {
-        return this.actor.actionBudget.hasAction(ActionType.Standard);
+    public canExecute(world: World): boolean {
+        const budget = world.getComponent(this.actor, ActionBudgetComponent);
+        return budget ? budget.standardActions > 0 : false;
     }
 
-    public async execute(target?: Entity | Point): Promise<void> {
-        console.log(`${this.actor.name} readies an action.`);
+    public async execute(world: World): Promise<void> {
+        const actorIdentity = world.getComponent(this.actor, IdentityComponent);
+        console.log(`${actorIdentity?.name} readies an action.`);
 
-        // In a real implementation, the UI would prompt the player to select
-        // a trigger and an action. For now, we assume they are passed in the constructor.
+        world.addComponent(this.actor, new ReadyActionComponent(this.trigger, this.readiedAction, this.target));
 
-        globalServiceLocator.interruptManager.add({
-            actor: this.actor,
-            trigger: this.trigger,
-            action: this.readiedAction,
-        });
-
-        this.actor.actionBudget.standard -= 1;
+        const budget = world.getComponent(this.actor, ActionBudgetComponent);
+        if (budget) {
+            budget.standardActions--;
+        }
     }
 }

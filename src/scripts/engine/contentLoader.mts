@@ -7,6 +7,8 @@ export class ContentLoader {
     public tileDefinitions: MapTile[] | null = null;
     public modifierTypes: any[] = [];
     public spells: ContentItem[] = [];
+    public interactionRules: any[] = [];
+    public terrainEffects: any[] = [];
 
     private async loadDirectory(dirPath: string): Promise<ContentItem> {
         const directory: ContentItem = new ContentItem("category");
@@ -87,6 +89,8 @@ export class ContentLoader {
             this.tileDefinitions = await this.loadTileDefinitions();
             this.modifierTypes = await this.loadModifierTypes();
             this.spells = await this.loadSpells();
+            this.interactionRules = await this.loadInteractionRules();
+            this.terrainEffects = await this.loadTerrainEffects();
             console.log("content loaded successfully from javascript calls:", this.contentData)
         }
         catch (e) {
@@ -109,6 +113,13 @@ export class ContentLoader {
         return this.campaignData;
     }
 
+    public getContentItemById(category: string, id: string): ContentItem | null {
+        if (this.contentData[category] && this.contentData[category][id]) {
+            return this.contentData[category][id];
+        }
+        return null;
+    }
+
     public async loadEffect(effectId: string): Promise<any> {
         const filePath = `./content/effects/${effectId}.json`;
         try {
@@ -119,6 +130,62 @@ export class ContentLoader {
             return await response.json();
         } catch (error) {
             console.error(`Error loading effect: ${filePath}`, error);
+            return null;
+        }
+    }
+
+    public async loadTemplate(templateId: string): Promise<any> {
+        const filePath = `./content/templates/${templateId}.json`;
+        try {
+            const response = await fetch(filePath);
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error(`Error loading template: ${filePath}`, error);
+            return null;
+        }
+    }
+
+    public async loadClass(classId: string): Promise<any> {
+        const filePath = `./content/classes/${classId}.json`;
+        try {
+            const response = await fetch(filePath);
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error(`Error loading class: ${filePath}`, error);
+            return null;
+        }
+    }
+
+    public async loadRace(raceId: string): Promise<any> {
+        const filePath = `./content/races/${raceId}.json`;
+        try {
+            const response = await fetch(filePath);
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error(`Error loading race: ${filePath}`, error);
+            return null;
+        }
+    }
+
+    public async loadFeat(featId: string): Promise<any> {
+        const filePath = `./content/feats/${featId}.json`;
+        try {
+            const response = await fetch(filePath);
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error(`Error loading feat: ${filePath}`, error);
             return null;
         }
     }
@@ -161,5 +228,50 @@ export class ContentLoader {
             }
         }
         return spellItems;
+    }
+
+    public async loadInteractionRules(): Promise<any[]> {
+        const filePath = `./content/interactions.json`;
+        try {
+            console.log(`Fetching ${filePath}`);
+            const response = await fetch(filePath);
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error(`Error loading interaction rules: ${filePath}`, error);
+            return [];
+        }
+    }
+
+    public async loadTerrainEffects(): Promise<any[]> {
+        const filePath = `./content/terrain_effects.json`;
+        try {
+            console.log(`Fetching ${filePath}`);
+            const response = await fetch(filePath);
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error(`Error loading terrain effects: ${filePath}`, error);
+            return [];
+        }
+    }
+
+    public async loadAttributeDefinitions(): Promise<any> {
+        const filePath = `./content/rules/attribute_definitions.json`;
+        try {
+            console.log(`Fetching ${filePath}`);
+            const response = await fetch(filePath);
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error(`Error loading attribute definitions: ${filePath}`, error);
+            return {};
+        }
     }
 }

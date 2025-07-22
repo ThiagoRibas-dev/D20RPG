@@ -1,7 +1,9 @@
 import { ContentItem } from '../../engine/entities/contentItem.mjs';
-import { EntityClass } from '../../engine/entities/entity.mjs';
 import { globalServiceLocator } from '../../engine/serviceLocator.mjs';
 import { updateSelectionInfo } from '../uiHelpers.mjs';
+import { ClassComponent } from '../../engine/ecs/components/index.mjs';
+import { ClassInstance } from '../../engine/ecs/components/classComponent.mjs';
+import { EffectManager } from '../../engine/effectManager.mjs';
 
 /**
  * Manages the UI and logic for the class selection step of character creation.
@@ -35,12 +37,20 @@ export class ClassSelectionView {
                 classButton.textContent = classData.name;
 
                 // Set the onclick handler for this class button
-                classButton.onclick = () => {
-                    const player = globalServiceLocator.state.player;
-                    if (!player) {
+                classButton.onclick = async () => {
+                    const playerId = globalServiceLocator.state.playerId;
+                    if (playerId === null) {
                         console.error("Player not initialized during class selection.");
                         return;
                     }
+
+                    const world = globalServiceLocator.world;
+                    const classComponent = world.getComponent(playerId, ClassComponent) as ClassComponent;
+                    if (!classComponent) return;
+
+                    const effectManager = globalServiceLocator.effectManager;
+                    const statCalcSystem = globalServiceLocator.statCalculationSystem;
+                    const oldClasses = [...classComponent.classes];
 
                     const isSelected = classButton.classList.contains('selected');
 
@@ -49,41 +59,34 @@ export class ClassSelectionView {
                         btn.classList.remove('selected');
                     });
 
+                    // Remove effects of any old classes
+                    for (const oldClass of oldClasses) {
+                        await effectManager.removeClassEffects(playerId, oldClass.classId, oldClass.level);
+                    }
+
                     if (isSelected) {
                         // If it was already selected, unselect it
-                        player.classes = [];
+                        classComponent.classes = [];
                         updateSelectionInfo(null);
                     } else {
                         // Otherwise, select it
                         classButton.classList.add('selected');
-
-                        // For now, we only allow one class at level 1. A multiclassing
-                        // system would require more complex logic here.
-                        if (player.classes.length > 0) {
-                            player.classes = []; // Reset if they change their mind
-                        }
-
-                        const hitDieValue: number = parseInt(classData.hit_die.replace('d', ''), 10);
-
-                        const newClass: EntityClass = {
-                            class: classData,
+                        
+                        const newClass: ClassInstance = {
+                            classId: classData.id,
                             level: 1,
-                            classSkills: classData.class_skills || [],
-                            hitDice: hitDieValue || 8 // Default to d8 if missing
                         };
 
-                        player.classes.push(newClass);
-                        player.totalLevel = player.classes.reduce((sum, cls) => sum + cls.level, 0);
-
-                        // --- NEW: Set Power System Rules ---
-                        player.powerSystem = classData.powerSystem || null;
-                        player.powerSystemRules = classData.powerSystemRules || null;
-
-                        // Recalculate stats to apply class bonuses/penalties
-                        globalServiceLocator.rulesEngine.calculateStats(player);
+                        classComponent.classes = [newClass];
+                        await effectManager.applyClassEffects(playerId, newClass.classId, newClass.level);
+                        
+                        // TODO: Set Power System Rules
 
                         updateSelectionInfo(classData);
                     }
+
+                    // Always recalculate stats after any change
+                    await statCalcSystem.recalculateStats(playerId, world);
                 };
 
                 // Add an icon if it exists

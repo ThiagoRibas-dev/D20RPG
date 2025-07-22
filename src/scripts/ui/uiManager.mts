@@ -1,5 +1,4 @@
 import { ContentItem } from "../engine/entities/contentItem.mjs";
-import { PlayerCharacter } from "../engine/entities/playerCharacter.mjs";
 import { GameEvents } from "../engine/events.mjs";
 import { globalServiceLocator } from "../engine/serviceLocator.mjs";
 import { setActiveScreen } from "./uiHelpers.mjs";
@@ -12,6 +11,22 @@ import { InventoryView } from "./views/inventoryView.mjs";
 import { RaceSelectionView } from "./views/raceSelectionView.mjs";
 import { SkillSelectionView } from "./views/skillSelectionView.mjs";
 import { InterruptPromptView } from "./views/interruptPromptView.mjs";
+import { ActionButtonsView } from "./views/actionButtonsView.mjs";
+import {
+    IdentityComponent,
+    TagsComponent,
+    AttributesComponent,
+    StateComponent,
+    PositionComponent,
+    RenderableComponent,
+    PlayerControlledComponent,
+    ClassComponent,
+    SkillsComponent,
+    FeatsComponent,
+    InventoryComponent,
+    EquipmentComponent,
+    ActionBudgetComponent
+} from "../engine/ecs/components/index.mjs";
 
 // --- VIEW INSTANCES ---
 // Create one instance of each view to manage its respective UI section.
@@ -24,6 +39,7 @@ let skillSelectionView: SkillSelectionView;
 let characterSummaryView: CharacterSummaryView;
 let inventoryView: InventoryView;
 let interruptPromptView: InterruptPromptView;
+let actionButtonsView: ActionButtonsView;
 
 /**
  * Initializes all the UI View classes.
@@ -39,6 +55,7 @@ export function initUIManager(): void {
   characterSummaryView = new CharacterSummaryView();
   inventoryView = new InventoryView();
   interruptPromptView = new InterruptPromptView();
+  actionButtonsView = new ActionButtonsView();
 
   // --- Make views globally accessible ---
   globalServiceLocator.ui.views = {
@@ -50,7 +67,8 @@ export function initUIManager(): void {
     skillSelection: skillSelectionView,
     characterSummary: characterSummaryView,
     inventory: inventoryView,
-    interruptPrompt: interruptPromptView
+    interruptPrompt: interruptPromptView,
+    actionButtons: actionButtonsView
   };
 
   // --- Wire up events controlled by the UI Manager ---
@@ -68,13 +86,10 @@ export function initUIManager(): void {
 
   // Screen/Menu Navigation
   setBtnOnCLick('newGameButton', () => {
-    state.currentScreen = "campaignSelection";
-    updateUI();
+    globalServiceLocator.game.startCharacterCreation();
   });
   setBtnOnCLick('campaignSelectBtn', () => {
     state.currentScreen = "characterCreation";
-    state.player = new PlayerCharacter();
-    state.creationStep = 0;
     updateUI();
   });
   setBtnOnCLick('back-btn', () => eventBus.publish('ui:creation:prev_step'));
@@ -92,14 +107,17 @@ export function initUIManager(): void {
 
   // Debug Buttons
   ui.btns['spawnTestnpcs'].onclick = async () => {
-    state.npcs = [];
-    const goblin = await globalServiceLocator.npcFactory.create('goblin_warrior', 'monsters', { x: 8, y: 3 });
-    if (goblin) state.npcs.push(goblin);
+    state.npcs = []; // state.npcs should now be number[] (EntityID[])
+    const goblinId = await globalServiceLocator.npcFactory.create('goblin_warrior', 'monsters', { x: 8, y: 3 });
+    if (goblinId !== null) {
+        state.npcs.push(goblinId);
+    }
     globalServiceLocator.renderer.renderMapFull(state.currentMapData);
   };
   ui.btns['startCombatButton'].onclick = () => {
-    if (!state.player) return;
-    globalServiceLocator.turnManager.startCombat([state.player, ...state.npcs]);
+    if (state.playerId === null) return;
+    const combatants = [state.playerId, ...state.npcs];
+    globalServiceLocator.turnManager.startCombat(combatants);
   };
 
   console.log("UI Manager and all its views have been initialized.");
@@ -131,6 +149,7 @@ export async function updateUI() {
   else if (state.currentScreen === 'gameContainer') {
     const mapData = state.currentMapData;
     if (mapData) globalServiceLocator.renderer.renderMapFull(mapData);
+    actionButtonsView.render();
   }
 }
 
@@ -165,7 +184,7 @@ export function showCharacterCreationStep(contentData: ContentItem, campaignData
     case "classSelection": classSelectionView.show(); classSelectionView.render(contentData); break;
     case "skillSelection": skillSelectionView.show(); skillSelectionView.render(contentData); break;
     case "characterSummary": characterSummaryView.show(); characterSummaryView.render(); break;
-    case "featSelection": featSelectionView.show(); featSelectionView.render(contentData); break;
+    case "featSelection": featSelectionView.show(); break;
     default:
       console.error("Unknown creation step:", currentStepName);
       break;

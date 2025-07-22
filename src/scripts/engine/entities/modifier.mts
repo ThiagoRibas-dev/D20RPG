@@ -8,6 +8,7 @@ export interface Modifier {
     source: string; // "Iron Will Feat", "Bless Spell", etc. etc.
     sourceId?: string; // The unique instance ID of the item or effect that applied this.
     duration?: number; // in rounds. undefined means permanent.
+    tags: string[]; // Tags for contextual filtering, e.g., ["from_dexterity", "from_armor"]
 }
 
 /**

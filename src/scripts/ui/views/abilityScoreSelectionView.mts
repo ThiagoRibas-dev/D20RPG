@@ -1,11 +1,7 @@
-import { ContentItem } from '../../engine/entities/contentItem.mjs';
 import { globalServiceLocator } from '../../engine/serviceLocator.mjs';
-import { EntityAbilityScores } from '../../engine/entities/entity.mjs';
 import { calculateModifier, getRandomInt } from '../../engine/utils.mjs';
+import { AttributesComponent, IdentityComponent } from '../../engine/ecs/components/index.mjs';
 
-/**
- * Manages the UI and logic for the ability score selection step of character creation.
- */
 export class AbilityScoreSelectionView {
     private container: HTMLElement;
     private scoreInputs: { [key: string]: HTMLInputElement };
@@ -23,53 +19,42 @@ export class AbilityScoreSelectionView {
             cha: ui.inputs.cha,
         };
 
-        // --- THIS IS THE CRITICAL FIX ---
-        // We set up the listeners here, directly in the class constructor.
-        // This makes the View fully responsible for its own events.
         for (const key in this.scoreInputs) {
             this.scoreInputs[key].onchange = () => this.updateDisplay();
         }
 
-        // Add event listeners to the buttons on this view
-        (this.container.querySelector('#roll-ability-scores') as HTMLElement).onclick = () => this.rollAbilities();
+        const rollButton = this.container.querySelector('#roll-ability-scores') as HTMLElement;
+        if (rollButton) {
+            rollButton.onclick = () => this.rollAbilities();
+        }
     }
 
-    /**
-     * Initializes the view, setting initial values and updating displays.
-     */
     public render(): void {
         this.updateDisplay();
     }
 
-    /**
-     * Updates all UI elements related to ability scores (totals, mods, costs).
-     * This function now fully replaces the old updateAbilityScoreDisplay.
-     */
-    public updateDisplay(): void {
-        const player = globalServiceLocator.state.player;
-        if (!player) return;
+    public async updateDisplay(): Promise<void> {
+        const playerId = globalServiceLocator.state.playerId;
+        if (!playerId) return;
 
-        // Ensure a race is selected to prevent errors with racial mods.
-        if (!player.selectedRace) {
-            console.warn("No race selected, cannot calculate final ability scores.");
-            // Maybe prompt the user to go back? For now, we'll proceed with 0 mods.
-        }
+        this.saveAbilities(); // Save the current input values first
+
+        // Recalculate all stats to reflect the new base attributes
+        await globalServiceLocator.statCalculationSystem.recalculateStats(playerId, globalServiceLocator.world);
 
         const ui = globalServiceLocator.ui;
         const currentPoints = this.calculateCurrentPoints();
         ui.els["remainingPointsDisplay"].textContent = (this.pointBuyTotal - currentPoints).toString();
 
         for (const key in this.scoreInputs) {
-            const ability = key as keyof EntityAbilityScores;
-            const input = this.scoreInputs[ability];
+            const input = this.scoreInputs[key];
             const baseValue = parseInt(input.value) || 0;
 
-            const racialMod = player.selectedRace?.ability_score_adjustments?.[ability] || 0;
-            const finalValue = baseValue + racialMod;
+            const finalValue = await globalServiceLocator.modifierManager.queryStat(playerId, key);
 
-            ui.els[`${ability}-cost`].innerText = this.pointBuyCost(baseValue).toString();
-            ui.els[`${ability}-mod`].innerText = calculateModifier(finalValue).toString();
-            ui.els[`${ability}-total`].innerText = `${finalValue} (${baseValue} + ${racialMod})`;
+            ui.els[`${key}-cost`].innerText = this.pointBuyCost(baseValue).toString();
+            ui.els[`${key}-mod`].innerText = calculateModifier(finalValue).toString();
+            ui.els[`${key}-total`].innerText = `${finalValue}`;
         }
     }
 
@@ -84,30 +69,31 @@ export class AbilityScoreSelectionView {
     private pointBuyCost(score: number): number {
         if (score <= 8) return 0;
         if (score <= 13) return score - 8;
-        if (score <= 18) return (score - 14) * 2 + 6; // D&D 3.5 point buy cost is different, but this is a placeholder.
-        return 999; // Should not happen with input max=18
+        if (score <= 18) return (score - 14) * 2 + 6;
+        return 999;
     }
 
     private rollAbilities(): void {
         for (const key in this.scoreInputs) {
             this.scoreInputs[key].value = (getRandomInt(1, 6) + getRandomInt(1, 6) + getRandomInt(1, 6)).toString();
         }
-        this.updateDisplay(); // Update display after rolling
+        this.updateDisplay();
     }
 
     public saveAbilities(): void {
-        const player = globalServiceLocator.state.player;
-        if (!player) return;
+        const playerId = globalServiceLocator.state.playerId;
+        if (!playerId) return;
 
-        // 1. Save the chosen scores to baseStats
+        const attributes = globalServiceLocator.world.getComponent(playerId, AttributesComponent);
+        console.log('saveAbilities');
+        console.table(attributes || []);
+        if (!attributes) return;
+
         for (const key in this.scoreInputs) {
-            const ability = key as keyof EntityAbilityScores;
-            player.baseStats[ability] = parseInt(this.scoreInputs[key].value, 10);
+            const value = parseInt(this.scoreInputs[key].value, 10);
+            console.log(`setting ${value} to ${key}`);
+            attributes.attributes.set(key, value);
         }
-
-        // 2. Recalculate all stats using the centralized engine method.
-        // This will correctly apply racial modifiers and all other effects.
-        globalServiceLocator.rulesEngine.calculateStats(player);
     }
 
     public show(): void { this.container.style.display = ''; }

@@ -1,7 +1,8 @@
-import { Entity } from "../engine/entities/entity.mjs";
 import { GameEvents } from "../engine/events.mjs";
 import { MapTile } from "../engine/entities/mapTile.mjs";
 import { globalServiceLocator } from "../engine/serviceLocator.mjs";
+import { EntityID } from "../engine/ecs/world.mjs";
+import { IdentityComponent } from "../engine/ecs/components/index.mjs";
 
 export class FeedbackManager {
     private logElement: HTMLElement;
@@ -22,63 +23,64 @@ export class FeedbackManager {
         );
     }
 
-    private onAttackResolved(context: any): void {
+    private async onAttackResolved(context: any): Promise<void> {
         const { attacker, target, attackRoll, outcome } = context;
-        if (!attacker) {
+        if (attacker === undefined || target === undefined || !outcome) {
             return;
         }
-        if (!target) {
-            return;
-        }
-        if (!outcome) {
-            return;
-        }
+
+        const world = globalServiceLocator.world;
+        const attackerName = world.getComponent(attacker, IdentityComponent)?.name || 'Someone';
+        const targetName = world.getComponent(target, IdentityComponent)?.name || 'Someone';
+        const targetAC = await globalServiceLocator.modifierManager.queryStat(target, 'ac');
+
         const outcomeText = outcome.replace('_', ' ').toUpperCase();
-        const message = `${attacker.name} attacks ${target.name}... Roll: ${attackRoll.final} vs AC ${target.getArmorClass()} -> ${outcomeText}!`;
+        const message = `${attackerName} attacks ${targetName}... Roll: ${attackRoll.final} vs AC ${targetAC} -> ${outcomeText}!`;
         this.addMessageToLog(message, 'cyan');
     }
 
     private onDamageResolved(context: any): void {
         const { attacker, target, damageRoll, damageType } = context;
-        if (!attacker) {
+        if (attacker === undefined || target === undefined || !damageRoll || !damageType) {
             return;
         }
-        if (!target) {
-            return;
-        }
-        if (!damageRoll) {
-            return;
-        }
-        if (!damageType) {
-            return;
-        }
-        const message = `${attacker.name} deals ${damageRoll.total} ${damageType} damage to ${target.name}.`;
+
+        const world = globalServiceLocator.world;
+        const attackerName = world.getComponent(attacker, IdentityComponent)?.name || 'Someone';
+        const targetName = world.getComponent(target, IdentityComponent)?.name || 'Someone';
+
+        const message = `${attackerName} deals ${damageRoll.total} ${damageType} damage to ${targetName}.`;
         this.addMessageToLog(message, 'orange');
     }
 
     private onCharacterDied(context: any): void {
         const { entity, killer } = context;
-        if (!entity) {
+        if (entity === undefined || killer === undefined) {
             return;
         }
-        if (!killer) {
-            return;
-        }
-        const message = `${entity.name} has been defeated by ${killer.name}!`;
+
+        const world = globalServiceLocator.world;
+        const entityName = world.getComponent(entity, IdentityComponent)?.name || 'Someone';
+        const killerName = world.getComponent(killer, IdentityComponent)?.name || 'Someone';
+
+        const message = `${entityName} has been defeated by ${killerName}!`;
         this.addMessageToLog(message, 'red');
     }
 
-    private onMoveBlocked(data: { actor: Entity, reason: string, blocker: MapTile | Entity | null }): void {
-        // We only care about providing feedback for the player's actions
-        if (data.actor !== globalServiceLocator.state.player) {
+    private onMoveBlocked(data: { actor: EntityID, reason: string, blocker: MapTile | EntityID | null }): void {
+        if (data.actor !== globalServiceLocator.state.playerId) {
             return;
         }
 
         let message = "Your path is blocked.";
         if (data.reason === 'tile' && data.blocker) {
-            message = `The ${data.blocker.name.toLowerCase()} blocks your path.`;
+            const blockerTile = data.blocker as MapTile;
+            message = `The ${blockerTile.name.toLowerCase()} blocks your path.`;
         } else if (data.reason === 'entity' && data.blocker) {
-            message = `${data.blocker.name} is in your way.`;
+            const blockerId = data.blocker as EntityID;
+            const world = globalServiceLocator.world;
+            const blockerName = world.getComponent(blockerId, IdentityComponent)?.name || 'Someone';
+            message = `${blockerName} is in your way.`;
         } else if (data.reason === 'boundary') {
             message = "You can't go that way.";
         }
@@ -86,15 +88,13 @@ export class FeedbackManager {
         this.addMessageToLog(message, 'yellow');
     }
 
-    // A generic helper to add messages to your log
     public addMessageToLog(text: string, color: string = 'white'): void {
         const p = this.logElement.ownerDocument.createElement('p');
         p.textContent = text;
         p.style.color = color;
 
-        // Add to the top and manage scroll
         this.logElement.prepend(p);
-        if (this.logElement.children.length > 50) { // Keep log from getting too long
+        if (this.logElement.children.length > 50) {
             this.logElement.removeChild(this.logElement.lastChild!);
         }
     }

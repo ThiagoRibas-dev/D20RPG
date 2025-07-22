@@ -1,20 +1,21 @@
-import { Entity } from '../entities/entity.mjs';
-import { ItemInstance } from './itemInstance.mjs';
+import { EntityID } from '../ecs/world.mjs';
 
+/**
+ * A component that holds the EntityIDs of items in an entity's inventory.
+ */
 export class InventoryComponent {
-    public items: ItemInstance[] = [];
-    public readonly owner: Entity;
+    public items: EntityID[] = [];
 
-    constructor(owner: Entity) {
-        this.owner = owner;
+    constructor(items: EntityID[] = []) {
+        this.items = items;
     }
 
-    public add(item: ItemInstance) {
+    public add(item: EntityID) {
         this.items.push(item);
     }
 
-    public remove(instanceId: string): ItemInstance | undefined {
-        const index = this.items.findIndex(i => i.instanceId === instanceId);
+    public remove(item: EntityID): EntityID | undefined {
+        const index = this.items.indexOf(item);
         if (index > -1) {
             return this.items.splice(index, 1)[0];
         }

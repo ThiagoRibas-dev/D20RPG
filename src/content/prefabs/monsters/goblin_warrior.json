@@ -2,7 +2,9 @@
   "name": "Goblin Warrior",
   "description": "A standard goblin warrior.",
   "race": "goblin",
-  "class": "warrior",
+  "classes": [
+    { "id": "warrior", "level": 1 }
+  ],
   "stats": {
     "str": 9,
     "dex": 15,
@@ -11,7 +13,6 @@
     "wis": 9,
     "cha": 4
   },
-  "level": 1,
   "equipment": {
     "main_hand": {
       "base_item": "morningstar",

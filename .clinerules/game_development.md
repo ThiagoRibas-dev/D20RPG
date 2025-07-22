@@ -2,4 +2,6 @@ The PROJECT_BRIEF.md file contains a Project Brief, defining the principles to b
 
 After every task, update the Checklist, adding the task to the Checklist if necessary, and match the existing code against the Checklist, looking for TODOs that might not already be on the Checklist, and determining if any of the tasks marked as completed in the Checklist are not currently implemented in the code.
 
-Import statements might reference .mjs files but the actual files have the .mts extension. That is on purpose and correct.
+Import statements might reference .mjs files but the actual files have the .mts extension.
+Files inside the src folder use the .mts.
+That is on purpose and correct.

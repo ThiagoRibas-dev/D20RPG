@@ -1,3 +1,8 @@
+import { EntityID } from "./ecs/world.mjs";
+import { PositionComponent } from "./ecs/components/index.mjs";
+import { globalServiceLocator } from "./serviceLocator.mjs";
+import { Point } from "../utils/point.mjs";
+
 export type EntityPosition = {
     x: number,
     y: number
@@ -26,26 +31,32 @@ export function rollD20(): number {
  * @param score The ability score (e.g., 14).
  * @returns The modifier (e.g., +2).
  */
-import { Entity } from "./entities/entity.mjs";
-import { globalServiceLocator } from "./serviceLocator.mjs";
-
 export function calculateModifier(score: number): number {
     return Math.floor((score - 10) / 2);
 }
 
-export function getAdjacentEntities(position: EntityPosition): Entity[] {
-    const adjacentEntities: Entity[] = [];
-    const allEntities = [
-        globalServiceLocator.state.player,
-        ...globalServiceLocator.state.npcs
-    ].filter(e => e) as Entity[];
+export function getAdjacentEntities(entityId: EntityID): EntityID[] {
+    const adjacentEntities: EntityID[] = [];
+    const world = globalServiceLocator.world;
+    const sourcePosition = world.getComponent(entityId, PositionComponent);
 
-    for (const entity of allEntities) {
-        if (entity) {
-            const dx = Math.abs(entity.position.x - position.x);
-            const dy = Math.abs(entity.position.y - position.y);
+    if (!sourcePosition) {
+        return [];
+    }
+
+    const allEntities = world.getEntitiesWith(PositionComponent);
+
+    for (const otherEntityId of allEntities) {
+        if (entityId === otherEntityId) {
+            continue;
+        }
+
+        const otherPosition = world.getComponent(otherEntityId, PositionComponent);
+        if (otherPosition) {
+            const dx = Math.abs(otherPosition.x - sourcePosition.x);
+            const dy = Math.abs(otherPosition.y - sourcePosition.y);
             if ((dx <= 1 && dy <= 1) && !(dx === 0 && dy === 0)) {
-                adjacentEntities.push(entity);
+                adjacentEntities.push(otherEntityId);
             }
         }
     }
@@ -75,4 +86,8 @@ export function deepMerge(target: any, source: any): any {
         }
     }
     return target;
+}
+
+export function isPoint(p: any): p is Point {
+    return p && typeof p.x === 'number' && typeof p.y === 'number';
 }
