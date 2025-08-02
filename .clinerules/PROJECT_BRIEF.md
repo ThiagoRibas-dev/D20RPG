@@ -1,0 +1,187 @@
+### **Project Brief: "Eversummer Days" (Working Title) - Revision 5**
+
+**Game Premise:**
+*   **Genre:** 2D, Tile-Based, Hybrid Turn-Based Tactical RPG.
+*   **Core Philosophy:** A "Fantasy World Simulator" that prioritizes deep, systemic interactivity and emergent gameplay over a linear, scripted narrative. The goal is a highly faithful digital adaptation of the D&D 3.5e OGL ruleset.
+*   **Inspiration:** The mechanical depth and rule-based world of **Dungeons & Dragons 3.5e OGL**, the strategic, systems-driven combat of **Incursion: Halls of the Goblin King**, and the profound emergent interactions and player freedom of **NetHack**.
+*   **Setting:** A setting-agnostic fantasy world, intentionally designed as a blank canvas for community-driven content.
+*   **Core Gameplay Loop:** Explore dangerous environments, overcome challenges using a wide array of tactical actions and items, engage in turn-based combat governed by a strict ruleset (including flanking and attacks of opportunity), and develop unique characters through a class-based system.
+
+**High-Level Objectives:**
+1.  **Build a Systems-First Engine:** The primary goal is to create a robust, bespoke game engine in TypeScript that simulates a fantasy world governed by consistent, interlocking rules. The story and quests are secondary to the quality of the simulation.
+2.  **Embrace Emergent Gameplay:** The engine will not script specific outcomes. Instead, it will provide a toolbox of universal actions (`Use`, `Equip`, `Attack`) and a rich set of object properties (tags, materials, curses, magical enchantments). The "gameplay" will emerge from the logical and often surprising interactions between these systems.
+3.  **True Plug-and-Play Moddability:** The engine is designed for **maximum moddability within the D&D 3.5e OGL ruleset**. Users must be able to add new races, classes, items, spells, and even fundamental game mechanics by simply adding data (`.json`) files that conform to defined schemas and companion logic (`.mjs`) files. The **Unified Effect System** ensures all content is processed consistently, maximizing customizability without recompiling the core engine.
+4.  **Flexible Content Generation:** The engine must support both handcrafted, static maps for authored experiences and procedural dungeon generation for infinite replayability, allowing content creators to blend both approaches within a single campaign.
+
+**Key Design Concepts & Technical Requirements:**
+*   **Architectural Pillars:**
+    *   **Entity-Component-System (ECS):** The engine is built on a pure ECS architecture. Everything in the game world—characters, items, map tiles, and even abstract concepts like traps—is an **Entity**. An entity's properties and data are defined by the **Components** attached to it (e.g., `PositionComponent`, `AttributesComponent`, `AIComponent`). The game's logic is implemented in **Systems** (e.g., `RenderSystem`, `MovementSystem`, `AISystem`), which are stateless and operate on entities that possess a specific set of components. This approach ensures a clean separation of data and logic, making the engine highly modular, performant, and easy to reason about.
+    *   **Data-Driven Logic with Scripting Hooks:** The engine is fundamentally rule-agnostic. All game logic—from the availability of actions to the effects of spells—is defined in external content files. Simple data is stored in `.json` files, while complex logic is implemented in companion `.mjs` script files. A `ScriptingService` dynamically loads and executes these scripts, allowing the D&D 3.5e ruleset to be treated as a modular "content pack" that can be modified or replaced without altering the core engine code.
+    *   **Stateless, Pure-Function Systems:** Core rule calculations are handled by stateless managers that act as pure functions. The `ModifierManager`, for example, takes a base value and a list of modifiers and returns a final, calculated value, ensuring that the complex D&D 3.5e bonus stacking rules are applied consistently and predictably.
+    *   **Service Locator:** A single, global point of access for all engine systems and the game state, ensuring controlled, explicit dependencies.
+    *   **Event Bus:** A central nervous system for decoupled communication, allowing systems to react to game events (like `DamageApplied` or `SpellCast`) without direct knowledge of one another.
+*   **The Modifier Pipeline:** Character statistics are not stored as fixed values but are calculated dynamically at runtime. The **Modifier Pipeline** is the system responsible for this calculation. It starts with a base value from an entity's `AttributesComponent` and applies a series of `Modifiers` from its `ModifiersComponent` to produce the final, in-the-moment value. This ensures all bonuses and penalties from race, feats, equipment, and spell effects are accounted for and correctly stacked according to D&D 3.5e rules.
+*   **Combinatorial Item System:** Items are generated by combining a **base item** (`longsword.json`) with one or more **magic properties** (`flaming.json`, `+1.json`) and **materials** (`adamantine.json`). A `LootFactory` is responsible for this procedural generation, creating immense variety from a small set of data files.
+*   **Composable, Data-Driven AI:** AI is not monolithic. The `AISystem` operates on entities with an `AIComponent`. This component specifies a list of behavior scripts (e.g., `aggressive_melee.mjs`, `fleer.mjs`) that dictate which reusable AI subroutines to execute, allowing for complex AI composition through data.
+*   **Hybrid Turn System:** A stateful `TurnManager` that seamlessly transitions between two distinct turn-based modes: a "WeGo" system for simultaneous-resolution **Exploration Mode**, and a strict, initiative-based system for sequential-action **Combat Mode**. This ensures fluid exploration while preserving the tactical, out-of-turn actions (like Attacks of Opportunity) that are exclusive to combat.
+
+---
+
+### **Implementation Checklist: The Path to MVP and Beyond (Revision 7)**
+
+#### **Phase 0: Core Engine Architecture**
+*   `[x]` **Task 0.1: Foundational Systems.**
+    *   **Status:** Complete. Implemented the `ServiceLocator`, `EventBus`, `TurnManager`, `RulesEngine`, `Renderable` component, `NpcFactory`, and the global `Tagging` system.
+*   `[x]` **Task 0.2: Standardize Content with a Unified Effect System.**
+    *   **Principle:** All character abilities, bonuses, and proficiencies, regardless of their source (race, class, feats, items), are defined as `effects`. This creates a single, predictable data structure for the engine to process, moving away from disparate properties like `bonuses` or `special_abilities`.
+    *   `[x]` **Sub-task 0.2.1: Create JSON Schemas for all Content Types.**
+        *   **Status:** Done. Created `race.schema.json`, `class.schema.json`, `feat.schema.json`, `skill.schema.json`, and `template.schema.json`. These enforce the unified `effects` array structure.
+*   `[x]` **Task 0.3: Implement the Modifier Pipeline.**
+    *   **Principle:** Character statistics are not stored as fixed values but are calculated dynamically at runtime. The **Modifier Pipeline** is the system responsible for this calculation. It starts with a base value (e.g., Strength score of 10) and applies a series of `Modifiers` from all active sources (race, feats, equipment, spell effects) to produce the final, in-the-moment value. This ensures all bonuses and penalties are accounted for and correctly stacked according to D&D 3.5e rules.
+    *   `[x]` **Sub-task 0.3.1: Implement Data-Driven Modifier Types.**
+        *   **Guidance:** The behavior of modifiers must be data-driven. Create `modifier_types.json` to define types like `racial`, `enhancement`, and `dodge`, specifying their stacking behavior (e.g., `stacking: 'sum'` or `stacking: 'highest'`). The `ModifierManager` will use this data to correctly calculate totals.
+    *   `[x]` **Sub-task 0.3.2: Implement the `ModifierManager` Service.**
+        *   **Guidance:** Build the central service that manages all active modifiers for an entity. It will expose methods like `addModifier()`, `removeModifier()`, and `getValue(targetStat)`.
+    *   `[x]` **Sub-task 0.3.3: Centralize Stat Calculation in the `Entity` Class.**
+        *   **Guidance:** Refactor the `Entity` class to be the single point of truth for all stats. Create getter methods (e.g., `getStrength()`, `getFortitudeSave()`) that combine the entity's base value with the final calculated value from the `ModifierManager`.
+    *   `[x]` **Sub-task 0.3.4: Integrate the Pipeline with all Game Systems.**
+        *   **Guidance:** Refactor the engine to use the new pipeline.
+        *   The `RulesEngine` will be responsible for applying **permanent** modifiers from race, class, and feats during character creation (`calculateStats`).
+        *   The `EffectManager` will be responsible for applying and removing **temporary** modifiers that from spells and item abilities.
+        *   The `EquipmentComponent` will apply and remove modifiers when items are equipped or unequipped.
+    *   `[x]` **Task 0.4: Refactor to a Pure, Rule-Agnostic ECS Architecture.**
+    *   **Status:** **Complete.** The hazardous hybrid architecture has been resolved. The engine now operates on a pure ECS model, with the legacy `Entity` classes fully removed and the stat system replaced with a dynamic, query-based `ModifierManager`.
+
+*   **Completed Foundational Work:**
+    *   `[x]` **Sub-task 0.4.1: Implement Foundational ECS Infrastructure.**
+    *   `[x]` **Sub-task 0.4.2: Implement a Scripting Service for Data-Driven Logic.**
+    *   `[x]` **Sub-task 0.4.3: Refactor the Action Lifecycle as a Proof of Concept.**
+
+*   **Phase 1: Purge the Legacy Model & Solidify the ECS Foundation**
+    *   `[x]` **Sub-task 0.4.4: Create Missing Core Components.**
+    *   `[x]` **Sub-task 0.4.5: Refactor Factories to be Pure ECS.**
+    *   `[x]` **Sub-taks 0.4.6: Deprecate and Remove Legacy Classes.**
+
+*   **Phase 2: Implement a Dynamic, Query-Based Stat System**
+    *   `[x]` **Sub-task 0.4.7: Redesign the Modifier System.**
+    *   `[x]` **Sub-task 0.4.8: Enhance Content with Modifier Tags.**
+    *   `[x]` **Sub-task 0.4.9: Deprecate Static Stat Calculation.**
+
+*   **Phase 3: Integrate and Validate**
+    *   `[x]` **Sub-task 0.4.10: Refactor Consumer Systems.**
+
+---
+#### **Phase 1: Core Actions & Combat**
+*   `[x]` **Task 1.1: Action & Combat Basics.**
+    *   **Status:** Complete. Implemented the Action Economy, Attack action, damage calculation, critical hits, and the movement system.
+*   `[x]` **Task 1.2: Implement Attacks of Opportunity (AoO).**
+    *   **Status:** Complete. The `InterruptManager` now correctly handles AoOs triggered by movement, ranged attacks, spellcasting, and other actions. The per-round AoO economy is also functional.
+*   `[x]` **Task 1.3: Implement Special & Tactical Combat Actions.**
+    *   `[x]` **Sub-task 1.3.1:** Implement Special Attacks (Charge, Trip, Disarm, Bull Rush, Feint, Grapple).
+    *   `[x]` **Sub-task 1.3.2:** Implement Tactical Actions (Aid Another, Ready, Total Defense, Withdraw).
+
+---
+#### **Phase 2: Itemization & Skill Systems**
+*   `[x]` **Task 2.1: Item & Skill Basics.**
+    *   **Status:** Complete. Implemented the equipment system, combinatorial item generation (`LootFactory`), the "Use Item" action, item identification, and item states via tags.
+*   `[x]` **Task 2.2: Implement Data-Driven Skill Usage.**
+    *   **Status:** Complete. Skills are now defined in JSON with `active_uses`, and the `RulesEngine` can resolve skill checks based on this data via the `UseSkillAction`.
+*   `[x]` **Task 2.3: Implement the Unified Power System.**
+    *   **Status:** Complete. Implemented a generic system for selecting and using powers (spells, etc.), including Concentration checks, casting on the defensive, and touch-based powers.
+
+---
+#### **Phase 3: Character Creation & Progression**
+*   `[ ]` **Task 3.1: Finalize the Character Creation Pipeline.**
+    *   **Status:** In Progress. Core systems are in place, but several key calculations are incomplete.
+    *   `[x]` **Sub-task 3.1.1: Implement Skill Point Calculation.**
+        *   **Status:** Done. Implemented the `lookup` case in `modifierManager.mts` to correctly calculate skill points based on class and intelligence modifier. **(Note: Corrected a bug with multiclass and first-level point calculation.)**
+    *   `[x]` **Sub-task 3.1.2: Implement Feat Prerequisite Checking.**
+        *   **Status:** Done. Implemented prerequisite checking in `featSelectionView.mts` to correctly filter the available feat list.
+    *   `[x]` **Sub-task 3.1.3: Implement `EffectManager` for Race, Class, and Feat Effects.**
+        *   **Status:** Done. The `EffectManager` can now apply effects that grant feat slots from race and class definitions.
+    *   `[x]` **Sub-task 3.1.4: Refactor Feat Selection UI.**
+        *   **Status:** Done. Replaced the old feat selection grid with a sequential wizard for a more user-friendly experience.
+    *   `[x]` **Sub-task 3.1.5: Fix Multi-Source Feat Slot Creation.**
+        *   **Status:** Done. Corrected a bug in the `EffectManager` where multiple feat slots from different sources (e.g., race and class) were not being created as distinct entities. The manager now correctly passes contextual tags and generates unique source IDs for each effect, ensuring the `featSelectionView` displays a separate step for each feat slot.
+    *   `[ ]` **Sub-task 3.1.6: Implement Template Application.**
+        *   **Status:** Pending. The `templateSelectionView.mts` has placeholder logic for handling template choices.
+    *   `[ ]` **Sub-task 3.1.7: Implement Equipment Purchasing.**
+        *   **Status:** Pending.
+
+---
+#### **Phase 4: Advanced Systems**
+*   `[x]` **Task 4.1: Implement Modular AI with Behavioral Flags.**
+*   `[ ]` **Task 4.2: Implement Systemic Interactions (The NetHack Factor).**
+    *   `[x]` **Sub-task 4.2.1:** Implement Material Interactions (Hardness & Erosion).
+        *   **Status:** Done. Created `material.schema.json` and data files for Adamantine, Mithral, Cold Iron, Dragonhide, Alchemical Silver, and Darkwood. The engine can now read these files to drive rules for object damage and material-specific effects.
+    *   `[x]` **Sub-task 4.2.2:** Implement Environmental Interactions (Flammable terrain, Water/Lava hazards, Spell combos).
+        *   **Status:** Done. Implemented a data-driven system for environmental interactions. Created `TileStateManager` to handle dynamic tile states (e.g., "burning"), and the `EnvironmentalInteractionManager` to process interaction rules from `interactions.json`. The `RulesEngine` now accounts for terrain tags, and the `TurnManager` applies terrain effects from `terrain_effects.json`.
+    *   `[x]` **Sub-task 4.2.3:** Implement Item-on-Item Interactions (Dipping).
+        *   **Status:** Done. Implemented a data-driven system for item-on-item interactions. Created `InteractionManager` to handle generic `source` and `target` entities, which could be items or map tiles. Created `DipAction` to store the `ID` of the item being dipped and the `ID` of the item or tile being dipped into. Enhanced `interactions.json` to support dipping.
+*   `[ ]` **Task 4.3: Implement Flexible Map Generation.**
+    *   **Principle:** The engine must treat map files (`.json`) as definitions that can describe either a static, handcrafted layout or the parameters for a procedurally generated area. The `ContentLoader` will be responsible for interpreting these files and generating the appropriate map data at runtime.
+    *   `[ ]` **Sub-task 4.3.1: Enhance the Map File Schema.**
+        *   **Guidance:** Modify the map `.json` schema to be a discriminated union. A `generation_type` field will determine how to interpret the rest of the file.
+            *   `generation_type: "static"`: The file will contain the existing `tiles`, `tileTypes`, and `triggers` fields for handcrafted maps.
+            *   `generation_type: "procedural"`: The file will contain a new `procedural_parameters` object. This object will define the rules for the generator, such as:
+                *   `algorithm`: (e.g., `"cellular_automata"`, `"dungeon_rooms_and_corridors"`)
+                *   `dimensions`: `{ "width": 80, "height": 24 }`
+                *   `tags`: (e.g., `["cave", "dungeon", "high_monster_density"]`) to influence tile sets, monster spawns, and loot tables.
+                *   `persistence`: (e.g., `"persistent"`, `"regenerate_on_entry"`)
+    *   `[ ]` **Sub-task 4.3.2: Implement the Procedural Map Generator.**
+        *   **Guidance:** Create a `ProceduralMapGenerator` service using NetHack's source code as inspiration. This service will take the `procedural_parameters` from a map file and return a complete map object (with `tiles`, `tileTypes`, etc.), ready to be used by the engine. Research and adapt algorithms from games like NetHack or Incursion for this purpose. The generator will use the `tags` to select appropriate tile definitions, monster prefabs, and item prefabs from the content library.
+    *   `[ ]` **Sub-task 4.3.3: Update the `ContentLoader` and `Trigger` System.**
+        *   **Guidance:** Refactor the `ContentLoader` to read the `generation_type` of a map file. If it's `"static"`, it will load the map as it does now. If it's `"procedural"`, it will call the `ProceduralMapGenerator` to create the map data. The `triggers` in any map (static or procedural) must be able to target any other map file by its filename, allowing for seamless transitions between the two types.
+
+---
+#### **Phase 5: Full SRD Content Implementation**
+*   **Description:** Systematically create JSON and companion `.mjs` files for all content listed in the D&D 3.5e System Reference Document (SRD).
+
+*   `[ ]` **Task 5.1: Basic Rules Content**
+    *   `[ ]` **5.1.1: Races:** Implement all standard player races.
+    *   `[ ]` **5.1.2: Classes:** Implement all base classes, NPC classes, and Prestige Classes.
+    *   `[ ]` **5.1.3: Feats:** Implement all feats from the SRD.
+    *   `[ ]` **5.1.4: Skills:** Ensure all skills and their uses are defined.
+    *   `[ ]` **5.1.5: Equipment:** All weapons, armor, shields, and adventuring gear.
+    *   `[x]` **5.1.6: Special Materials:** Adamantine, Mithral, etc.
+        *   **Status:** Done. Created data files for all core special materials.
+    *   `[ ]` **5.1.7: Special Abilities & Conditions:** Gaze Attacks, Incorporeal, Energy Drain, etc.
+
+*   `[ ]` **Task 5.2: Spells & Magic**
+    *   `[ ]` **5.2.1: Spell Lists:** Implement all spells for all spellcasting classes.
+    *   `[ ]` **5.2.2: Domains:** Implement all Cleric domains.
+
+*   `[ ]` **Task 5.3: Magic Items**
+    *   `[ ]` **5.3.1: Base Items:** Potions, Scrolls, Wands, Rings, Rods, Staves, Wondrous Items.
+    *   `[ ]` **5.3.2: Magic Properties:** All weapon, armor, and shield special abilities.
+    *   `[ ]` **5.3.3: Cursed Items & Artifacts.**
+
+*   `[ ]` **Task 5.4: Monsters & Templates**
+    *   `[ ]` **5.4.1: All Monsters:** Implement every monster from the SRD.
+    *   `[ ]` **5.4.2: Templates:** Implement all monster templates.
+
+*   `[ ]` **Task 5.5: Divine Content**
+    *   `[ ]` **5.5.1: Deities & Demigods:** Implement the sample pantheon.
+
+*   `[ ]` **Task 5.6: Psionics**
+    *   `[ ]` **5.6.1: Psionic Races, Classes, Skills, Feats, Powers, Items, and Monsters.**
+
+*   `[ ]` **Task 5.7: Epic Level Content**
+    *   `[ ]` **5.7.1: Epic Classes, Feats, Skills, Spells, Magic Items, and Monsters.**
+
+
+---
+### Online references for D&D 3.5e and the d20 System : 
+*   https://www.d20srd.org/index.htm
+*   https://www.realmshelps.net
+*   https://srd.dndtools.org/
+*   https://dndtools.net
+*   https://dnd.arkalseif.info
+
+### Incursion: Halls of the Goblin King references and source code : 
+*   https://www.roguebasin.com/index.php/Incursion
+*   https://github.com/rmtew/incursion-roguelike
+
+### NetHack references and source code : 
+*   https://nethackwiki.com
+*   https://github.com/NetHack/NetHack
