@@ -1,0 +1,1039 @@
+{
+   "name":"Triel Fitheaben",
+   "alignment":"Neutral Good",
+   "age":29,
+   "deity":"Enthariel",
+   "origin":"Mithraelis (Principados Brilhantes)",
+   "experience":105000,
+   "level":15,
+   "effective_character_level":15,
+   "level_adjustment":0,
+   "challenge_rating":null,
+   "race":"Human",
+   "templates":[
+      
+   ],
+   "size":"Medium",
+   "type":"Humanoid",
+   "subtype":[
+      "Human"
+   ],
+   "languages":[
+      "Common (Derenthi)",
+      "Celestial",
+      "Draconic",
+      "Orc"
+   ],
+   "hit_points":{
+      "base":106,
+      "temporary":0,
+      "current":-3,
+      "nonlethal":0
+   },
+   "action_points":{
+      "base":12,
+      "temporary":0,
+      "current":10
+   },
+   "armor_class":{
+      "total":36,
+      "base":10,
+      "touch":22,
+      "flat_footed":34,
+      "modifiers":{
+         "dexterity":2,
+         "armor":12,
+         "shield":5,
+         "natural":2,
+         "deflection":2,
+         "dodge":1,
+         "size":0,
+         "misc":3
+      }
+   },
+   "combat":{
+      "base_attack_bonus":{
+         "base":13,
+         "temporary":2,
+         "current":15
+      },
+      "initiative":{
+         "base":2,
+         "temporary":0,
+         "total":4
+      },
+      "grapple":21,
+      "spell_resistance":0,
+      "damage_reduction":null,
+      "armor_check_penalty":5,
+      "furious_counterstrike":{
+         "base":5,
+         "temporary":0,
+         "current":0
+      }
+   },
+   "abilities":{
+      "strength":{
+         "base":15,
+         "temporary":8,
+         "equipment":0,
+         "current":23,
+         "modifier":6
+      },
+      "dexterity":{
+         "base":10,
+         "temporary":2,
+         "equipment":2,
+         "current":14,
+         "modifier":2
+      },
+      "constitution":{
+         "base":15,
+         "temporary":0,
+         "equipment":0,
+         "current":15,
+         "modifier":2
+      },
+      "intelligence":{
+         "base":11,
+         "temporary":0,
+         "equipment":0,
+         "current":11,
+         "modifier":0
+      },
+      "wisdom":{
+         "base":17,
+         "temporary":0,
+         "equipment":0,
+         "current":20,
+         "modifier":5
+      },
+      "charisma":{
+         "base":13,
+         "temporary":0,
+         "equipment":4,
+         "current":17,
+         "modifier":3
+      }
+   },
+   "saving_throws":{
+      "fortitude":{
+         "base":18,
+         "temporary":9,
+         "total":27
+      },
+      "reflex":{
+         "base":6,
+         "temporary":10,
+         "total":16
+      },
+      "will":{
+         "base":19,
+         "temporary":9,
+         "total":28
+      }
+   },
+   "movement":{
+      "base":30,
+      "current":60,
+      "units":"ft",
+      "modes":{
+         "land":60,
+         "climb":30,
+         "swim":15
+      }
+   },
+   "spellcasting":{
+      "caster_level":{
+         "base":12,
+         "temporary":0,
+         "current":15
+      },
+      "concentration":20,
+      "domains":[
+         "War",
+         "Law",
+         "Healing",
+         "Sun"
+      ],
+      "domain_powers":[
+         "You cast law spells at +1 caster level",
+         "You cast healing spells at +1 caster level",
+         "Once per day, you can perform a greater turning against undead"
+      ],
+      "spell_save_dc":{
+         "base":15,
+         "ability_modifier":5
+      },
+      "spells_prepared":{
+         "0":[
+            "Read Magic",
+            "Cure Minor Wounds",
+            "Create Water",
+            "Light",
+            "Detect Magic",
+            "Detect Magic"
+         ],
+         "1":[
+            "Magic Weapon",
+            "Protection from Evil",
+            "Ice Slick",
+            "Ice Slick",
+            "Sanctuary",
+            "Protective Interposition",
+            "Delay Disease",
+            "Snowshoes (E-Rod)"
+         ],
+         "2":[
+            "Spiritual Weapon",
+            "Cure Moderate Wounds",
+            "Lava Missile",
+            "Lava Missile",
+            "Lava Missile",
+            "Restoration, Lesser",
+            "Elation (P)"
+         ],
+         "3":[
+            "Magic Vestment (E-rod)",
+            "Cure Serious Wounds",
+            "Shivering Touch",
+            "Shivering Touch",
+            "Divine Insight (E)",
+            "Delay Poison (E)",
+            "Shivering Touch (Triadspell)",
+            "Shivering Touch (Triadspell)"
+         ],
+         "4":[
+            "Divine Power (P)",
+            "Cure Critical Wounds",
+            "Mass Resist Energy (E)",
+            "Holy Transformation, Lesser (P)",
+            "Recitation (P)",
+            "Restoration"
+         ],
+         "5":[
+            "Flame Strike",
+            "Cure Light Wounds, Mass",
+            "Righteous Wrath of the Faithful (P)",
+            "Magic Weapon, Greater (E)",
+            "Triadspell",
+            "Dragon Breath (P)"
+         ],
+         "6":[
+            "Blade Barrier",
+            "Heal",
+            "Resistance, Superior",
+            "Heal"
+         ],
+         "7":[
+            "Power Word Blind",
+            "Sunbeam"
+         ],
+         "8":[
+            "Power Word Stun",
+            "Cure Critical Wounds, Mass"
+         ],
+         "9":[
+            "Power Word Kill",
+            "Heal, Mass"
+         ]
+      }
+   },
+   "maneuvers":{
+      "initiator_level":{
+         "base":8,
+         "temporary":0,
+         "current":8
+      },
+      "prepared":[
+         "Douse the Flames",
+         "White Raven Strike"
+      ],
+      "known":[
+         {
+            "level":"Stance",
+            "name":"Martial Spirit"
+         },
+         {
+            "level":1,
+            "name":"Douse the Flames"
+         },
+         {
+            "level":2,
+            "name":"Mountain Hammer"
+         },
+         {
+            "level":3,
+            "name":"Revitalizing Strike"
+         },
+         {
+            "level":4,
+            "name":"White Raven Strike"
+         },
+         {
+            "level":4,
+            "name":"Divine Surge"
+         }
+      ]
+   },
+   "special_abilities":{
+      "turn_undead":{
+         "level":7,
+         "uses_per_day":16,
+         "used":14,
+         "current":2
+      },
+      "destroy_undead":{
+         "level":4,
+         "dc":17,
+         "uses_per_day":16,
+         "used":14,
+         "current":2
+      },
+      "law_devotion":{
+         "uses_per_day":33,
+         "used":0,
+         "current":2
+      },
+      "smite":{
+         "level":7,
+         "uses_per_day":32,
+         "current":4
+      },
+      "smite_undead":{
+         "level":6,
+         "uses_per_day":2,
+         "used":0,
+         "current":2
+      },
+      "blurring":{
+         "level":5,
+         "uses_per_day":3,
+         "used":3,
+         "current":0
+      }
+   },
+   "items":{
+      "extend_rod":{
+         "uses_per_day":3,
+         "used":3,
+         "current":0
+      },
+      "belt_of_battle":{
+         "uses_per_day":3,
+         "used":3,
+         "current":0
+      }
+   },
+   "active_buffs":[
+      {
+         "name":"Martial Spirit",
+         "duration":"constant"
+      },
+      {
+         "name":"Sacred Item (Gauntlets)",
+         "duration":"constant"
+      },
+      {
+         "name":"Delay Disease",
+         "duration":"24hr"
+      },
+      {
+         "name":"Resistance, Superior",
+         "duration":"24hr"
+      },
+      {
+         "name":"Magic Vestment (Armor)",
+         "duration":"28hr"
+      },
+      {
+         "name":"Magic Vestment (Shield)",
+         "duration":"28hr"
+      },
+      {
+         "name":"Snowshoes",
+         "duration":"28hr"
+      },
+      {
+         "name":"Delay Poison",
+         "duration":"28hr"
+      },
+      {
+         "name":"Greater Magic Weapon",
+         "duration":"28hr"
+      },
+      {
+         "name":"Elation",
+         "duration":"24hr"
+      },
+      {
+         "name":"Recitation",
+         "duration":"24hr"
+      },
+      {
+         "name":"Dragon Breath",
+         "duration":"24hr"
+      },
+      {
+         "name":"Divine Power",
+         "duration":"24hr"
+      },
+      {
+         "name":"Blur",
+         "duration":"2 rounds"
+      },
+      {
+         "name":"Resist Energy (Sonic)",
+         "duration":"active"
+      }
+   ],
+   "skills":{
+      "appraise":{
+         "ranks":0,
+         "modifier":0,
+         "misc":0,
+         "total":0
+      },
+      "balance":{
+         "ranks":0,
+         "modifier":2,
+         "acp":-5,
+         "total":-3
+      },
+      "bluff":{
+         "ranks":0,
+         "modifier":3,
+         "misc":0,
+         "total":3
+      },
+      "climb":{
+         "ranks":0,
+         "modifier":6,
+         "acp":-5,
+         "total":1
+      },
+      "concentration":{
+         "ranks":18,
+         "modifier":2,
+         "misc":0,
+         "total":20
+      },
+      "decipher_script":{
+         "ranks":0,
+         "modifier":0,
+         "misc":0,
+         "total":0
+      },
+      "diplomacy":{
+         "ranks":8,
+         "modifier":3,
+         "misc":0,
+         "total":11
+      },
+      "disguise":{
+         "ranks":0,
+         "modifier":3,
+         "misc":0,
+         "total":3
+      },
+      "escape_artist":{
+         "ranks":0,
+         "modifier":2,
+         "acp":-5,
+         "total":-3
+      },
+      "forgery":{
+         "ranks":0,
+         "modifier":0,
+         "misc":0,
+         "total":0
+      },
+      "gather_information":{
+         "ranks":0,
+         "modifier":3,
+         "misc":0,
+         "total":3
+      },
+      "handle_animal":{
+         "ranks":0,
+         "modifier":3,
+         "misc":0,
+         "total":3
+      },
+      "heal":{
+         "ranks":6,
+         "modifier":5,
+         "misc":0,
+         "total":11
+      },
+      "hide":{
+         "ranks":0,
+         "modifier":2,
+         "acp":-5,
+         "total":-5
+      },
+      "intimidate":{
+         "ranks":0,
+         "modifier":3,
+         "misc":0,
+         "total":3
+      },
+      "jump":{
+         "ranks":0,
+         "modifier":6,
+         "acp":-5,
+         "total":1
+      },
+      "knowledge_arcana":{
+         "ranks":1,
+         "modifier":0,
+         "misc":0,
+         "total":1,
+         "max":6
+      },
+      "knowledge_dungeoneering":{
+         "ranks":0,
+         "modifier":0,
+         "misc":0,
+         "total":0
+      },
+      "knowledge_geography":{
+         "ranks":0,
+         "modifier":0,
+         "misc":0,
+         "total":0
+      },
+      "knowledge_history":{
+         "ranks":1,
+         "modifier":0,
+         "misc":0,
+         "total":1,
+         "max":6
+      },
+      "knowledge_nature":{
+         "ranks":0,
+         "modifier":0,
+         "misc":0,
+         "total":0
+      },
+      "knowledge_nobility":{
+         "ranks":0,
+         "modifier":0,
+         "misc":0,
+         "total":0
+      },
+      "knowledge_planes":{
+         "ranks":1,
+         "modifier":0,
+         "misc":0,
+         "total":1,
+         "max":6
+      },
+      "knowledge_religion":{
+         "ranks":15,
+         "modifier":0,
+         "misc":0,
+         "total":15,
+         "max":20
+      },
+      "listen":{
+         "ranks":0,
+         "modifier":5,
+         "misc":0,
+         "total":5
+      },
+      "move_silently":{
+         "ranks":0,
+         "modifier":2,
+         "acp":-5,
+         "total":-3
+      },
+      "open_lock":{
+         "ranks":0,
+         "modifier":2,
+         "misc":0,
+         "total":2
+      },
+      "perform":{
+         "ranks":0,
+         "modifier":3,
+         "misc":0,
+         "total":3
+      },
+      "profession":{
+         "ranks":0,
+         "modifier":5,
+         "misc":0,
+         "total":5
+      },
+      "ride":{
+         "ranks":0,
+         "modifier":2,
+         "misc":0,
+         "total":2
+      },
+      "search":{
+         "ranks":0,
+         "modifier":0,
+         "misc":0,
+         "total":0
+      },
+      "sense_motive":{
+         "ranks":0,
+         "modifier":5,
+         "misc":0,
+         "total":5
+      },
+      "sleight_of_hand":{
+         "ranks":0,
+         "modifier":2,
+         "acp":-5,
+         "total":-3
+      },
+      "speak_language_orc":{
+         "ranks":1,
+         "modifier":0,
+         "misc":0,
+         "total":1
+      },
+      "spellcraft":{
+         "ranks":4,
+         "modifier":0,
+         "misc":0,
+         "total":4
+      },
+      "spot":{
+         "ranks":4,
+         "modifier":5,
+         "misc":0,
+         "total":9
+      },
+      "survival":{
+         "ranks":0,
+         "modifier":5,
+         "misc":0,
+         "total":5
+      },
+      "swim":{
+         "ranks":0,
+         "modifier":6,
+         "acp":-10,
+         "total":-4
+      },
+      "tumble":{
+         "ranks":0,
+         "modifier":2,
+         "acp":-5,
+         "total":-3
+      },
+      "use_magic_device":{
+         "ranks":1,
+         "modifier":3,
+         "misc":0,
+         "total":4
+      },
+      "use_rope":{
+         "ranks":0,
+         "modifier":2,
+         "misc":0,
+         "total":2
+      }
+   },
+   "skill_tricks":[
+      "Collector of Stories"
+   ],
+   "feats":{
+      "general":[
+         "Extend Spell",
+         "Persist Spell",
+         "Practiced Spellcaster",
+         "Divine Metamagic Persist",
+         "Holy Warrior",
+         "Extra Granted Maneuver"
+      ],
+      "bonus":[
+         "Extra Turning",
+         "Martial Weapon Proficiency (Longsword)",
+         "Weapon Focus (Longsword)",
+         "Power Attack",
+         "Parrying Shield",
+         "Law Devotion",
+         "Diehard",
+         "Enduring Life",
+         "Heavy Armor Proficiency",
+         "Shield Proficiency",
+         "Simple Weapons Proficiency"
+      ]
+   },
+   "classes_and_progression":[
+      {
+         "level":1,
+         "class":"Cleric",
+         "hp_gained":8,
+         "BAB_gain":0,
+         "Fort":2,
+         "Ref":0,
+         "features":[
+            "Aura",
+            "Spellcasting",
+            "War Domain",
+            "Healing Domain",
+            "Lightbringer ACF: Destroy Undead"
+         ],
+         "class_feats":[
+            "Heavy Armor Proficiency",
+            "Shield Proficiency",
+            "Simple Weapons Proficiency"
+         ],
+         "extra_feats":[
+            "Extra Turning",
+            "Martial Weapon Proficiency (War Domain)",
+            "Weapon Focus (Longsword)"
+         ],
+         "feats_gained_at_level":[
+            "Extend Spell"
+         ]
+      },
+      {
+         "level":2,
+         "class":"Cleric",
+         "hp_gained":8,
+         "BAB_gain":1,
+         "Fort":1,
+         "features":[
+            "Undead Intuition"
+         ]
+      },
+      {
+         "level":3,
+         "class":"Cleric",
+         "hp_gained":8,
+         "BAB_gain":1,
+         "features":[
+            
+         ],
+         "feats_gained_at_level":[
+            "Persist Spell"
+         ]
+      },
+      {
+         "level":4,
+         "class":"Cleric",
+         "hp_gained":7,
+         "BAB_gain":1,
+         "features":[
+            
+         ]
+      },
+      {
+         "level":5,
+         "class":"Ordained Champion",
+         "hp_gained":1,
+         "BAB_gain":1,
+         "features":[
+            "Bonus Domain: Law Domain",
+            "Modified Spontaneous Casting (Ex)",
+            "Continued Advancement",
+            "Combat Feats"
+         ],
+         "feats_gained_at_level":[
+            "Power Attack",
+            "Parrying Shield",
+            "Law Devotion"
+         ]
+      },
+      {
+         "level":6,
+         "class":"Ordained Champion",
+         "hp_gained":4,
+         "BAB_gain":1,
+         "features":[
+            "Smite (Su)"
+         ],
+         "feats_gained_at_level":[
+            "Diehard",
+            "Practiced Spellcaster"
+         ]
+      },
+      {
+         "level":7,
+         "class":"Knight of the Raven",
+         "hp_gained":1,
+         "BAB_gain":1,
+         "features":[
+            "Raven harrier (harry), speak with ravens"
+         ]
+      },
+      {
+         "level":8,
+         "class":"Knight of the Raven",
+         "hp_gained":1,
+         "BAB_gain":1,
+         "features":[
+            "Smite undead 1/day"
+         ]
+      },
+      {
+         "level":9,
+         "class":"Knight of the Raven",
+         "hp_gained":4,
+         "BAB_gain":1,
+         "features":[
+            "Turn undead",
+            "Extra Domain: Sun domain",
+            "Raven harrier (baffle)"
+         ],
+         "feats_gained_at_level":[
+            "Divine Metamagic: Persist"
+         ]
+      },
+      {
+         "level":10,
+         "class":"Knight of the Raven",
+         "hp_gained":6,
+         "BAB_gain":1,
+         "features":[
+            "Light focus",
+            "Smite undead 2/day"
+         ]
+      },
+      {
+         "level":11,
+         "class":"Knight of the Raven",
+         "hp_gained":6,
+         "BAB_gain":1,
+         "features":[
+            "Raven harrier (falter)",
+            "Enduring Life"
+         ]
+      },
+      {
+         "level":12,
+         "class":"Knight of the Raven",
+         "hp_gained":6,
+         "BAB_gain":1,
+         "features":[
+            "Smite undead 3/day",
+            "Collector of Stories",
+            "Holy Warrior"
+         ]
+      },
+      {
+         "level":13,
+         "class":"Ordained Champion",
+         "hp_gained":3,
+         "BAB_gain":1,
+         "features":[
+            "Channel Spell (Su)",
+            "Divine Bulwark (Su)"
+         ]
+      },
+      {
+         "level":14,
+         "class":"Crusader",
+         "hp_gained":8,
+         "BAB_gain":1,
+         "features":[
+            "Furious Counterstrike",
+            "Steely Resolve 5"
+         ]
+      },
+      {
+         "level":15,
+         "class":"The Righteous Cohort of Kiri-Jolith",
+         "hp_gained":5,
+         "BAB_gain":0,
+         "features":[
+            "Fraternal Oath",
+            "Rallying Cry 1/day",
+            "Extra Granted Maneuver"
+         ]
+      }
+   ],
+   
+   "inventory":{
+      "coins":{
+         "cp":0,
+         "sp":0,
+         "gp":4624,
+         "pp":0
+      },
+      "gems":[
+         {
+            "description":"Diamonds for spells",
+            "value":700,
+            "units":"gp"
+         }
+      ],
+      "equipment":{
+         "hand1":{
+            "name":"Longsword Keen +1",
+            "type":"longsword",
+            "crystals":[
+               "Lesser Crystal of Return"
+            ],
+            "enhancement_bonus":1,
+            "damage_dice":"1d8",
+            "damage_mod_1h":"str",
+            "damage_mod_2h":"(str*1.5)",
+            "critical_range":"17-20",
+            "critical_mult":"2",
+            "damage_types":[
+               "slashing",
+               "piercing"
+            ],
+            "materials":["steel"],
+            "properties":[
+               "keen",
+               "magic"
+            ]
+         },
+         "hand2":{
+            "name":"Sanctified Durable Animated Steel Heavy Shield +1",
+            "type":"heavy_shield",
+            "crystals":[],
+            "enhancement_bonus":1,
+            "damage_dice":"1d4",
+            "damage_mod_1h":"str",
+            "damage_mod_2h":"str",
+            "critical_range":"20",
+            "critical_mult":"2",
+            "damage_types":[
+               "bluedgeoning"
+            ],
+            "materials":["steel"],
+            "properties":[
+               "sanctified",
+               "durable",
+               "animated",
+               "magic"
+            ]
+         },
+         "armor":{
+            "name":"Restful Blurring Full Plate +1",
+            "enhancement_bonus":1,
+            "materials":["steel"],
+            "properties":[
+               "restful",
+               "blurring",
+               "magic"
+            ]
+         },
+         "torso":null,
+         "head":null,
+         "eyes":{
+            "name":"Goggles of Night"
+         },
+         "shoulders":{
+            "name":"Cloak of Charisma +4"
+         },
+         "neck":{
+            "name":"Reliquary Holy Symbol of Natural Armor +2"
+         },
+         "waist":{
+            "name":"Belt of Battle"
+         },
+         "arms":null,
+         "hands":{
+            "name":"Gauntlets of War of Dexterity +2",
+            "under_effects":["sacred_item"]
+         },
+         "ring1":{
+            "name":"Ring of Sustenance"
+         },
+         "ring2":{
+            "name":"Ring of Protection +2"
+         },
+         "feet":{
+            "name":"Boots of the Unending Journey"
+         }
+      },
+      "other_items":[
+         {
+            "name":"Handy Haversack"
+         },
+         {
+            "name":"Metamagic Rod (Extend, Lesser)"
+         },
+         {
+            "name":"Nightstick"
+         },
+         {
+            "name":"Extend Rod",
+            "uses":{
+               "total":3,
+               "current":0
+            }
+         },
+         {
+            "name":"Belt of Battle",
+            "uses":{
+               "total":3,
+               "current":0
+            }
+         }
+      ],
+      "haversack_contents":[
+         {
+            "name":"Waterskin"
+         },
+         {
+            "name":"Bedroll"
+         },
+         {
+            "name":"Flint and Steel"
+         },
+         {
+            "name":"Soap"
+         },
+         {
+            "name":"Tent"
+         },
+         {
+            "name":"Rope, silk (50 ft)"
+         },
+         {
+            "name":"Blanket, winter"
+         },
+         {
+            "name":"Cold Weather Outfit"
+         },
+         {
+            "name":"Symbol of Enthariel, Wooden",
+            "quantity":10
+         },
+         {
+            "name":"Symbol of Ashka-Mithael, Wooden",
+            "quantity":10
+         },
+         {
+            "name":"Healer's Kit"
+         },
+         {
+            "name":"Spell Component Pouch"
+         },
+         {
+            "name":"Shapesand"
+         },
+         {
+            "name":"Pouch with Glyph Seal (Hand of the Faithful)"
+         },
+         {
+            "name":"Expandable Pole"
+         }
+      ]
+   },
+   "attacks":[
+      {
+         "name":"Longsword Keen +1 (Lesser Crystal of Return)",
+         "type":"melee",
+         "enhancement_bonus":3,
+         "bonus_to_hit":24,
+         "attack_bonus_total":33,
+         "bonus_damage_total":21,
+         "damage_1h":"1d8 + 45",
+         "damage_2h":"1d8 + 63",
+         "critical":"17-20 x2",
+      }
+   ]
+}
